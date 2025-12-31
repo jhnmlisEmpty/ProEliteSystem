@@ -1,26 +1,25 @@
 <div>
     {{-- Header --}}
-    <div class="mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <div class="flex items-center gap-3 mb-2">
-                    <a href="{{ route('orders.index') }}" class="text-blue-600 hover:text-blue-700 font-medium text-sm">← Back to Orders</a>
-                </div>
-                <h1 class="text-3xl font-bold text-gray-900">Order #{{ $order->id }}</h1>
-                <p class="mt-2 text-sm text-gray-600">Created on {{ $order->created_at->format('M d, Y \a\t h:i A') }}</p>
+    <x-page-header :title="'Order #' . $order->id" :subtitle="'Created on ' . $order->created_at->format('M d, Y \\a\\t h:i A')">
+        <x-slot name="pretitle">
+            <div class="flex items-center gap-3">
+                <a href="{{ route('orders.index') }}" class="text-blue-600 hover:text-blue-700 font-medium text-sm">← Back to Orders</a>
+                @if(in_array($order->status, ['pending','in_progress']))
+                    <a href="{{ route('orders.edit', $order->id) }}" class="text-sm px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-md font-medium transition">Edit Order</a>
+                @endif
             </div>
-            <div class="mt-4 sm:mt-0">
-                <div class="inline-flex items-center gap-3">
-                    <span class="px-3 py-1 rounded-full text-sm font-medium {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : ($order->status === 'in_progress' ? 'bg-blue-100 text-blue-800' : ($order->status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')) }}">
-                        {{ ucfirst($order->status) }}
-                    </span>
-                    <span class="px-3 py-1 rounded-full text-sm font-medium {{ $order->payment_status === 'paid' ? 'bg-green-100 text-green-800' : ($order->payment_status === 'partial' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800') }}">
-                        {{ ucfirst($order->payment_status) }}
-                    </span>
-                </div>
+        </x-slot>
+        <x-slot name="actions">
+            <div class="inline-flex items-center gap-3">
+                <span class="px-3 py-1 rounded-full text-sm font-medium {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : ($order->status === 'in_progress' ? 'bg-blue-100 text-blue-800' : ($order->status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')) }}">
+                    {{ ucfirst($order->status) }}
+                </span>
+                <span class="px-3 py-1 rounded-full text-sm font-medium {{ $order->payment_status === 'paid' ? 'bg-green-100 text-green-800' : ($order->payment_status === 'partial' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800') }}">
+                    {{ ucfirst($order->payment_status) }}
+                </span>
             </div>
-        </div>
-    </div>
+        </x-slot>
+    </x-page-header>
 
     {{-- Flash Messages --}}
     @if (session()->has('success'))
@@ -51,8 +50,11 @@
         <div class="lg:col-span-2 space-y-6">
             {{-- Customer Information --}}
             <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-semibold text-gray-900">Customer Information</h2>
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Customer Information</h2>
+                        <p class="text-sm text-gray-600">Customer contact and profile details.</p>
+                    </div>
                     @if($order->customer)
                         <a href="{{ route('customers.edit', $order->customer->id) }}" class="text-blue-600 hover:text-blue-700 text-sm font-medium">View Profile</a>
                     @endif
@@ -78,7 +80,8 @@
             {{-- Vehicle Information --}}
             @if($order->vehicle_type || $order->plate_number)
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Vehicle Information</h2>
+                    <h2 class="text-lg font-semibold text-gray-900 mb-1">Vehicle Information</h2>
+                    <p class="text-sm text-gray-600 mb-3">Vehicle details associated with this order.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         @if($order->vehicle_type)
                             <div>
@@ -98,7 +101,8 @@
 
             {{-- Order Items --}}
             <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Order Items</h2>
+                <h2 class="text-lg font-semibold text-gray-900 mb-1">Order Items</h2>
+                <p class="text-sm text-gray-600 mb-3">Products and services included in this order.</p>
                 @if($order->orderItems->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
@@ -142,36 +146,13 @@
             {{-- Job Order (if services were ordered) --}}
             @if($order->jobOrder)
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Job Order</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <p class="text-sm text-gray-600">Status</p>
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $order->jobOrder->status === 'completed' ? 'bg-green-100 text-green-800' : ($order->jobOrder->status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">
-                                {{ ucfirst($order->jobOrder->status) }}
-                            </span>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-600">Duration</p>
-                            <p class="font-medium text-gray-900">
-                                @if($order->jobOrder->start_date && $order->jobOrder->end_date)
-                                    {{ $order->jobOrder->duration_in_days }} day(s)
-                                @else
-                                    Not set
-                                @endif
-                            </p>
-                        </div>
-                        @if($order->jobOrder->start_date)
-                            <div>
-                                <p class="text-sm text-gray-600">Start Date</p>
-                                <p class="font-medium text-gray-900">{{ $order->jobOrder->start_date->format('M d, Y') }}</p>
-                            </div>
-                        @endif
-                        @if($order->jobOrder->end_date)
-                            <div>
-                                <p class="text-sm text-gray-600">End Date</p>
-                                <p class="font-medium text-gray-900">{{ $order->jobOrder->end_date->format('M d, Y') }}</p>
-                            </div>
-                        @endif
+                    <h2 class="text-lg font-semibold text-gray-900 mb-1">Job Order</h2>
+                    <p class="text-sm text-gray-600 mb-3">Service job details linked to this order.</p>
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-600">Status</p>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $order->jobOrder->status === 'completed' ? 'bg-green-100 text-green-800' : ($order->jobOrder->status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">
+                            {{ ucfirst($order->jobOrder->status) }}
+                        </span>
                     </div>
                     @if($order->jobOrder->notes)
                         <div>
@@ -184,7 +165,8 @@
 
             {{-- Payment History --}}
             <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Payment History</h2>
+                <h2 class="text-lg font-semibold text-gray-900 mb-1">Payment History</h2>
+                <p class="text-sm text-gray-600 mb-3">Recorded payments made for this order.</p>
                 @if($order->payments->count() > 0)
                     <div class="space-y-3">
                         @foreach($order->payments as $payment)
@@ -211,7 +193,8 @@
         <div class="space-y-6">
             {{-- Order Summary --}}
             <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+                <h2 class="text-lg font-semibold text-gray-900 mb-1">Order Summary</h2>
+                <p class="text-sm text-gray-600 mb-3">Totals, payments, and remaining balance.</p>
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Subtotal</span>
@@ -232,7 +215,8 @@
 
             {{-- Status Management --}}
             <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Order Status</h2>
+                <h2 class="text-lg font-semibold text-gray-900 mb-1">Order Status</h2>
+                <p class="text-sm text-gray-600 mb-3">Update the overall status of this order.</p>
                 <div class="space-y-2">
                     <button wire:click="updateOrderStatus('pending')" class="w-full text-left px-4 py-2 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-400 transition {{ $order->status === 'pending' ? 'bg-blue-50 border-blue-400 font-medium text-blue-600' : 'text-gray-700' }}">
                         Pending
@@ -252,7 +236,8 @@
             {{-- Payment Section --}}
             @if($order->remaining_balance > 0)
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Add Payment</h2>
+                    <h2 class="text-lg font-semibold text-gray-900 mb-1">Add Payment</h2>
+                    <p class="text-sm text-gray-600 mb-3">Record a new payment against the remaining balance.</p>
                     
                     @if($showPaymentForm)
                         <form wire:submit.prevent="addPayment" class="space-y-3">

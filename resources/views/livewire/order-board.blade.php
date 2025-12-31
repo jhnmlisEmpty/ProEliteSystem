@@ -1,19 +1,15 @@
 <div>
     {{-- Header --}}
-    <div class="mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Order Board</h1>
-                <p class="mt-2 text-sm text-gray-600">Manage service orders and track progress</p>
-            </div>
-            <a href="{{ route('orders.index') }}" class="mt-4 sm:mt-0 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
+    <x-page-header title="Job Order Board" subtitle="Manage service orders and track progress">
+        <x-slot name="actions">
+            <a href="{{ route('orders.index') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
                 View All Orders
             </a>
-        </div>
-    </div>
+        </x-slot>
+    </x-page-header>
 
     {{-- Flash Messages --}}
     @if (session()->has('success'))
@@ -28,7 +24,7 @@
     @endif
 
     {{-- Kanban Board --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {{-- Pending Column --}}
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="flex items-center justify-between mb-4">
@@ -53,9 +49,13 @@
                             @if($order->order->orderItems->count() > 0)
                                 <div class="text-xs text-gray-600 mb-3">
                                     <p class="font-medium text-gray-700">Services:</p>
-                                    @foreach($order->order->orderItems->where('service_id', '!=', null) as $item)
-                                        <p class="ml-2">• {{ $item->item_name }}</p>
-                                    @endforeach
+                                    @forelse($order->order->orderItems as $item)
+                                        @if($item->service_id)
+                                            <p class="ml-2">• {{ $item->item_name ?? $item->service->name ?? 'N/A' }}</p>
+                                        @endif
+                                    @empty
+                                        <p class="ml-2 text-gray-500">No services</p>
+                                    @endforelse
                                 </div>
                             @endif
 
@@ -110,12 +110,6 @@
                                 </div>
                             @endif
 
-                            @if($order->start_date)
-                                <p class="text-xs text-gray-600 mb-3">
-                                    <span class="font-medium">Started:</span> {{ $order->start_date->format('M d, Y') }}
-                                </p>
-                            @endif
-
                             <div class="flex gap-2 mt-3">
                                 <button wire:click.stop="updateStatus({{ $order->id }}, 'completed')" class="flex-1 bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded text-xs font-medium transition">
                                     Complete
@@ -167,12 +161,6 @@
                                 </div>
                             @endif
 
-                            @if($order->start_date && $order->end_date)
-                                <p class="text-xs text-gray-600 mb-3">
-                                    <span class="font-medium">Duration:</span> {{ $order->duration_in_days }} day(s)
-                                </p>
-                            @endif
-
                             <a href="{{ route('orders.view', $order->order_id) }}" class="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-medium transition text-center">
                                 View Details
                             </a>
@@ -184,52 +172,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                         </svg>
                         <p class="text-gray-500 text-sm font-medium">No completed orders</p>
-                    </div>
-                @endforelse
-            </div>
-        </div>
-
-        {{-- Cancelled Column --}}
-        <div class="bg-gray-50 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold text-gray-900">Cancelled</h2>
-                <span class="bg-red-100 text-red-800 text-sm font-semibold px-3 py-1 rounded-full">{{ count($cancelledOrders) }}</span>
-            </div>
-
-            <div class="space-y-3">
-                @forelse($cancelledOrders as $order)
-                    <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition cursor-pointer border-l-4 border-red-400 opacity-75" wire:click="$navigate('{{ route('orders.view', $order->order_id) }}')">
-                        <div class="p-4">
-                            <div class="flex items-start justify-between mb-2">
-                                <div class="flex-1">
-                                    <p class="text-sm font-medium text-gray-900">Order #{{ $order->order_id }}</p>
-                                    <p class="text-xs text-gray-600 mt-1">{{ $order->order->customer_name ?? 'N/A' }}</p>
-                                </div>
-                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
-                                    Cancelled
-                                </span>
-                            </div>
-
-                            @if($order->order->orderItems->count() > 0)
-                                <div class="text-xs text-gray-600 mb-3">
-                                    <p class="font-medium text-gray-700">Services:</p>
-                                    @foreach($order->order->orderItems->where('service_id', '!=', null) as $item)
-                                        <p class="ml-2">• {{ $item->item_name }}</p>
-                                    @endforeach
-                                </div>
-                            @endif
-
-                            <a href="{{ route('orders.view', $order->order_id) }}" class="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-medium transition text-center">
-                                View Details
-                            </a>
-                        </div>
-                    </div>
-                @empty
-                    <div class="bg-white rounded-lg p-8 text-center">
-                        <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                        </svg>
-                        <p class="text-gray-500 text-sm font-medium">No cancelled orders</p>
                     </div>
                 @endforelse
             </div>
@@ -270,18 +212,6 @@
                 </div>
                 <svg class="w-12 h-12 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600">Cancelled</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ count($cancelledOrders) }}</p>
-                </div>
-                <svg class="w-12 h-12 text-red-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </div>
         </div>

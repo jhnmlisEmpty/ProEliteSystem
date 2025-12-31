@@ -10,7 +10,6 @@ class OrderBoard extends Component
     public $pendingOrders;
     public $inProgressOrders;
     public $completedOrders;
-    public $cancelledOrders;
 
     public function mount()
     {
@@ -33,11 +32,6 @@ class OrderBoard extends Component
             ->with('order.customer')
             ->orderBy('created_at', 'desc')
             ->get();
-
-        $this->cancelledOrders = JobOrder::whereIn('status', ['cancelled'])
-            ->with('order.customer')
-            ->orderBy('created_at', 'desc')
-            ->get();
     }
 
     public function updateStatus($jobId, $newStatus)
@@ -56,7 +50,6 @@ class OrderBoard extends Component
             'pendingOrders' => $this->pendingOrders,
             'inProgressOrders' => $this->inProgressOrders,
             'completedOrders' => $this->completedOrders,
-            'cancelledOrders' => $this->cancelledOrders,
         ])->layout('layouts.app');
     }
 }

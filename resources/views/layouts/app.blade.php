@@ -22,8 +22,9 @@
             <div class="flex items-center justify-between h-16">
                 <!-- Brand -->
                 <div class="flex items-center">
-                    <a href="/" class="flex items-center">
-                        <span class="text-xl font-bold text-white tracking-tight">PRO ELITE</span>
+                    <a href="/" class="flex items-center space-x-2">
+                        <img src="{{ asset('logo.png') }}" alt="PRO ELITE" class="h-8 w-auto">
+                        <span class="text-xl font-bold text-yellow-400 italic tracking-tight">PRO ELITE SYSTEM</span>
                     </a>
                 </div>
 
@@ -34,6 +35,16 @@
                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('/') ? 'bg-gray-700 text-white' : '' }}">
                             <x-heroicon-o-home class="w-5 h-5 inline-block mr-1" />
                             Dashboard
+                        </a>
+                        <a href="{{ route('orders.index') }}" 
+                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('orders*') || request()->is('pos*') ? 'bg-gray-700 text-white' : '' }}">
+                            <x-heroicon-o-shopping-cart class="w-5 h-5 inline-block mr-1" />
+                            Orders
+                        </a>
+                        <a href="{{ route('board.index') }}" 
+                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('board*') ? 'bg-gray-700 text-white' : '' }}">
+                            <x-heroicon-o-squares-2x2 class="w-5 h-5 inline-block mr-1" />
+                            Job Order Board
                         </a>
                         <a href="{{ route('products.index') }}" 
                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
@@ -50,16 +61,7 @@
                             <x-heroicon-o-users class="w-5 h-5 inline-block mr-1" />
                             Customers
                         </a>
-                        <a href="{{ route('orders.index') }}" 
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('orders*') || request()->is('pos*') ? 'bg-gray-700 text-white' : '' }}">
-                            <x-heroicon-o-shopping-cart class="w-5 h-5 inline-block mr-1" />
-                            Orders
-                        </a>
-                        <a href="{{ route('board.index') }}" 
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('board*') ? 'bg-gray-700 text-white' : '' }}">
-                            <x-heroicon-o-squares-2x2 class="w-5 h-5 inline-block mr-1" />
-                            Order Board
-                        </a>
+                        
                     </div>
                 </div>
 
@@ -84,6 +86,14 @@
                     <x-heroicon-o-home class="w-5 h-5 inline-block mr-1" />
                     Dashboard
                 </a>
+                <a href="{{ route('orders.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('orders*') || request()->is('pos*') ? 'bg-gray-700 text-white' : '' }}">
+                    <x-heroicon-o-shopping-cart class="w-5 h-5 inline-block mr-1" />
+                    Orders
+                </a>
+                <a href="{{ route('board.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('board*') ? 'bg-gray-700 text-white' : '' }}">
+                    <x-heroicon-o-squares-2x2 class="w-5 h-5 inline-block mr-1" />
+                    Job Order Board
+                </a>
                 <a href="{{ route('products.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
                     <x-heroicon-o-cube class="w-5 h-5 inline-block mr-1" />
                     Products
@@ -95,14 +105,6 @@
                 <a href="{{ route('customers.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('customers*') ? 'bg-gray-700 text-white' : '' }}">
                     <x-heroicon-o-users class="w-5 h-5 inline-block mr-1" />
                     Customers
-                </a>
-                <a href="{{ route('orders.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('orders*') || request()->is('pos*') ? 'bg-gray-700 text-white' : '' }}">
-                    <x-heroicon-o-shopping-cart class="w-5 h-5 inline-block mr-1" />
-                    Orders
-                </a>
-                <a href="{{ route('board.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('board*') ? 'bg-gray-700 text-white' : '' }}">
-                    <x-heroicon-o-squares-2x2 class="w-5 h-5 inline-block mr-1" />
-                    Order Board
                 </a>
             </div>
             

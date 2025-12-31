@@ -1,19 +1,15 @@
 <div>
     {{-- Header --}}
-    <div class="mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Job Board</h1>
-                <p class="mt-2 text-sm text-gray-600">Manage service jobs and track progress</p>
-            </div>
-            <a href="{{ route('orders.index') }}" class="mt-4 sm:mt-0 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
+    <x-page-header title="Job Board" subtitle="Manage service jobs and track progress">
+        <x-slot name="actions">
+            <a href="{{ route('orders.index') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
                 View Orders
             </a>
-        </div>
-    </div>
+        </x-slot>
+    </x-page-header>
 
     {{-- Flash Messages --}}
     @if (session()->has('success'))
@@ -110,12 +106,6 @@
                                 </div>
                             @endif
 
-                            @if($job->start_date)
-                                <p class="text-xs text-gray-600 mb-3">
-                                    <span class="font-medium">Started:</span> {{ $job->start_date->format('M d, Y') }}
-                                </p>
-                            @endif
-
                             <div class="flex gap-2 mt-3">
                                 <button wire:click.stop="updateStatus({{ $job->id }}, 'completed')" class="flex-1 bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded text-xs font-medium transition">
                                     Complete
@@ -165,12 +155,6 @@
                                         <p class="ml-2">• {{ $item->item_name }}</p>
                                     @endforeach
                                 </div>
-                            @endif
-
-                            @if($job->start_date && $job->end_date)
-                                <p class="text-xs text-gray-600 mb-3">
-                                    <span class="font-medium">Duration:</span> {{ $job->duration_in_days }} day(s)
-                                </p>
                             @endif
 
                             <a href="{{ route('orders.view', $job->order_id) }}" class="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-medium transition text-center">

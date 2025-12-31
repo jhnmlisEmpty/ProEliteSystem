@@ -1,20 +1,14 @@
 <div>
     <!-- Page Header -->
-    <div class="mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Customer Management</h1>
-                <p class="mt-2 text-sm text-gray-600">Manage customer records and contact details</p>
-            </div>
-            <div class="mt-4 sm:mt-0">
-                <a href="/customers/create" wire:navigate
-                   class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition">
-                    <x-heroicon-o-plus class="w-5 h-5 mr-2" />
-                    Add Customer
-                </a>
-            </div>
-        </div>
-    </div>
+    <x-page-header title="Customer Management" subtitle="Manage customer records and contact details">
+        <x-slot name="actions">
+            <a href="/customers/create" wire:navigate
+               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition">
+                <x-heroicon-o-plus class="w-5 h-5 mr-2" />
+                Add Customer
+            </a>
+        </x-slot>
+    </x-page-header>
 
     <!-- Search Section -->
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6">

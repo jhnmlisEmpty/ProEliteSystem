@@ -1,20 +1,14 @@
 <div>
     <!-- Page Header -->
-    <div class="mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Service Management</h1>
-                <p class="mt-2 text-sm text-gray-600">Manage services and labor costs</p>
-            </div>
-            <div class="mt-4 sm:mt-0">
-                <a href="/services/create" wire:navigate
-                   class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition">
-                    <x-heroicon-o-plus class="w-5 h-5 mr-2" />
-                    Add Service
-                </a>
-            </div>
-        </div>
-    </div>
+    <x-page-header title="Service Management" subtitle="Manage services and labor costs">
+        <x-slot name="actions">
+            <a href="/services/create" wire:navigate
+               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition">
+                <x-heroicon-o-plus class="w-5 h-5 mr-2" />
+                Add Service
+            </a>
+        </x-slot>
+    </x-page-header>
 
     <!-- Search Section -->
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
