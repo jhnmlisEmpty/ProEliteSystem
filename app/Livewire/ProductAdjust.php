@@ -31,12 +31,19 @@ class ProductAdjust extends Component
         $delta = abs((int) $data['change_amount']);
         $delta = $data['direction'] === 'decrease' ? -$delta : $delta;
 
+        // Prevent negative stock
+        if ($data['direction'] === 'decrease' && $this->product->stock_qty + $delta < 0) {
+            $this->addError('change_amount', 'Cannot decrease stock by more than available quantity (' . $this->product->stock_qty . ' units).');
+            return;
+        }
+
         $this->product->stock_qty = $this->product->stock_qty + $delta;
         $this->product->save();
 
         ProductLog::create([
             'product_id' => $this->product->id,
             'change_amount' => $delta,
+            'reference_id' => 'PL' . random_int(100000, 999999),
             'reason' => $data['reason'],
         ]);
 

@@ -1,17 +1,13 @@
 <div>
     {{-- Header --}}
-    <div class="mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Point of Sale</h1>
-                <p class="mt-2 text-sm text-gray-600">Create and manage customer orders</p>
-            </div>
-            <div class="mt-4 sm:mt-0 text-right">
+    <x-page-header title="Point of Sale" subtitle="Create and manage customer orders">
+        <x-slot name="actions">
+            <div class="text-right">
                 <p class="text-sm text-gray-600">Order Total:</p>
                 <p class="text-2xl font-bold text-blue-600">₱{{ number_format($this->cartTotal) }}</p>
             </div>
-        </div>
-    </div>
+        </x-slot>
+    </x-page-header>
 
     {{-- Flash Messages --}}
     @if (session()->has('success'))

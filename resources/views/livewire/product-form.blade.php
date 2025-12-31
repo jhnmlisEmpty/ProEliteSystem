@@ -1,20 +1,19 @@
 <div>
     <!-- Header -->
-    <div class="mb-6 flex items-start justify-between">
-        <div>
-            <h1 class="text-2xl font-semibold text-gray-900">{{ $product ? 'Edit Product' : 'Create New Product' }}</h1>
-            <p class="text-sm text-gray-500 mt-1">{{ $product ? 'Update the product information and inventory details' : 'Add a new product to your inventory system' }}</p>
-        </div>
-        <button wire:click="cancel" type="button" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 border border-red-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-            Cancel
-        </button>
-    </div>
+    <x-page-header :title="$product ? 'Edit Product' : 'Create New Product'" :subtitle="$product ? 'Update the product information and inventory details' : 'Add a new product to your inventory system'">
+        <x-slot name="actions">
+            <button wire:click="cancel" type="button" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 border border-red-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                Cancel
+            </button>
+        </x-slot>
+    </x-page-header>
 
     <!-- Form -->
     <form wire:submit="save" class="space-y-6">
         <!-- Product Image & Preview -->
         <div>
-            <label class="block text-sm font-medium text-gray-900 mb-2">Product Image</label>
+            <label class="block text-sm font-medium text-gray-900 mb-1">Product Image</label>
+            <p class="text-sm text-gray-600 mb-2">Upload or change the product thumbnail for listings.</p>
             
             <!-- Image Preview Box -->
             <div class="relative mb-3 border border-gray-300 rounded-md bg-gray-50 flex items-center justify-center overflow-hidden" style="height: 200px;">
@@ -44,7 +43,8 @@
 
         <!-- Product Name -->
         <div>
-            <label class="block text-sm font-medium text-gray-900 mb-2">Product Name <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-medium text-gray-900 mb-1">Product Name <span class="text-red-500">*</span></label>
+            <p class="text-sm text-gray-600 mb-2">Display name shown across inventory and sales.</p>
             <input wire:model="name" type="text" placeholder="Enter product name" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('name') border-red-500 @enderror">
             <p class="text-xs text-gray-500 mt-1">The product's display name in the system</p>
             @error('name') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
@@ -52,7 +52,8 @@
 
         <!-- SKU -->
         <div>
-            <label class="block text-sm font-medium text-gray-900 mb-2">SKU <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-medium text-gray-900 mb-1">SKU <span class="text-red-500">*</span></label>
+            <p class="text-sm text-gray-600 mb-2">Unique identifier for tracking and searches.</p>
             <input wire:model="sku" type="text" placeholder="Enter SKU code" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('sku') border-red-500 @enderror">
             <p class="text-xs text-gray-500 mt-1">Unique product identifier for inventory tracking</p>
             @error('sku') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
@@ -61,7 +62,8 @@
         <!-- Type & Stock (Side by Side) -->
         <div class="grid grid-cols-2 gap-6">
             <div>
-                <label class="block text-sm font-medium text-gray-900 mb-2">Product Type <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-900 mb-1">Product Type <span class="text-red-500">*</span></label>
+                <p class="text-sm text-gray-600 mb-2">Choose whether this is retail or material stock.</p>
                 <select wire:model="type" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     <option value="retail">Retail</option>
                     <option value="material">Material</option>
@@ -70,7 +72,8 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-900 mb-2">Stock Quantity <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-900 mb-1">Stock Quantity <span class="text-red-500">*</span></label>
+                <p class="text-sm text-gray-600 mb-2">Current on-hand quantity available for sale.</p>
                 <input wire:model="stock_qty" type="number" step="1" min="0" placeholder="0" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('stock_qty') border-red-500 @enderror">
                 <p class="text-xs text-gray-500 mt-1">Current inventory quantity</p>
                 @error('stock_qty') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
@@ -80,7 +83,8 @@
         <!-- Buy Price & Sell Price (Side by Side) -->
         <div class="grid grid-cols-2 gap-6">
             <div>
-                <label class="block text-sm font-medium text-gray-900 mb-2">Buy Price <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-900 mb-1">Buy Price <span class="text-red-500">*</span></label>
+                <p class="text-sm text-gray-600 mb-2">Cost per unit from suppliers.</p>
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm text-gray-500">₱</span>
                     <input wire:model="buy_price" type="number" step="1" placeholder="0" class="block w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('buy_price') border-red-500 @enderror">
@@ -90,7 +94,8 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-900 mb-2">Sell Price</label>
+                <label class="block text-sm font-medium text-gray-900 mb-1">Sell Price</label>
+                <p class="text-sm text-gray-600 mb-2">Default selling price to customers.</p>
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm text-gray-500">₱</span>
                     <input wire:model="sell_price" type="number" step="1" placeholder="0" class="block w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('sell_price') border-red-500 @enderror">
@@ -102,7 +107,8 @@
 
         <!-- Alert Limit -->
         <div>
-            <label class="block text-sm font-medium text-gray-900 mb-2">Alert Limit <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-medium text-gray-900 mb-1">Alert Limit <span class="text-red-500">*</span></label>
+            <p class="text-sm text-gray-600 mb-2">Threshold to trigger low-stock warnings.</p>
             <input wire:model="alert_limit" type="number" step="1" min="0" placeholder="10" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('alert_limit') border-red-500 @enderror">
             <p class="text-xs text-gray-500 mt-1">Low stock threshold for notifications</p>
             @error('alert_limit') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror

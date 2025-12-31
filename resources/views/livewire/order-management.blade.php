@@ -1,19 +1,15 @@
 <div>
     {{-- Header --}}
-    <div class="mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Order Management</h1>
-                <p class="mt-2 text-sm text-gray-600">Manage all customer orders</p>
-            </div>
-            <a href="{{ route('pos.create') }}" class="mt-4 sm:mt-0 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
+    <x-page-header title="Order Management" subtitle="Manage all customer orders">
+        <x-slot name="actions">
+            <a href="{{ route('pos.create') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
                 New Order
             </a>
-        </div>
-    </div>
+        </x-slot>
+    </x-page-header>
 
     {{-- Flash Messages --}}
     @if (session()->has('success'))
@@ -145,6 +141,9 @@
                         <td class="px-6 py-4">
                             <div class="flex gap-3">
                                 <a href="{{ route('orders.view', $order->id) }}" class="text-blue-600 hover:text-blue-700 font-medium text-sm">View</a>
+                                @if(in_array($order->status, ['pending','in_progress']))
+                                    <a href="{{ route('orders.edit', $order->id) }}" class="text-gray-700 hover:text-gray-900 font-medium text-sm">Edit</a>
+                                @endif
                                 @if($order->status === 'pending')
                                     <button wire:click="delete({{ $order->id }})" wire:confirm="Are you sure you want to delete this order?" class="text-red-600 hover:text-red-700 font-medium text-sm">Delete</button>
                                 @endif
@@ -218,6 +217,9 @@
 
                 <div class="flex gap-2">
                     <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium transition">View</a>
+                    @if(in_array($order->status, ['pending','in_progress']))
+                        <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition">Edit</a>
+                    @endif
                     @if($order->status === 'pending')
                         <button wire:click="delete({{ $order->id }})" wire:confirm="Are you sure?" class="flex-1 text-center bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition">Delete</button>
                     @endif

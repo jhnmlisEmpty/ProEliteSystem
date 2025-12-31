@@ -1,20 +1,15 @@
 <div >
     <div class="max-w-7xl mx-auto">
-        <div class="mb-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-                    <p class="mt-2 text-sm text-gray-600">{{ now()->format('l, F j, Y') }}</p>
-                </div>
-
-                 <a href="{{ route('pos.create') }}" class="mt-4 sm:mt-0 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
+        <x-page-header title="Dashboard" subtitle="Overview of today and recent performance" :showDate="true">
+            <x-slot name="actions">
+                <a href="{{ route('pos.create') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                     New Order
                 </a>
-            </div>
-        </div>
+            </x-slot>
+        </x-page-header>
 
         <!-- TOP SUMMARY ROW - Today at a Glance -->
         <div class="mb-4">
@@ -38,18 +33,18 @@
 
                 <!-- Orders Today -->
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-purple-500">
-                    <p class="text-xs text-gray-600 font-medium">Orders Today</p>
+                    <p class="text-xs text-gray-600 font-medium">Job Order Today</p>
                     <p class="text-xl font-bold text-gray-900 mt-0.5">{{ $todayJobs }}</p>
                     <p class="text-xs text-gray-500 mt-0.5">{{ $inProgressJobs }} in progress</p>
-                    <p class="text-xs text-gray-400 mt-1 italic">Count of orders created today</p>
+                    <p class="text-xs text-gray-400 mt-1 italic">Count of job order created today</p>
                 </div>
 
                 <!-- Pending Orders -->
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-orange-500">
-                    <p class="text-xs text-gray-600 font-medium">Pending Orders</p>
+                    <p class="text-xs text-gray-600 font-medium">Pending Job Order</p>
                     <p class="text-xl font-bold text-gray-900 mt-0.5">{{ $pendingJobs }}</p>
                     <p class="text-xs text-gray-500 mt-0.5">Awaiting action</p>
-                    <p class="text-xs text-gray-400 mt-1 italic">Orders with status "pending"</p>
+                    <p class="text-xs text-gray-400 mt-1 italic">Job orders with status "pending"</p>
                 </div>
             </div>
         </div>
@@ -112,7 +107,7 @@
 
                 <!-- Orders Distribution (1 column) -->
                 <div class="bg-white rounded-lg shadow p-4">
-                    <h3 class="text-xs font-semibold text-gray-900 mb-2">Orders Distribution</h3>
+                    <h3 class="text-xs font-semibold text-gray-900 mb-2">Job Order Distribution</h3>
                     <canvas id="jobsChart" height="80"></canvas>
                 </div>
             </div>

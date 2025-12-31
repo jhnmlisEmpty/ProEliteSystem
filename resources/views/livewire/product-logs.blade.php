@@ -1,17 +1,21 @@
 <div>
     <!-- Header -->
-    <div class="mb-6 flex items-start justify-between">
-        <div>
-            <h1 class="text-2xl font-semibold text-gray-900">Product Logs</h1>
-            <p class="text-sm text-gray-500 mt-1">Viewing history for {{ $product->name }} (SKU: {{ $product->sku }})</p>
-        </div>
-        <button wire:click="back" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50">
-            Back to Products
-        </button>
-    </div>
+    <x-page-header title="Product Logs" :subtitle="'Viewing history for ' . $product->name . ' (SKU: ' . $product->sku . ')'">
+        <x-slot name="actions">
+            <button wire:click="back" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50">
+                Back to Products
+            </button>
+        </x-slot>
+    </x-page-header>
 
     <!-- Product Summary Card -->
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div class="flex items-start justify-between mb-3">
+            <div>
+                <h2 class="text-base font-semibold text-gray-900">Product Snapshot</h2>
+                <p class="text-sm text-gray-600">Quick view of current stock and thresholds.</p>
+            </div>
+        </div>
         <div class="flex flex-wrap gap-6 text-sm">
             <div>
                 <span class="text-gray-500">Current Stock:</span>

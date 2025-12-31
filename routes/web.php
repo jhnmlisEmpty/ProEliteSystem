@@ -12,6 +12,7 @@ use App\Livewire\CustomerForm;
 use App\Livewire\PointOfSale;
 use App\Livewire\OrderManagement;
 use App\Livewire\OrderView;
+use App\Livewire\OrderEdit;
 use App\Livewire\OrderBoard;
 use App\Livewire\Dashboard;
 
@@ -34,4 +35,5 @@ Route::get('/customers/{id}/edit', CustomerForm::class)->name('customers.edit');
 Route::get('/pos', PointOfSale::class)->name('pos.create');
 Route::get('/orders', OrderManagement::class)->name('orders.index');
 Route::get('/orders/{id}', OrderView::class)->name('orders.view');
+Route::get('/orders/{id}/edit', OrderEdit::class)->name('orders.edit');
 Route::get('/board', OrderBoard::class)->name('board.index');
