@@ -83,26 +83,19 @@
                 <div class="lg:col-span-3 bg-white rounded-lg shadow p-4">
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-sm font-semibold text-gray-900">Revenue Trend</h3>
-                        <div class="flex gap-1">
-                            <button wire:click="updateRevenuePeriod('daily')" 
-                                class="px-2 py-1 text-xs rounded {{ $revenuePeriod === 'daily' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
-                                Daily
-                            </button>
-                            <button wire:click="updateRevenuePeriod('weekly')" 
-                                class="px-2 py-1 text-xs rounded {{ $revenuePeriod === 'weekly' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
-                                Weekly
-                            </button>
-                            <button wire:click="updateRevenuePeriod('monthly')" 
-                                class="px-2 py-1 text-xs rounded {{ $revenuePeriod === 'monthly' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
-                                Monthly
-                            </button>
-                            <button wire:click="updateRevenuePeriod('yearly')" 
-                                class="px-2 py-1 text-xs rounded {{ $revenuePeriod === 'yearly' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
-                                Yearly
-                            </button>
+                        <div class="flex gap-2 items-center">
+                            <label class="text-xs text-gray-600">From:</label>
+                            <input type="date" wire:model="start_date" wire:change="updateDateRange" 
+                                class="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <label class="text-xs text-gray-600">To:</label>
+                            <input type="date" wire:model="end_date" wire:change="updateDateRange" 
+                                class="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <span wire:loading wire:target="updateDateRange" class="text-xs text-blue-600 ml-2">
+                                Updating...
+                            </span>
                         </div>
                     </div>
-                    <canvas id="revenueChart" height="80" wire:key="revenue-chart-{{ $revenuePeriod }}"></canvas>
+                    <canvas id="revenueChart" height="80" wire:key="revenue-chart-{{ $start_date }}-{{ $end_date }}"></canvas>
                 </div>
 
                 <!-- Orders Distribution (1 column) -->
@@ -250,27 +243,35 @@
     <!-- Chart.js Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
-        let revenueChart = null;
-        let jobsChart = null;
+        const ChartManager = {
+            charts: {
+                revenue: null,
+                jobs: null
+            },
 
-        function initCharts() {
-            // Revenue Chart
-            const revenueData = @json($revenueChartData);
-            const revenueCtx = document.getElementById('revenueChart');
-            
-            if (revenueCtx) {
-                // Destroy existing chart if it exists
-                if (revenueChart) {
-                    revenueChart.destroy();
-                }
+            init() {
+                this.initRevenueChart();
+                this.initJobsChart();
+            },
+
+            initRevenueChart() {
+                const canvas = document.getElementById('revenueChart');
+                if (!canvas) return;
+
+                const data = @json($revenueChartData);
                 
-                revenueChart = new Chart(revenueCtx.getContext('2d'), {
+                // Destroy existing chart
+                if (this.charts.revenue) {
+                    this.charts.revenue.destroy();
+                }
+
+                this.charts.revenue = new Chart(canvas.getContext('2d'), {
                     type: 'line',
                     data: {
-                        labels: revenueData.map(d => d.date),
+                        labels: data.map(d => d.date),
                         datasets: [{
                             label: 'Revenue (₱)',
-                            data: revenueData.map(d => d.amount),
+                            data: data.map(d => d.amount),
                             borderColor: 'rgb(59, 130, 246)',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             tension: 0.4,
@@ -281,35 +282,32 @@
                         responsive: true,
                         maintainAspectRatio: true,
                         plugins: {
-                            legend: {
-                                display: false
-                            }
+                            legend: { display: false }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    callback: function(value) {
-                                        return '₱' + value.toLocaleString();
-                                    }
+                                    callback: (value) => '₱' + value.toLocaleString()
                                 }
                             }
                         }
                     }
                 });
-            }
+            },
 
-            // Jobs Chart
-            const jobsData = @json($jobsChartData);
-            const jobsCtx = document.getElementById('jobsChart');
-            
-            if (jobsCtx && !jobsChart) {
-                jobsChart = new Chart(jobsCtx.getContext('2d'), {
+            initJobsChart() {
+                const canvas = document.getElementById('jobsChart');
+                if (!canvas || this.charts.jobs) return;
+
+                const data = @json($jobsChartData);
+
+                this.charts.jobs = new Chart(canvas.getContext('2d'), {
                     type: 'doughnut',
                     data: {
-                        labels: jobsData.map(d => d.status),
+                        labels: data.map(d => d.status),
                         datasets: [{
-                            data: jobsData.map(d => d.count),
+                            data: data.map(d => d.count),
                             backgroundColor: [
                                 'rgb(234, 179, 8)',
                                 'rgb(59, 130, 246)',
@@ -321,27 +319,29 @@
                         responsive: true,
                         maintainAspectRatio: true,
                         plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
+                            legend: { position: 'bottom' }
                         }
                     }
                 });
+            },
+
+            refresh() {
+                setTimeout(() => this.init(), 100);
             }
-        }
+        };
 
-        document.addEventListener('DOMContentLoaded', initCharts);
+        // Initialize charts on page load
+        document.addEventListener('DOMContentLoaded', () => ChartManager.init());
         
-        // Re-initialize charts when Livewire updates
+        // Re-initialize charts on Livewire updates
         document.addEventListener('livewire:init', () => {
-            Livewire.hook('morph.updated', ({ el, component }) => {
-                setTimeout(() => initCharts(), 100);
+            Livewire.hook('morph.updated', () => ChartManager.refresh());
+            Livewire.hook('commit', ({ component, respond }) => {
+                respond(() => ChartManager.refresh());
             });
+            Livewire.on('chartUpdated', () => ChartManager.refresh());
         });
 
-        // Fallback: Listen for wire:navigate or any Livewire update
-        document.addEventListener('livewire:update', () => {
-            setTimeout(() => initCharts(), 100);
-        });
+        window.addEventListener('livewire:update', () => ChartManager.refresh());
     </script>
 </div>
