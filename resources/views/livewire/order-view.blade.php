@@ -154,12 +154,6 @@
                             {{ ucfirst($order->jobOrder->status) }}
                         </span>
                     </div>
-                    @if($order->jobOrder->notes)
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Notes</p>
-                            <p class="text-gray-900 bg-gray-50 p-3 rounded">{{ $order->jobOrder->notes }}</p>
-                        </div>
-                    @endif
                 </div>
             @endif
 
