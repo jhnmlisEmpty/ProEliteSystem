@@ -15,8 +15,21 @@ use App\Livewire\OrderView;
 use App\Livewire\OrderEdit;
 use App\Livewire\OrderBoard;
 use App\Livewire\Dashboard;
+use App\Livewire\Auth\Login;
+use Illuminate\Support\Facades\Auth;
 
-Route::get('/', Dashboard::class)->name('dashboard.index');
+// Guest routes
+Route::get('/login', Login::class)->name('login');
+Route::post('/logout', function () {
+    Auth::logout();
+    session()->invalidate();
+    session()->regenerateToken();
+    return redirect('/login');
+})->name('logout');
+
+// Protected routes
+Route::middleware('auth')->group(function () {
+    Route::get('/', Dashboard::class)->name('dashboard.index');
 
 Route::get('/products', ProductManagement::class)->name('products.index');
 Route::get('/products/create', ProductForm::class)->name('products.create');
@@ -37,3 +50,4 @@ Route::get('/orders', OrderManagement::class)->name('orders.index');
 Route::get('/orders/{id}', OrderView::class)->name('orders.view');
 Route::get('/orders/{id}/edit', OrderEdit::class)->name('orders.edit');
 Route::get('/board', OrderBoard::class)->name('board.index');
+});
