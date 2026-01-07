@@ -25,7 +25,9 @@
                 <div class="flex items-center">
                     <a href="/" class="flex items-center space-x-2">
                         <img src="{{ asset('logo.png') }}" alt="PRO ELITE" class="h-8 w-auto">
-                        <span class="text-xl font-bold text-yellow-400 italic tracking-tight">PRO ELITE SYSTEM</span>
+                        <div>
+                            <span class="text-md font-bold text-yellow-400 italic tracking-tight block">PRO ELITE SYSTEM - {{ Auth::user()->name }}</span>
+                        </div>
                     </a>
                 </div>
 
@@ -66,8 +68,16 @@
                     </div>
                 </div>
 
-                <!-- Right side placeholder (removed user menu) -->
-                <div class="hidden md:block"></div>
+                <!-- Right side logout button -->
+                <div class="hidden md:block">
+                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm font-medium transition flex items-center">
+                            <x-heroicon-o-arrow-left-on-rectangle class="w-5 h-5 mr-1" />
+                            Logout
+                        </button>
+                    </form>
+                </div>
 
                 <!-- Mobile menu button -->
                 <div class="md:hidden">
@@ -107,8 +117,17 @@
                     <x-heroicon-o-users class="w-5 h-5 inline-block mr-1" />
                     Customers
                 </a>
-            </div>
-            
+                <hr class="my-2 border-gray-700">
+                <div class="px-3 py-2">
+                    <p class="text-gray-300 text-sm font-medium mb-2">{{ Auth::user()->name }}</p>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full text-left text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition">
+                            <x-heroicon-o-arrow-left-on-rectangle class="w-5 h-5 inline-block mr-1" />
+                            Logout
+                        </button>
+                    </form>
+                </div>
         </div>
     </nav>
 
