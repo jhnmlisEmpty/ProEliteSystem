@@ -14,30 +14,21 @@ class BranchSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Main Branch
-        $mainBranch = Branch::create([
-            'name' => 'Main Branch',
-            'code' => 'MAIN',
-            'address' => '123 Main Street, Metro Manila',
-            'phone' => '+63 912 345 6789',
+        // Create Branch 1
+        $branch1 = Branch::create([
+            'name' => 'Baguio City Branch',
+            'code' => 'BG01',
+            'address' => 'Baguio City',
+            'phone' => '09266530192',
             'is_active' => true,
         ]);
 
         // Create Branch 2
         $branch2 = Branch::create([
-            'name' => 'Quezon City Branch',
-            'code' => 'QC01',
-            'address' => '456 Commonwealth Ave, Quezon City',
-            'phone' => '+63 912 345 6790',
-            'is_active' => true,
-        ]);
-
-        // Create Branch 3
-        $branch3 = Branch::create([
-            'name' => 'Makati Branch',
-            'code' => 'MKT01',
-            'address' => '789 Ayala Avenue, Makati City',
-            'phone' => '+63 912 345 6791',
+            'name' => 'NCR Branch',
+            'code' => 'NCR01',
+            'address' => 'Brgy. Calumbaya, Bauang Sur',
+            'phone' => '09569424297',
             'is_active' => true,
         ]);
 
@@ -52,39 +43,31 @@ class BranchSeeder extends Seeder
 
         // Create Manager for Main Branch
         User::create([
-            'name' => 'Main Branch Manager',
-            'email' => 'manager.main@proelite.com',
+            'name' => 'Manager',
+            'email' => 'manager@proelite.com',
             'password' => Hash::make('password'),
-            'branch_id' => $mainBranch->id,
+            'branch_id' => null,
             'role' => 'manager',
         ]);
 
         // Create User for Main Branch
         User::create([
-            'name' => 'Main Branch User',
-            'email' => 'user.main@proelite.com',
+            'name' => 'Baguio Branch',
+            'email' => 'user.baguio@proelite.com',
             'password' => Hash::make('password'),
-            'branch_id' => $mainBranch->id,
+            'branch_id' => $branch1->id,
             'role' => 'user',
         ]);
 
-        // Create User for QC Branch
+        // Create User for NCR Branch
         User::create([
-            'name' => 'QC Branch User',
-            'email' => 'user.qc@proelite.com',
+            'name' => 'NCR Branch',
+            'email' => 'user.ncr@proelite.com',
             'password' => Hash::make('password'),
             'branch_id' => $branch2->id,
             'role' => 'user',
         ]);
 
-        // Create User for Makati Branch
-        User::create([
-            'name' => 'Makati Branch User',
-            'email' => 'user.makati@proelite.com',
-            'password' => Hash::make('password'),
-            'branch_id' => $branch3->id,
-            'role' => 'user',
-        ]);
 
         $this->command->info('✓ Branches and users created successfully!');
         $this->command->info('');
