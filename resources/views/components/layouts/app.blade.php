@@ -44,7 +44,7 @@
                             <x-heroicon-o-shopping-cart class="w-5 h-5 inline-block mr-1" />
                             Orders
                         </a>
-                       
+                      
                         <a href="{{ route('products.index') }}" 
                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
                             <x-heroicon-o-cube class="w-5 h-5 inline-block mr-1" />

@@ -11,7 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Register route middleware aliases
+        $middleware->alias([
+            'ongoing' => \App\Http\Middleware\OngoingDevelopment::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
