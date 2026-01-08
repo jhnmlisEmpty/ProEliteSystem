@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             JobOrderSeeder::class,
             PaymentSeeder::class,
             ProductLogSeeder::class,
+            EmployeeSeeder::class,
         ]);
         
         $this->command->info('✅ Database seeding completed successfully!');
