@@ -383,6 +383,9 @@ class CreateOrder extends Component
         if ($customer) {
             $this->customer_id = $customer->id;
             $this->customer_name = $customer->name;
+            $this->newCustomerName = $customer->name;
+            $this->newCustomerPhone = $customer->phone;
+            $this->newCustomerAddress = $customer->address;
             $this->customerSearch = '';
         }
     }
@@ -414,14 +417,26 @@ class CreateOrder extends Component
             'newCustomerAddress' => 'required|string',
         ]);
 
-        $customer = Customer::create([
-            'name' => $validated['newCustomerName'],
-            'phone' => $validated['newCustomerPhone'],
-            'address' => $validated['newCustomerAddress'],
-        ]);
+        if ($this->customer_id) {
+            $customer = Customer::find($this->customer_id);
+            if ($customer) {
+                $customer->update([
+                    'name' => $validated['newCustomerName'],
+                    'phone' => $validated['newCustomerPhone'],
+                    'address' => $validated['newCustomerAddress'],
+                ]);
+                $this->customer_name = $customer->name;
+                $this->customerSearch = '';
+            }
+        } else {
+            $customer = Customer::create([
+                'name' => $validated['newCustomerName'],
+                'phone' => $validated['newCustomerPhone'],
+                'address' => $validated['newCustomerAddress'],
+            ]);
 
-        $this->selectCustomer($customer->id);
-        $this->closeCustomerForm();
+            $this->selectCustomer($customer->id);
+        }
     }
 
     /**
