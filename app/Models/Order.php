@@ -23,10 +23,16 @@ class Order extends Model
         'status',
         'payment_status',
         'total_amount',
+        'total_gross',
+        'total_cost',
+        'net_income',
     ];
 
     protected $casts = [
         'total_amount' => 'integer',
+        'total_gross' => 'integer',
+        'total_cost' => 'integer',
+        'net_income' => 'integer',
     ];
 
     // Relationships
@@ -48,6 +54,16 @@ class Order extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(OrderExpense::class);
+    }
+
+    public function serviceAssignments(): HasMany
+    {
+        return $this->hasMany(ServiceAssignment::class);
     }
 
     // Query Scopes

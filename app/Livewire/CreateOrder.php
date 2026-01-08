@@ -5,9 +5,12 @@ namespace App\Livewire;
 use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\Order;
+use App\Models\OrderExpense;
+use App\Models\ProductLog;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Service;
+use App\Models\ServiceAssignment;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -59,6 +62,9 @@ class CreateOrder extends Component
 
     protected $rules = [
         'customer_id' => 'required|exists:customers,id',
+        'customer_name' => 'required|string|min:2',
+        'vehicle_type' => 'nullable|string|max:100',
+        'plate_number' => 'nullable|string|max:20',
     ];
 
     protected $listeners = [
@@ -69,21 +75,24 @@ class CreateOrder extends Component
         'update-discount' => 'updateDiscount',
     ];
 
-    public function mount(): void
-    {
-        $this->recalculate();
-    }
-
     public function render()
     {
+        // Get current user's branch (admins can see all)
+        $userBranch = auth()->user()->branch_id;
+        $isAdmin = auth()->user()->role === 'admin';
+
         $customers = $this->customerSearch
-            ? Customer::where('name', 'like', '%' . $this->customerSearch . '%')
-                ->orWhere('phone', 'like', '%' . $this->customerSearch . '%')
+            ? Customer::where(function ($q) {
+                    $q->where('name', 'like', '%' . $this->customerSearch . '%')
+                        ->orWhere('phone', 'like', '%' . $this->customerSearch . '%');
+                })
+                ->when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
                 ->take(8)
                 ->get()
             : collect();
 
         $products = Product::query()
+            ->when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
             ->when($this->productSearch, function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', '%' . $this->productSearch . '%')
@@ -95,6 +104,7 @@ class CreateOrder extends Component
             ->get();
 
         $services = Service::query()
+            ->when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
             ->when($this->serviceSearch, function ($query) {
                 $query->where('name', 'like', '%' . $this->serviceSearch . '%');
             })
@@ -102,7 +112,9 @@ class CreateOrder extends Component
             ->take(25)
             ->get();
 
-        $employees = Employee::orderBy('name')->get();
+        $employees = Employee::when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
+            ->orderBy('name')
+            ->get();
 
         return view('livewire.create-order', [
             'customers' => $customers,
@@ -135,15 +147,25 @@ class CreateOrder extends Component
 
     public function addProduct(int $productId): void
     {
-        $product = Product::find($productId);
+        $isAdmin = auth()->user()->role === 'admin';
+        $userBranch = auth()->user()->branch_id;
+        
+        $product = Product::when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
+            ->find($productId);
+        
         if (!$product) {
-            $this->addError('product', 'Product not found.');
+            $this->addError('product', 'Product not found or access denied.');
             return;
         }
 
         $quantity = $this->productQuantities[$productId] ?? 1;
         if ($quantity < 1) {
             $quantity = 1;
+        }
+        
+        if ($quantity > 9999) {
+            $this->addError('product', 'Quantity cannot exceed 9999.');
+            return;
         }
 
         $existingKey = $this->findProductItemKey($productId);
@@ -327,9 +349,10 @@ class CreateOrder extends Component
 
     public function setDiscount(string $type, $value): void
     {
+        $value = max(0, (float) $value);  // Prevent negative discounts
         $this->updateDiscount([
             'type' => $type,
-            'value' => (float) $value,
+            'value' => $value,
         ]);
     }
 
@@ -379,7 +402,12 @@ class CreateOrder extends Component
      */
     public function selectCustomer($customerId)
     {
-        $customer = Customer::find($customerId);
+        $isAdmin = auth()->user()->role === 'admin';
+        $userBranch = auth()->user()->branch_id;
+        
+        $customer = Customer::when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
+            ->find($customerId);
+        
         if ($customer) {
             $this->customer_id = $customer->id;
             $this->customer_name = $customer->name;
@@ -387,6 +415,8 @@ class CreateOrder extends Component
             $this->newCustomerPhone = $customer->phone;
             $this->newCustomerAddress = $customer->address;
             $this->customerSearch = '';
+        } else {
+            $this->addError('customer_id', 'Customer not found or access denied.');
         }
     }
 
@@ -433,6 +463,7 @@ class CreateOrder extends Component
                 'name' => $validated['newCustomerName'],
                 'phone' => $validated['newCustomerPhone'],
                 'address' => $validated['newCustomerAddress'],
+                'branch_id' => auth()->user()->branch_id,
             ]);
 
             $this->selectCustomer($customer->id);
@@ -440,7 +471,7 @@ class CreateOrder extends Component
     }
 
     /**
-     * DATABASE TRANSACTION MANAGER: Saves the complete order
+     * DATABASE TRANSACTION MANAGER: Saves the complete order with financials
      */
     public function saveOrder()
     {
@@ -452,9 +483,16 @@ class CreateOrder extends Component
         }
 
         try {
-            DB::transaction(function () {
+            $orderId = DB::transaction(function () {
+                $customer = Customer::find($this->customer_id);
+
+                if (!$customer) {
+                    throw new \Exception('Customer not found.');
+                }
+
                 // Create the order
                 $order = Order::create([
+                    'branch_id' => $customer->branch_id ?? (auth()->user()->branch_id ?? null),
                     'customer_id' => $this->customer_id,
                     'customer_name' => $this->customer_name,
                     'vehicle_type' => $this->vehicle_type,
@@ -465,42 +503,122 @@ class CreateOrder extends Component
                     'total_amount' => $this->total_due,
                 ]);
 
+                // Track financial values
+                $totalGross = 0;      // Total revenue from customer
+                $totalCost = 0;       // Total cost to us
+
                 // Create order items
                 foreach ($this->cartItems as $item) {
                     if ($item['type'] === 'product') {
+                        $product = Product::find($item['product_id']);
+                        
+                        if (!$product) {
+                            throw new \Exception("Product {$item['product_id']} not found.");
+                        }
+
+                        // Check stock availability
+                        if ($product->stock_qty < $item['quantity']) {
+                            throw new \Exception("Insufficient stock for {$product->name}. Available: {$product->stock_qty}, Required: {$item['quantity']}");
+                        }
+                        
+                        $itemCost = (int) ($item['quantity'] * $product->buy_price);
+                        $itemRevenue = (int) ($item['quantity'] * $item['unit_price']);
+                        
                         OrderItem::create([
                             'order_id' => $order->id,
                             'product_id' => $item['product_id'],
                             'service_id' => null,
                             'quantity' => $item['quantity'],
-                            'price' => $item['unit_price'],
+                            'unit_price' => (int) $item['unit_price'],
+                            'total_price' => $itemRevenue,
                         ]);
+
+                        // Update inventory - deduct stock
+                        $oldStock = $product->stock_qty;
+                        $product->decrement('stock_qty', $item['quantity']);
+                        
+                        // Log the inventory change
+                        ProductLog::create([
+                            'product_id' => $product->id,
+                            'change_amount' => -$item['quantity'],
+                            'reason' => 'Sale - Order #' . $order->id,
+                            'reference_id' => 'ORD-' . $order->id,
+                        ]);
+
+                        $totalGross += $itemRevenue;
+                        $totalCost += $itemCost;
                     } elseif ($item['type'] === 'service') {
+                        $service = Service::find($item['service_id']);
+                        
+                        if (!$service) {
+                            throw new \Exception("Service {$item['service_id']} not found.");
+                        }
+                        
+                        $itemCost = (int) $service->base_labor_cost;  // Service cost to us
+                        $itemRevenue = (int) $item['unit_price'];      // Client charge
+                        
                         OrderItem::create([
                             'order_id' => $order->id,
                             'product_id' => null,
                             'service_id' => $item['service_id'],
                             'quantity' => 1,
-                            'price' => $item['unit_price'],
-                            'crew_members' => json_encode($item['crew_members'] ?? []),
+                            'unit_price' => $itemRevenue,
+                            'total_price' => $itemRevenue,
                         ]);
+
+                        // Save crew assignments
+                        if (!empty($item['crew_members'])) {
+                            foreach ($item['crew_members'] as $crewMember) {
+                                ServiceAssignment::create([
+                                    'order_id' => $order->id,
+                                    'service_id' => $item['service_id'],
+                                    'employee_id' => $crewMember['id'] ?? $crewMember,
+                                ]);
+                            }
+                        }
+
+                        $totalGross += $itemRevenue;
+                        $totalCost += $itemCost;
                     } elseif ($item['type'] === 'expense') {
-                        OrderItem::create([
+                        $expenseCost = (int) $item['my_cost'];
+                        $expenseCharge = (int) ($item['is_billable'] ? $item['charge_client'] : 0);
+                        
+                        OrderExpense::create([
                             'order_id' => $order->id,
-                            'product_id' => null,
-                            'service_id' => null,
-                            'quantity' => 1,
-                            'price' => $item['total_price'],
                             'description' => $item['description'],
+                            'my_cost' => $expenseCost,
+                            'charge_client' => $expenseCharge,
                             'is_billable' => $item['is_billable'],
                         ]);
+
+                        // Billable expenses count toward revenue
+                        if ($item['is_billable']) {
+                            $totalGross += $expenseCharge;
+                        }
+                        
+                        // All costs count toward total cost
+                        $totalCost += $expenseCost;
                     }
                 }
 
-                session()->flash('success', 'Order created successfully!');
-                return $this->redirect(route('order.view', $order->id), navigate: true);
+                // Update order with financial totals
+                $order->update([
+                    'total_gross' => $totalGross,
+                    'total_cost' => $totalCost,
+                    'net_income' => ($totalGross - $this->discounted_amount) - $totalCost,
+                ]);
+
+                return $order->id;
             });
+
+            // Clear cart after successful save
+            $this->clearCart();
+            
+            // Flash success and redirect
+            session()->flash('success', 'Order #' . $orderId . ' created successfully!');
+            return redirect()->route('orders.view', ['id' => $orderId]);
         } catch (\Exception $e) {
+            \Log::error('Order creation failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             $this->addError('submit', 'Failed to create order: ' . $e->getMessage());
         }
     }
