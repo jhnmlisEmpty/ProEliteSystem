@@ -49,11 +49,13 @@
             <div class="relative">
                 <input type="text" wire:model.live="customerSearch" placeholder="By name or phone..." class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 @if($customers->count() > 0)
-                    <div class="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-auto">
+                    <div class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-sm max-h-56 overflow-auto divide-y divide-gray-100">
                         @foreach($customers as $customer)
-                            <button wire:click="selectCustomer({{ $customer->id }})" class="w-full text-left px-4 py-2 hover:bg-blue-50 border-b last:border-b-0 transition">
-                                <p class="font-medium text-gray-900">{{ $customer->name }}</p>
-                                <p class="text-sm text-gray-600">{{ $customer->phone }}</p>
+                            <button wire:click="selectCustomer({{ $customer->id }})" type="button" class="w-full px-3 py-2 text-sm hover:bg-gray-50 transition text-left">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium text-gray-900">{{ $customer->name }}</span>
+                                    <span class="text-xs text-gray-500">{{ $customer->phone }}</span>
+                                </div>
                             </button>
                         @endforeach
                     </div>
@@ -341,12 +343,12 @@
                        
                         
                         @if($serviceSearch && $services->count() > 0)
-                            <div class="mt-2 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-auto">
+                            <div class="mt-2 bg-white border border-gray-200 rounded-md shadow-sm max-h-56 overflow-auto divide-y divide-gray-100">
                                 @foreach($services as $service)
-                                    <button type="button" wire:click="selectService({{ $service->id }})" class="w-full text-left px-3 py-2 hover:bg-blue-50 border-b last:border-b-0 transition">
+                                    <button type="button" wire:click="selectService({{ $service->id }})" class="w-full px-3 py-2 text-sm hover:bg-gray-50 transition text-left">
                                         <div class="flex justify-between items-center">
                                             <span class="font-medium text-gray-900">{{ $service->name }}</span>
-                                            <span class="text-blue-600 font-bold text-sm">₱{{ number_format($service->base_labor_cost ?? 0, 2) }}</span>
+                                            <span class="text-gray-600 font-medium">₱{{ number_format($service->base_labor_cost ?? 0, 2) }}</span>
                                         </div>
                                     </button>
                                 @endforeach

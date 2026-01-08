@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Service extends Model
 {
+    use BelongsToBranch;
+
     protected $fillable = [
+        'branch_id',
         'name',
         'base_labor_cost',
     ];

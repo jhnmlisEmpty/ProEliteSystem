@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
         
         // Seed in order of dependencies
         $this->call([
-            UserSeeder::class,
+            // UserSeeder::class,
             ProductSeeder::class,
             ServiceSeeder::class,
             CustomerSeeder::class,
@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             PaymentSeeder::class,
             ProductLogSeeder::class,
             EmployeeSeeder::class,
+            BranchSeeder::class,
         ]);
         
         $this->command->info('✅ Database seeding completed successfully!');
