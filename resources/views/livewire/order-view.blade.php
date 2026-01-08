@@ -15,7 +15,7 @@
                 <p class="text-sm text-gray-600 mt-1">Created {{ $order->created_at->format('M d, Y') }}</p>
             </div>
             <div class="flex gap-3">
-                <a href="{{ route('orders.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 text-sm">← Back to Orders</a>
+                <a href="{{ route('orders.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 text-sm">Back to Orders</a>
                 <button onclick="window.print()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 text-sm">Print Invoice</button>
             </div>
         </div>
@@ -222,7 +222,7 @@
                             <p class="text-xs text-gray-600">Phone</p>
                             <p class="font-semibold text-gray-900">{{ $order->customer->phone ?? 'N/A' }}</p>
                         </div>
-                         <div class="col-span-3">
+                        <div>
                             <p class="text-xs text-gray-600">Location</p>
                             <p class="font-semibold text-gray-900">{{ $order->customer->address ?? 'N/A' }}</p>
                         </div>
