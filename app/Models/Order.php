@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,9 +11,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToBranch;
 
     protected $fillable = [
+        'branch_id',
         'customer_id',
         'customer_name',
         'vehicle_type',
@@ -21,10 +23,16 @@ class Order extends Model
         'status',
         'payment_status',
         'total_amount',
+        'total_gross',
+        'total_cost',
+        'net_income',
     ];
 
     protected $casts = [
         'total_amount' => 'integer',
+        'total_gross' => 'integer',
+        'total_cost' => 'integer',
+        'net_income' => 'integer',
     ];
 
     // Relationships
@@ -46,6 +54,16 @@ class Order extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(OrderExpense::class);
+    }
+
+    public function serviceAssignments(): HasMany
+    {
+        return $this->hasMany(ServiceAssignment::class);
     }
 
     // Query Scopes
