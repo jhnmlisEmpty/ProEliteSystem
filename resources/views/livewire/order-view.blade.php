@@ -15,6 +15,7 @@
                 <p class="text-sm text-gray-600 mt-1">Created {{ $order->created_at->format('M d, Y') }}</p>
             </div>
             <div class="flex gap-3">
+                <a href="{{ route('orders.edit', $order->id) }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium">Edit Order</a>
                 <a href="{{ route('orders.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 text-sm">Back to Orders</a>
                 <button onclick="window.print()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 text-sm">Print Invoice</button>
             </div>

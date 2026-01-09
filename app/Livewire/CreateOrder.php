@@ -22,6 +22,7 @@ class CreateOrder extends Component
     public $vehicle_type = '';
     public $plate_number = '';
     public $customerSearch = '';
+    public $branch_id;
 
     // Master Cart - Single Source of Truth
     public $cartItems = [];
@@ -65,6 +66,7 @@ class CreateOrder extends Component
         'customer_name' => 'required|string|min:2',
         'vehicle_type' => 'nullable|string|max:100',
         'plate_number' => 'nullable|string|max:20',
+        'branch_id' => 'required|exists:branches,id',
     ];
 
     protected $listeners = [
@@ -74,6 +76,15 @@ class CreateOrder extends Component
         'remove-item' => 'removeItemFromCart',
         'update-discount' => 'updateDiscount',
     ];
+    
+    public function mount()
+    {
+        // Set default branch based on user role
+        $user = auth()->user();
+        if ($user->role === 'user') {
+            $this->branch_id = $user->branch_id;
+        }
+    }
 
     public function render()
     {
@@ -115,12 +126,17 @@ class CreateOrder extends Component
         $employees = Employee::when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
             ->orderBy('name')
             ->get();
+        
+        $branches = \App\Models\Branch::where('is_active', true)->orderBy('name')->get();
+        $canSelectBranch = in_array(auth()->user()->role, ['admin', 'manager']);
 
         return view('livewire.create-order', [
             'customers' => $customers,
             'products' => $products,
             'services' => $services,
             'employees' => $employees,
+            'branches' => $branches,
+            'canSelectBranch' => $canSelectBranch,
         ])->layout('layouts.app');
     }
 
@@ -492,7 +508,7 @@ class CreateOrder extends Component
 
                 // Create the order
                 $order = Order::create([
-                    'branch_id' => $customer->branch_id ?? (auth()->user()->branch_id ?? null),
+                    'branch_id' => $this->branch_id,
                     'customer_id' => $this->customer_id,
                     'customer_name' => $this->customer_name,
                     'vehicle_type' => $this->vehicle_type,

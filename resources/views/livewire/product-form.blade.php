@@ -114,6 +114,25 @@
             @error('alert_limit') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
         </div>
 
+        <!-- Branch Selection -->
+        <div>
+            <label class="block text-sm font-medium text-gray-900 mb-1">Branch <span class="text-red-500">*</span></label>
+            <p class="text-sm text-gray-600 mb-2">Assign this product to a specific branch.</p>
+            @if($canSelectBranch)
+                <select wire:model="branch_id" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('branch_id') border-red-500 @enderror">
+                    <option value="">Select Branch</option>
+                    @foreach($branches as $branch)
+                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Select the branch where this product will be available</p>
+            @else
+                <input type="text" value="{{ $branches->firstWhere('id', $branch_id)?->name ?? 'Unknown Branch' }}" disabled class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100 text-gray-600">
+                <p class="text-xs text-gray-500 mt-1">Your branch is automatically assigned</p>
+            @endif
+            @error('branch_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
         <!-- Submit Button -->
         <div class="pt-4">
             <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">

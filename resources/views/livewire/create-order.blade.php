@@ -91,7 +91,7 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-3 mb-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Vehicle Type</label>
                     <input type="text" wire:model="vehicle_type" placeholder="e.g., Ford Transit" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
@@ -100,6 +100,24 @@
                     <label class="block text-xs font-medium text-gray-600 mb-1">Plate Number</label>
                     <input type="text" wire:model="plate_number" placeholder="e.g., ABC-1234" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                 </div>
+            </div>
+
+            {{-- Branch Selection --}}
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Branch <span class="text-red-500">*</span></label>
+                @if($canSelectBranch)
+                    <select wire:model="branch_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                        <option value="">Select Branch</option>
+                        @foreach($branches as $branch)
+                            <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Select the branch for this order</p>
+                @else
+                    <input type="text" value="{{ $branches->firstWhere('id', $branch_id)?->name ?? 'Unknown Branch' }}" disabled class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 text-sm">
+                    <p class="text-xs text-gray-500 mt-1">Your branch is automatically assigned</p>
+                @endif
+                @error('branch_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
         @endif
     </div>

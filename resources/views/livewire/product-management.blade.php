@@ -12,7 +12,7 @@
 
     <!-- Filters Section -->
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-{{ $canFilterBranch ? '4' : '3' }} gap-4">
             <!-- Search -->
             <div class="md:col-span-2">
                 <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
@@ -39,10 +39,25 @@
                     <option value="material">Material</option>
                 </select>
             </div>
+
+            <!-- Branch Filter -->
+            @if($canFilterBranch)
+                <div>
+                    <label for="branchFilter" class="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+                    <select wire:model.live="branchFilter" 
+                            id="branchFilter"
+                            class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Branches</option>
+                        @foreach($branches as $branch)
+                            <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
         </div>
 
         <!-- Clear Filters -->
-        @if($search || $typeFilter)
+        @if($search || $typeFilter || $branchFilter)
             <div class="mt-3">
                 <button wire:click="clearFilters" 
                         class="text-sm text-blue-600 hover:text-blue-800 font-medium">
@@ -62,6 +77,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alert Limit</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buy Price</th>
@@ -105,6 +121,11 @@
                                     Material
                                 </span>
                             @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                {{ $product->branch?->name ?? 'Unknown' }}
+                            </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ number_format($product->stock_qty) }}
@@ -213,6 +234,12 @@
                                     @else
                                         <span class="text-gray-400">N/A</span>
                                     @endif
+                                </span>
+                            </div>
+                            <div class="col-span-2">
+                                <span class="text-gray-500">Branch:</span>
+                                <span class="inline-block ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">
+                                    {{ $product->branch?->name ?? 'N/A' }}
                                 </span>
                             </div>
                         </div>
