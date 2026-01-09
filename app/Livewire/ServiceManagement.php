@@ -11,11 +11,17 @@ class ServiceManagement extends Component
     use WithPagination;
 
     public $search = '';
+    public $branchFilter = '';
     public $perPage = 10;
 
     protected $paginationTheme = 'tailwind';
 
     public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingBranchFilter()
     {
         $this->resetPage();
     }
@@ -32,6 +38,7 @@ class ServiceManagement extends Component
     public function clearFilters()
     {
         $this->search = '';
+        $this->branchFilter = '';
         $this->resetPage();
     }
 
@@ -43,11 +50,20 @@ class ServiceManagement extends Component
             $query->where('name', 'like', '%' . $this->search . '%');
         }
 
+        if ($this->branchFilter) {
+            $query->where('branch_id', $this->branchFilter);
+        }
+
         $services = $query->orderBy('created_at', 'desc')
                          ->paginate($this->perPage);
 
+        $branches = \App\Models\Branch::where('is_active', true)->get();
+        $canFilterBranch = in_array(auth()->user()->role, ['admin', 'manager']);
+
         return view('livewire.service-management', [
-            'services' => $services
+            'services' => $services,
+            'branches' => $branches,
+            'canFilterBranch' => $canFilterBranch
         ])->layout('layouts.app');
     }
 }

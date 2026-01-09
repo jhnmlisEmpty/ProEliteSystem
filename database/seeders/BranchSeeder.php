@@ -70,12 +70,5 @@ class BranchSeeder extends Seeder
 
 
         $this->command->info('✓ Branches and users created successfully!');
-        $this->command->info('');
-        $this->command->info('=== LOGIN CREDENTIALS ===');
-        $this->command->info('Admin: admin@proelite.com / password');
-        $this->command->info('Main Manager: manager.main@proelite.com / password');
-        $this->command->info('Main User: user.main@proelite.com / password');
-        $this->command->info('QC User: user.qc@proelite.com / password');
-        $this->command->info('Makati User: user.makati@proelite.com / password');
     }
 }

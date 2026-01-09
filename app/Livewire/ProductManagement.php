@@ -13,6 +13,7 @@ class ProductManagement extends Component
     // UI State
     public $search = '';
     public $typeFilter = '';
+    public $branchFilter = '';
     public $perPage = 10;
 
     protected $paginationTheme = 'tailwind';
@@ -23,6 +24,11 @@ class ProductManagement extends Component
     }
 
     public function updatingTypeFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingBranchFilter()
     {
         $this->resetPage();
     }
@@ -50,6 +56,7 @@ class ProductManagement extends Component
     {
         $this->search = '';
         $this->typeFilter = '';
+        $this->branchFilter = '';
         $this->resetPage();
     }
 
@@ -70,13 +77,23 @@ class ProductManagement extends Component
             $query->where('type', $this->typeFilter);
         }
 
+        // Filter by branch
+        if ($this->branchFilter) {
+            $query->where('branch_id', $this->branchFilter);
+        }
+
         $products = $query
             ->orderByRaw('stock_qty <= alert_limit desc')
             ->orderBy('created_at', 'desc')
             ->paginate($this->perPage);
 
+        $branches = \App\Models\Branch::where('is_active', true)->get();
+        $canFilterBranch = in_array(auth()->user()->role, ['admin', 'manager']);
+
         return view('livewire.product-management', [
-            'products' => $products
+            'products' => $products,
+            'branches' => $branches,
+            'canFilterBranch' => $canFilterBranch
         ])->layout('layouts.app');
     }
 }

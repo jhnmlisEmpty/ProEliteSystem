@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Product;
+use App\Models\Branch;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Validate;
@@ -36,9 +37,20 @@ class ProductForm extends Component
     
     #[Validate('required|numeric|min:0')]
     public $alert_limit = 10;
+    
+    #[Validate('required|exists:branches,id')]
+    public $branch_id;
 
     public function mount($id = null)
     {
+        // Set default branch based on user role
+        if (!$id) {
+            $user = auth()->user();
+            if ($user->role === 'user') {
+                $this->branch_id = $user->branch_id;
+            }
+        }
+        
         if ($id) {
             $this->product = Product::findOrFail($id);
             $this->name = $this->product->name;
@@ -48,6 +60,7 @@ class ProductForm extends Component
             $this->buy_price = $this->product->buy_price;
             $this->sell_price = $this->product->sell_price;
             $this->alert_limit = $this->product->alert_limit;
+            $this->branch_id = $this->product->branch_id;
         }
     }
 
@@ -63,6 +76,7 @@ class ProductForm extends Component
                 'buy_price' => 'required|numeric|min:0',
                 'sell_price' => 'nullable|numeric|min:0',
                 'alert_limit' => 'required|numeric|min:0',
+                'branch_id' => 'required|exists:branches,id',
             ];
             
             $validated = $this->validate($rules);
@@ -99,6 +113,13 @@ class ProductForm extends Component
 
     public function render()
     {
-        return view('livewire.product-form')->layout('layouts.app');
+        $branches = Branch::where('is_active', true)->orderBy('name')->get();
+        $user = auth()->user();
+        $canSelectBranch = in_array($user->role, ['admin', 'manager']);
+        
+        return view('livewire.product-form', [
+            'branches' => $branches,
+            'canSelectBranch' => $canSelectBranch,
+        ])->layout('layouts.app');
     }
 }
