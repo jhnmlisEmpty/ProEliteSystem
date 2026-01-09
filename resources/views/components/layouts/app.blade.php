@@ -44,7 +44,7 @@
                             <x-heroicon-o-shopping-cart class="w-5 h-5 inline-block mr-1" />
                             Orders
                         </a>
-                      
+                       
                         <a href="{{ route('products.index') }}" 
                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
                             <x-heroicon-o-cube class="w-5 h-5 inline-block mr-1" />
@@ -60,6 +60,26 @@
                             <x-heroicon-o-users class="w-5 h-5 inline-block mr-1" />
                             Customers
                         </a>
+                        <!-- <div class="relative group">
+                            @if(Auth::user()->isAdmin())
+                                <button class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition">
+                                    <x-heroicon-o-cog-6-tooth class="w-5 h-5 inline-block mr-1" />
+                                    Admin
+                                </button>
+                                <div class="absolute left-0 mt-0 w-48 bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                                    <a href="{{ route('users.index') }}" 
+                                       class="block text-gray-300 hover:bg-gray-700 hover:text-white px-4 py-2 text-sm font-medium transition first:rounded-t-md {{ request()->is('users*') ? 'bg-gray-700 text-white' : '' }}">
+                                        <x-heroicon-o-identification class="w-4 h-4 inline-block mr-2" />
+                                        Users
+                                    </a>
+                                    <a href="{{ route('branches.index') }}" 
+                                       class="block text-gray-300 hover:bg-gray-700 hover:text-white px-4 py-2 text-sm font-medium transition last:rounded-b-md {{ request()->is('branches*') ? 'bg-gray-700 text-white' : '' }}">
+                                        <x-heroicon-o-building-office class="w-4 h-4 inline-block mr-2" />
+                                        Branches
+                                    </a>
+                                </div>
+                            @endif
+                        </div> -->
                         
                     </div>
                 </div>
@@ -109,6 +129,12 @@
                     <x-heroicon-o-users class="w-5 h-5 inline-block mr-1" />
                     Customers
                 </a>
+                @if(Auth::user()->isAdmin())
+                    <a href="{{ route('users.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('users*') ? 'bg-gray-700 text-white' : '' }}">
+                        <x-heroicon-o-identification class="w-5 h-5 inline-block mr-1" />
+                        Users
+                    </a>
+                @endif
                 <hr class="my-2 border-gray-700">
                 <div class="px-3 py-2">
                     <p class="text-gray-300 text-sm font-medium mb-2">{{ Auth::user()->name }}</p>

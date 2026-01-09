@@ -28,18 +28,6 @@
                 </div>
             </div>
 
-            <!-- Type Filter -->
-            <div>
-                <label for="typeFilter" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                <select wire:model.live="typeFilter" 
-                        id="typeFilter"
-                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">All Types</option>
-                    <option value="retail">Retail</option>
-                    <option value="material">Material</option>
-                </select>
-            </div>
-
             <!-- Branch Filter -->
             @if($canFilterBranch)
                 <div>
@@ -76,7 +64,6 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alert Limit</th>
@@ -110,17 +97,6 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm text-gray-900 font-mono">{{ $product->sku }}</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if($product->type === 'retail')
-                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Retail
-                                </span>
-                            @else
-                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    Material
-                                </span>
-                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">

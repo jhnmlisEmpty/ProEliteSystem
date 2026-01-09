@@ -135,11 +135,9 @@
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Customer</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Branch</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Vehicle</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Type</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Total</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Payment</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Date</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Actions</th>
                     </tr>
                 </thead>
@@ -167,15 +165,6 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4">
-                                @if($order->type === 'product')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Product</span>
-                                @elseif($order->type === 'service')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Service</span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Both</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4">
                                 <span class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</span>
                             </td>
                             <td class="px-6 py-4">
@@ -197,9 +186,6 @@
                                 @else
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Paid</span>
                                 @endif
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">
-                                {{ $order->created_at->format('M d, Y') }}
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex gap-3">
@@ -238,7 +224,6 @@
                         </div>
                         <div class="text-right">
                             <div class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</div>
-                            <div class="text-xs text-gray-500 mt-1">{{ $order->created_at->format('M d, Y') }}</div>
                         </div>
                     </div>
 
@@ -246,13 +231,6 @@
                         <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">
                             {{ $order->branch?->name ?? 'N/A' }}
                         </span>
-                        @if($order->type === 'product')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Product</span>
-                        @elseif($order->type === 'service')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Service</span>
-                        @else
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Both</span>
-                        @endif
 
                         @if($order->status === 'pending')
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
@@ -331,20 +309,33 @@
                 </div>
                 <div class="p-4 space-y-3 flex-1">
                     @forelse($pendingOrders as $order)
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 hover:shadow-md transition">
-                            <div class="flex justify-between items-start mb-2">
-                                <div class="font-semibold text-gray-900">#{{ $order->id }}</div>
-                                <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Pending</span>
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="font-semibold text-gray-900">Order #{{ $order->id }}</div>
+                                <div class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</div>
                             </div>
-                            <div class="text-sm text-gray-600 mb-2">{{ $order->customer_name }}</div>
-                            <div class="text-sm font-semibold text-gray-900 mb-3">₱{{ number_format($order->total_amount) }}</div>
+                            <div class="text-sm text-gray-700 mb-3">{{ $order->customer_name }}</div>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">{{ $order->branch?->name ?? 'N/A' }}</span>
+                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">Pending</span>
+                                @if($order->payment_status === 'unpaid')
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">Unpaid</span>
+                                @elseif($order->payment_status === 'partial')
+                                    <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded">Partial</span>
+                                @else
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">Paid</span>
+                                @endif
+                            </div>
+                            @if($order->vehicle_type || $order->plate_number)
+                                <div class="text-sm text-gray-600 mb-3">{{ $order->vehicle_type }} - {{ $order->plate_number }}</div>
+                            @endif
                             <div class="grid grid-cols-2 gap-2 mb-3">
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'in_progress')" class="px-2 py-1.5 text-xs bg-gray-700 hover:bg-gray-800 text-white rounded font-medium transition">In Progress</button>
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'completed')" class="px-2 py-1.5 text-xs bg-gray-700 hover:bg-gray-800 text-white rounded font-medium transition">Complete</button>
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'in_progress')" class="px-2 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition">In Progress</button>
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'completed')" class="px-2 py-1.5 text-xs bg-green-600 hover:bg-green-700 text-white rounded font-medium transition">Complete</button>
                             </div>
                             <div class="flex gap-2">
-                                <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center text-xs bg-yellow-200 hover:bg-yellow-300 text-yellow-900 px-2 py-1.5 rounded font-medium transition">View</a>
-                                <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center text-xs bg-blue-200 hover:bg-blue-300 text-blue-900 px-2 py-1.5 rounded font-medium transition">Edit</a>
+                                <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg font-medium transition">View</a>
+                                <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg font-medium transition">Edit</a>
                             </div>
                         </div>
                     @empty
@@ -376,20 +367,33 @@
                 </div>
                 <div class="p-4 space-y-3 flex-1">
                     @forelse($inProgressOrders as $order)
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 hover:shadow-md transition">
-                            <div class="flex justify-between items-start mb-2">
-                                <div class="font-semibold text-gray-900">#{{ $order->id }}</div>
-                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">In Progress</span>
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="font-semibold text-gray-900">Order #{{ $order->id }}</div>
+                                <div class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</div>
                             </div>
-                            <div class="text-sm text-gray-600 mb-2">{{ $order->customer_name }}</div>
-                            <div class="text-sm font-semibold text-gray-900 mb-3">₱{{ number_format($order->total_amount) }}</div>
+                            <div class="text-sm text-gray-700 mb-3">{{ $order->customer_name }}</div>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">{{ $order->branch?->name ?? 'N/A' }}</span>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">In Progress</span>
+                                @if($order->payment_status === 'unpaid')
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">Unpaid</span>
+                                @elseif($order->payment_status === 'partial')
+                                    <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded">Partial</span>
+                                @else
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">Paid</span>
+                                @endif
+                            </div>
+                            @if($order->vehicle_type || $order->plate_number)
+                                <div class="text-sm text-gray-600 mb-3">{{ $order->vehicle_type }} - {{ $order->plate_number }}</div>
+                            @endif
                             <div class="grid grid-cols-2 gap-2 mb-3">
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'completed')" class="px-2 py-1.5 text-xs bg-gray-700 hover:bg-gray-800 text-white rounded font-medium transition">Complete</button>
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'pending')" class="px-2 py-1.5 text-xs bg-gray-700 hover:bg-gray-800 text-white rounded font-medium transition">Pending</button>
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'completed')" class="px-2 py-1.5 text-xs bg-green-600 hover:bg-green-700 text-white rounded font-medium transition">Complete</button>
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'pending')" class="px-2 py-1.5 text-xs bg-yellow-600 hover:bg-yellow-700 text-white rounded font-medium transition">Pending</button>
                             </div>
                             <div class="flex gap-2">
-                                <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center text-xs bg-blue-200 hover:bg-blue-300 text-blue-900 px-2 py-1.5 rounded font-medium transition">View</a>
-                                <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center text-xs bg-green-200 hover:bg-green-300 text-green-900 px-2 py-1.5 rounded font-medium transition">Edit</a>
+                                <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg font-medium transition">View</a>
+                                <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg font-medium transition">Edit</a>
                             </div>
                         </div>
                     @empty
@@ -421,20 +425,33 @@
                 </div>
                 <div class="p-4 space-y-3 flex-1">
                     @forelse($completedOrders as $order)
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 hover:shadow-md transition">
-                            <div class="flex justify-between items-start mb-2">
-                                <div class="font-semibold text-gray-900">#{{ $order->id }}</div>
-                                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Completed</span>
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="font-semibold text-gray-900">Order #{{ $order->id }}</div>
+                                <div class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</div>
                             </div>
-                            <div class="text-sm text-gray-600 mb-2">{{ $order->customer_name }}</div>
-                            <div class="text-sm font-semibold text-gray-900 mb-3">₱{{ number_format($order->total_amount) }}</div>
+                            <div class="text-sm text-gray-700 mb-3">{{ $order->customer_name }}</div>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">{{ $order->branch?->name ?? 'N/A' }}</span>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">Completed</span>
+                                @if($order->payment_status === 'unpaid')
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">Unpaid</span>
+                                @elseif($order->payment_status === 'partial')
+                                    <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded">Partial</span>
+                                @else
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">Paid</span>
+                                @endif
+                            </div>
+                            @if($order->vehicle_type || $order->plate_number)
+                                <div class="text-sm text-gray-600 mb-3">{{ $order->vehicle_type }} - {{ $order->plate_number }}</div>
+                            @endif
                             <div class="grid grid-cols-2 gap-2 mb-3">
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'in_progress')" class="px-2 py-1.5 text-xs bg-gray-700 hover:bg-gray-800 text-white rounded font-medium transition">In Progress</button>
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'pending')" class="px-2 py-1.5 text-xs bg-gray-700 hover:bg-gray-800 text-white rounded font-medium transition">Pending</button>
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'in_progress')" class="px-2 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition">In Progress</button>
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'pending')" class="px-2 py-1.5 text-xs bg-yellow-600 hover:bg-yellow-700 text-white rounded font-medium transition">Pending</button>
                             </div>
                             <div class="flex gap-2">
-                                <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center text-xs bg-green-200 hover:bg-green-300 text-green-900 px-2 py-1.5 rounded font-medium transition">View</a>
-                                <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center text-xs bg-purple-200 hover:bg-purple-300 text-purple-900 px-2 py-1.5 rounded font-medium transition">Edit</a>
+                                <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg font-medium transition">View</a>
+                                <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg font-medium transition">Edit</a>
                             </div>
                         </div>
                     @empty

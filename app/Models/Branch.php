@@ -60,6 +60,14 @@ class Branch extends Model
     }
 
     /**
+     * Get all employees for this branch.
+     */
+    public function employees(): HasMany
+    {
+        return $this->hasMany(Employee::class);
+    }
+
+    /**
      * Scope to get only active branches.
      */
     public function scopeActive($query)
