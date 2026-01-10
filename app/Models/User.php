@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Employee;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -47,6 +48,28 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(function (User $user) {
+            // Keep employee record in sync for employee role
+            if ($user->role === 'employee') {
+                Employee::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'name' => $user->name,
+                        'branch_id' => $user->branch_id,
+                    ]
+                );
+            } else {
+                // If role changes away, do not delete employee; just clear branch
+                $employee = Employee::where('user_id', $user->id)->first();
+                if ($employee) {
+                    $employee->update(['branch_id' => null]);
+                }
+            }
+        });
     }
 
     /**

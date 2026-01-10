@@ -13,13 +13,13 @@ use App\Livewire\OrderManagement;
 use App\Livewire\OrderView;
 use App\Livewire\OrderEdit;
 use App\Livewire\CreateOrder;
-use App\Livewire\OrderBoard;
 use App\Livewire\Dashboard;
-use App\Livewire\BranchManagement;
-// use App\Livewire\BranchUserManagement;
-use App\Livewire\UserManagement;
 use App\Livewire\Auth\Login;
 use Illuminate\Support\Facades\Auth;
+use App\Livewire\UserManagement;
+use App\Livewire\UserForm;
+use App\Livewire\BranchManagement;
+use App\Livewire\BranchForm;
 
 // Guest routes
 Route::get('/login', Login::class)->name('login');
@@ -48,15 +48,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/customers/create', CustomerForm::class)->name('customers.create');
     Route::get('/customers/{id}/edit', CustomerForm::class)->name('customers.edit');
 
+    // Users
+    Route::get('/users', UserManagement::class)->name('users.index');
+    Route::get('/users/create', UserForm::class)->name('users.create');
+    Route::get('/users/{id}/edit', UserForm::class)->name('users.edit');
+
+    // Branches
+    Route::get('/branches', BranchManagement::class)->name('branches.index');
+    Route::get('/branches/create', BranchForm::class)->name('branches.create');
+    Route::get('/branches/{id}/edit', BranchForm::class)->name('branches.edit');
+
     Route::get('/orders', OrderManagement::class)->name('orders.index');
     Route::get('/orders/create', CreateOrder::class)->name('orders.create');
     Route::get('/orders/{id}', OrderView::class)->name('orders.view');
     Route::get('/orders/{id}/edit', OrderEdit::class)->name('orders.edit');
 
-    // Admin only routes
-    Route::middleware('admin')->group(function () {
-        Route::get('/users', UserManagement::class)->name('users.index')->middleware('ongoing');
-        Route::get('/branches', BranchManagement::class)->name('branches.index')->middleware('ongoing');
-        
-    });
 });
