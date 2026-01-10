@@ -123,7 +123,9 @@ class CreateOrder extends Component
             ->take(25)
             ->get();
 
-        $employees = Employee::when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
+        $employees = Employee::with('user')
+            ->whereHas('user', fn ($q) => $q->where('role', 'employee'))
+            ->when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
             ->orderBy('name')
             ->get();
         
