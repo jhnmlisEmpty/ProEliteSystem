@@ -11,29 +11,48 @@
     <!-- Form -->
     <form wire:submit="save" class="space-y-6">
         <!-- Product Image & Preview -->
-        <div>
+        <div x-data="{
+                imagePreview: null,
+                setPreview(event) {
+                    const [file] = event.target.files;
+                    if (!file) {
+                        this.imagePreview = null;
+                        return;
+                    }
+                    this.imagePreview = URL.createObjectURL(file);
+                },
+                clearPreview() {
+                    if (this.imagePreview) {
+                        URL.revokeObjectURL(this.imagePreview);
+                        this.imagePreview = null;
+                    }
+                }
+            }" x-init="$watch('imagePreview', value => { if (!value) clearPreview(); })">
             <label class="block text-sm font-medium text-gray-900 mb-1">Product Image</label>
             <p class="text-sm text-gray-600 mb-2">Upload or change the product thumbnail for listings.</p>
-            
-            <!-- Image Preview Box -->
+
+            <!-- Image Preview Box (Alpine-driven, no Livewire temporaryUrl) -->
             <div class="relative mb-3 border border-gray-300 rounded-md bg-gray-50 flex items-center justify-center overflow-hidden" style="height: 200px;">
-                @if ($image)
-                    <img src="{{ $image->temporaryUrl() }}" class="max-h-full max-w-full object-contain">
-                @elseif($product && $product->image)
-                    <img src="{{ Storage::url($product->image) }}" class="max-h-full max-w-full object-contain">
-                @else
-                    <div class="text-center">
-                        <x-heroicon-o-photo class="w-16 h-16 text-gray-300 mx-auto" />
-                        <p class="text-sm text-gray-400 mt-2">No image uploaded</p>
-                    </div>
-                @endif
+                <template x-if="imagePreview">
+                    <img :src="imagePreview" class="max-h-full max-w-full object-contain" alt="Preview">
+                </template>
+
+                <template x-if="!imagePreview">
+                    @if($product && $product->image)
+                        <img src="{{ Storage::url($product->image) }}" class="max-h-full max-w-full object-contain" alt="Current image">
+                    @else
+                        <div class="text-center">
+                            <x-heroicon-o-photo class="w-16 h-16 text-gray-300 mx-auto" />
+                            <p class="text-sm text-gray-400 mt-2">No image uploaded</p>
+                        </div>
+                    @endif
+                </template>
             </div>
-            
+
             <!-- File Input -->
             <div class="flex items-center gap-3">
-                <input wire:model="image" type="file" accept="image/*" class="block flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border file:border-gray-300 file:text-sm file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50">
+                <input wire:model="image" @change="setPreview" type="file" accept="image/*" class="block flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border file:border-gray-300 file:text-sm file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50">
                 <div wire:loading wire:target="image" class="flex items-center gap-2 text-sm text-gray-600 whitespace-nowrap">
-                    
                     <span>Uploading.....</span>
                 </div>
             </div>
