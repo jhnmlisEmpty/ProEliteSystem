@@ -129,7 +129,7 @@ class OrderEdit extends Component
                 $service = $item->service;
                 if ($service) {
                     // Get assigned employees
-                    $assignments = ServiceAssignment::where('order_item_id', $item->id)->pluck('employee_id')->toArray();
+                    $assignments = ServiceAssignment::where('order_id', $this->orderId)->where('service_id', $service->id)->pluck('employee_id')->toArray();
                     
                     $itemId = 'service_' . $service->id . '_' . $item->id;
                     $this->cartItems[$itemId] = [
@@ -612,7 +612,7 @@ class OrderEdit extends Component
                 // Delete existing order items and service assignments
                 foreach ($order->orderItems as $item) {
                     if ($item->service_id) {
-                        ServiceAssignment::where('order_item_id', $item->id)->delete();
+                        ServiceAssignment::where('order_id', $order->id)->where('service_id', $item->service_id)->delete();
                     }
                 }
                 $order->orderItems()->delete();
@@ -684,7 +684,7 @@ class OrderEdit extends Component
                         if (!empty($item['crew_members'])) {
                             foreach ($item['crew_members'] as $crewMember) {
                                 ServiceAssignment::create([
-                                    'order_item_id' => $orderItem->id,
+                                    'order_id' => $order->id,
                                     'service_id' => $item['service_id'],
                                     'employee_id' => is_array($crewMember) ? ($crewMember['id'] ?? $crewMember) : $crewMember,
                                 ]);
