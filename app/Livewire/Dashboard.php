@@ -103,7 +103,7 @@ class Dashboard extends Component
         $ordersRange = Order::query()->whereBetween('created_at', [$start, $end]);
         if ($this->branchId) $ordersRange->where('branch_id', $this->branchId);
         $this->grossSales = (int) ($ordersRange->sum('total_gross') ?? 0);
-        $this->netSales = (int) ($ordersRange->sum('total_amount') ?? 0);
+        $this->netSales = (int) ($ordersRange->sum('net_income') ?? 0);
 
         $orderItemsRange = OrderItem::whereHas('order', function($q) use ($start, $end){
             $q->whereBetween('created_at', [$start, $end]);
