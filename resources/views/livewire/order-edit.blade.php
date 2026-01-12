@@ -122,181 +122,10 @@
         @endif
     </div>
 
-    {{-- Order Summary Section (Top) --}}
-    <div class="bg-white rounded-lg shadow mb-6">
-        <div class="bg-slate-900 text-white p-4 rounded-t-lg flex justify-between items-center">
-            <h2 class="text-lg font-bold">Order Summary</h2>
-            <span class="text-2xl font-bold text-blue-300">₱{{ number_format($total_due, 2) }}</span>
-        </div>
-
-        <div class="p-6">
-            @if(empty($cartItems))
-                <div class="text-center py-8 text-gray-500">
-                    <p class="font-medium">Cart is empty</p>
-                    <p class="text-sm">Add products, services, or expenses to get started</p>
-                </div>
-            @else
-                <div class="space-y-4">
-                    {{-- PRODUCTS SECTION --}}
-                    @php
-                        $summaryProducts = array_filter($cartItems, fn($item) => $item['type'] === 'product');
-                    @endphp
-                    @if(!empty($summaryProducts))
-                        <div>
-                            <h3 class="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">PRODUCTS</h3>
-                            <div class="space-y-2">
-                                @foreach($summaryProducts as $key => $item)
-                                    <div class="flex justify-between items-start pb-2 border-b border-gray-100">
-                                        <div class="flex-1">
-                                            <p class="font-medium text-gray-900">{{ $item['name'] }}</p>
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <button wire:click="updateItemQuantity('{{ $key }}', {{ $item['quantity'] - 1 }})" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs font-bold">−</button>
-                                                <input type="number" min="1" wire:change="updateItemQuantity('{{ $key }}', $event.target.value)" value="{{ $item['quantity'] }}" class="w-12 px-2 py-1 border border-gray-300 rounded text-center text-sm">
-                                                <button wire:click="updateItemQuantity('{{ $key }}', {{ $item['quantity'] + 1 }})" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs font-bold">+</button>
-                                                <span class="text-xs text-gray-600 ml-2">₱{{ number_format($item['unit_price'], 2) }}</span>
-                                            </div>
-                                        </div>
-                                        <div class="text-right ml-2">
-                                            <button wire:click="removeItemFromCart('{{ $key }}')" class="text-red-600 hover:text-red-800 mb-1">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                            </button>
-                                            <p class="font-bold text-gray-900">₱{{ number_format($item['total_price'], 2) }}</p>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-
-                    {{-- SERVICES SECTION --}}
-                    @php
-                        $summaryServices = array_filter($cartItems, fn($item) => $item['type'] === 'service');
-                    @endphp
-                    @if(!empty($summaryServices))
-                        <div>
-                            <h3 class="text-xs font-bold text-blue-600 uppercase tracking-wide mb-2">SERVICES</h3>
-                            <div class="space-y-2">
-                                @foreach($summaryServices as $key => $item)
-                                    <div class="flex justify-between items-start pb-2 border-b border-gray-100">
-                                        <div class="flex-1">
-                                            <p class="font-medium text-gray-900">{{ $item['name'] }}</p>
-                                            @if(!empty($item['crew_members']))
-                                                <p class="text-xs text-gray-600 mb-1">
-                                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                                    @php
-                                                        $crewNames = collect($item['crew_members'])
-                                                            ->map(fn($member) => is_array($member) ? $member['name'] : $member->name)
-                                                            ->implode(', ');
-                                                    @endphp
-                                                    {{ $crewNames }}
-                                                </p>
-                                            @endif
-                                        </div>
-                                        <div class="text-right ml-2">
-                                            <button wire:click="removeItemFromCart('{{ $key }}')" class="text-red-600 hover:text-red-800 mb-1">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                            </button>
-                                            <p class="font-bold text-gray-900">₱{{ number_format($item['total_price'], 2) }}</p>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-
-                    {{-- EXPENSES SECTION --}}
-                    @php
-                        $summaryExpenses = array_filter($cartItems, fn($item) => $item['type'] === 'expense');
-                    @endphp
-                    @if(!empty($summaryExpenses))
-                        <div>
-                            <h3 class="text-xs font-bold text-orange-600 uppercase tracking-wide mb-2">MISC. EXPENSES</h3>
-                            <div class="space-y-2">
-                                @foreach($summaryExpenses as $key => $item)
-                                    <div class="flex justify-between items-start pb-2 border-b border-gray-100">
-                                        <div class="flex-1">
-                                            <p class="font-medium text-gray-900">{{ $item['name'] }}</p>
-                                            @if($item['is_billable'])
-                                                <p class="text-xs text-gray-600">My Cost: <span class="text-red-600">₱{{ number_format($item['my_cost'], 2) }}</span> • Charge: <span class="text-blue-600">₱{{ number_format($item['charge_client'], 2) }}</span></p>
-                                            @else
-                                                <p class="text-xs text-gray-600">Cost: <span class="text-red-600">₱{{ number_format($item['my_cost'], 2) }}</span></p>
-                                            @endif
-                                        </div>
-                                        <div class="text-right ml-2">
-                                            <button wire:click="removeItemFromCart('{{ $key }}')" class="text-red-600 hover:text-red-800 mb-1">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                            </button>
-                                            <p class="font-bold text-gray-900">₱{{ number_format($item['total_price'], 2) }}</p>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-
-                    {{-- DISCOUNT SECTION --}}
-                    @if($discount_value > 0)
-                        <div class="flex justify-between items-center py-2 text-red-600 font-bold border-t-2 border-red-200">
-                            <span>Discount ({{ $discount_type === 'percentage' ? $discount_value . '%' : 'Fixed' }}) <button wire:click="$set('discount_value', 0)" class="text-xs ml-1">×</button></span>
-                            <span>−₱{{ number_format($discounted_amount, 2) }}</span>
-                        </div>
-                    @endif
-
-                    {{-- TOTALS --}}
-                    <div class="space-y-2 pt-2 border-t-2">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Subtotal</span>
-                            <span class="font-medium">₱{{ number_format($subtotal, 2) }}</span>
-                        </div>
-                        <div class="flex justify-between text-lg font-bold text-blue-600 py-1">
-                            <span>Total Due</span>
-                            <span>₱{{ number_format($total_due, 2) }}</span>
-                        </div>
-                    </div>
-
-                    {{-- DISCOUNT INPUT --}}
-                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-4">
-                        <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Apply Discount</label>
-                        <div class="flex gap-2">
-                            <select wire:model="discount_type" class="px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="percentage">% Off</option>
-                                <option value="fixed">Fixed Amount</option>
-                            </select>
-                            <input type="number" min="0" step="0.01" wire:model.live="discount_value" placeholder="Amount" class="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <button wire:click="recalculate" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded font-medium transition">
-                                Apply
-                            </button>
-                        </div>
-                    </div>
-
-                    {{-- CHECKOUT BUTTON --}}
-                    @if($customer_id && !empty($cartItems))
-                        <button wire:click="updateOrder" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition text-lg mt-4">
-                            Update Order - ₱{{ number_format($total_due, 2) }}
-                        </button>
-                    @else
-                        <button disabled class="w-full bg-gray-300 text-gray-500 font-bold py-3 px-4 rounded-lg cursor-not-allowed mt-4">
-                            {{ !$customer_id ? 'Select Customer' : 'Add Items' }}
-                        </button>
-                    @endif
-
-                    {{-- ACTION BUTTONS --}}
-                    <div class="flex gap-2 mt-3">
-                        @if(!empty($cartItems))
-                            <button wire:click="clearCart" class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-3 rounded transition">
-                                Clear Cart
-                            </button>
-                        @endif
-                    </div>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    {{-- Main Content: Products/Services + Cart --}}
-    <div class="space-y-4">
-        {{-- Products/Services Section --}}
-        <div class="space-y-4">
+    {{-- Main Content: Two Column Layout --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {{-- LEFT COLUMN: Products/Services/Expenses --}}
+        <div class="lg:col-span-2 space-y-4">
             {{-- Tab Selection --}}
             <div class="bg-white rounded-lg shadow p-4">
                 <div class="flex gap-2">
@@ -315,7 +144,7 @@
                 </div>
             </div>
 
-            {{-- Search & Create --}}
+            {{-- Search & Products/Services/Expenses Content --}}
             <div class="bg-white rounded-lg shadow p-4">
                 <div class="flex gap-2 mb-4">
                     @if($activeTab === 'products')
@@ -476,5 +305,370 @@
                 @endif
             </div>
         </div>
+
+        {{-- RIGHT COLUMN: Order Summary Sidebar --}}
+        <div class="lg:col-span-1">
+           <div class="bg-white rounded-lg shadow mb-6">
+                <div class="bg-slate-900 text-white p-4 rounded-t-lg flex justify-between items-center">
+                    <h2 class="text-lg font-bold">Order Summary</h2>
+                    <span class="text-2xl font-bold text-blue-300">₱{{ number_format($total_due, 2) }}</span>
+                </div>
+
+                <div class="p-6">
+                    @if(empty($cartItems))
+                        <div class="text-center py-8 text-gray-500">
+                            <p class="font-medium">Cart is empty</p>
+                            <p class="text-sm">Add products, services, or expenses to get started</p>
+                        </div>
+                    @else
+                        <div class="space-y-4">
+                    {{-- PRODUCTS SECTION --}}
+                    @php
+                        $summaryProducts = array_filter($cartItems, fn($item) => $item['type'] === 'product');
+                    @endphp
+                    @if(!empty($summaryProducts))
+                        <div>
+                            <h3 class="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">PRODUCTS</h3>
+                            <div class="space-y-2">
+                                @foreach($summaryProducts as $key => $item)
+                                    <div class="flex justify-between items-start pb-2 border-b border-gray-100">
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-900">{{ $item['name'] }}</p>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <button wire:click="updateItemQuantity('{{ $key }}', {{ $item['quantity'] - 1 }})" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs font-bold">−</button>
+                                                <input type="number" min="1" wire:change="updateItemQuantity('{{ $key }}', $event.target.value)" value="{{ $item['quantity'] }}" class="w-12 px-2 py-1 border border-gray-300 rounded text-center text-sm">
+                                                <button wire:click="updateItemQuantity('{{ $key }}', {{ $item['quantity'] + 1 }})" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs font-bold">+</button>
+                                                <span class="text-xs text-gray-600 ml-2">₱{{ number_format($item['unit_price'], 2) }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-right ml-2">
+                                            <button wire:click="removeItemFromCart('{{ $key }}')" class="text-red-600 hover:text-red-800 mb-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            </button>
+                                            <p class="font-bold text-gray-900">₱{{ number_format($item['total_price'], 2) }}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- SERVICES SECTION --}}
+                    @php
+                        $summaryServices = array_filter($cartItems, fn($item) => $item['type'] === 'service');
+                    @endphp
+                    @if(!empty($summaryServices))
+                        <div>
+                            <h3 class="text-xs font-bold text-blue-600 uppercase tracking-wide mb-2">SERVICES</h3>
+                            <div class="space-y-2">
+                                @foreach($summaryServices as $key => $item)
+                                    <div class="flex justify-between items-start pb-2 border-b border-gray-100">
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-900">{{ $item['name'] }}</p>
+                                            @if(!empty($item['crew_members']))
+                                                <p class="text-xs text-gray-600 mb-1">
+                                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                                    @php
+                                                        $crewNames = collect($item['crew_members'])
+                                                            ->map(function($member) {
+                                                                if (is_array($member)) {
+                                                                    return $member['name'] ?? 'Unknown';
+                                                                } elseif (is_object($member)) {
+                                                                    return $member->name ?? 'Unknown';
+                                                                }
+                                                                return 'Unknown';
+                                                            })
+                                                            ->implode(', ');
+                                                    @endphp
+                                                    {{ $crewNames }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                        <div class="text-right ml-2">
+                                            <button wire:click="removeItemFromCart('{{ $key }}')" class="text-red-600 hover:text-red-800 mb-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            </button>
+                                            <p class="font-bold text-gray-900">₱{{ number_format($item['total_price'], 2) }}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- EXPENSES SECTION --}}
+                    @php
+                        $summaryExpenses = array_filter($cartItems, fn($item) => $item['type'] === 'expense');
+                    @endphp
+                    @if(!empty($summaryExpenses))
+                        <div>
+                            <h3 class="text-xs font-bold text-orange-600 uppercase tracking-wide mb-2">MISC. EXPENSES</h3>
+                            <div class="space-y-2">
+                                @foreach($summaryExpenses as $key => $item)
+                                    <div class="flex justify-between items-start pb-2 border-b border-gray-100">
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-900">{{ $item['name'] }}</p>
+                                            @if($item['is_billable'])
+                                                <p class="text-xs text-gray-600">My Cost: <span class="text-red-600">₱{{ number_format($item['my_cost'], 2) }}</span> • Charge: <span class="text-blue-600">₱{{ number_format($item['charge_client'], 2) }}</span></p>
+                                            @else
+                                                <p class="text-xs text-gray-600">Cost: <span class="text-red-600">₱{{ number_format($item['my_cost'], 2) }}</span></p>
+                                            @endif
+                                        </div>
+                                        <div class="text-right ml-2">
+                                            <button wire:click="removeItemFromCart('{{ $key }}')" class="text-red-600 hover:text-red-800 mb-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            </button>
+                                            <p class="font-bold text-gray-900">₱{{ number_format($item['total_price'], 2) }}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- DISCOUNT SECTION --}}
+                    @if($discount_value > 0)
+                        <div class="flex justify-between items-center py-2 text-red-600 font-bold border-t-2 border-red-200">
+                            <span>Discount ({{ $discount_type === 'percentage' ? $discount_value . '%' : 'Fixed' }}) <button wire:click="$set('discount_value', 0)" class="text-xs ml-1">×</button></span>
+                            <span>−₱{{ number_format($discounted_amount, 2) }}</span>
+                        </div>
+                    @endif
+
+                    {{-- TOTALS --}}
+                    <div class="space-y-2 pt-2 border-t-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Subtotal</span>
+                            <span class="font-medium">₱{{ number_format($subtotal, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between text-lg font-bold text-blue-600 py-1">
+                            <span>Total Due</span>
+                            <span>₱{{ number_format($total_due, 2) }}</span>
+                        </div>
+                    </div>
+
+                    {{-- DISCOUNT INPUT --}}
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase">Apply Discount</label>
+                                @if($discount_value > 0)
+                                    <p class="text-xs text-gray-600 mt-1">Current: <span class="font-bold text-red-600">{{ $discount_type === 'percentage' ? $discount_value . '%' : '₱' . number_format($discount_value, 2) }}</span></p>
+                                @endif
+                            </div>
+                            <button 
+                                wire:click="toggleDiscountForm" 
+                                class="relative inline-flex h-6 w-11 items-center rounded-full transition {{ $showDiscountForm ? 'bg-blue-600' : 'bg-gray-300' }}">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white transition {{ $showDiscountForm ? 'translate-x-6' : 'translate-x-1' }}"></span>
+                            </button>
+                        </div>
+
+                        @if($showDiscountForm)
+                            {{-- Password Protection --}}
+                            @if(!$discountPasswordVerified)
+                                <div class="space-y-2 mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                                    <p class="text-xs font-medium text-yellow-800">Admin password required to modify discount</p>
+                                    <input 
+                                        type="password" 
+                                        wire:model="discountPassword" 
+                                        placeholder="Enter admin password" 
+                                        class="w-full px-3 py-2 border border-yellow-300 rounded text-sm focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+                                    <div class="flex gap-2">
+                                        <button 
+                                            wire:click="verifyDiscountPassword" 
+                                            class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded text-sm font-medium transition">
+                                            Verify
+                                        </button>
+                                        <button 
+                                            wire:click="toggleDiscountForm" 
+                                            class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-2 rounded text-sm font-medium transition">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                    @error('discountPassword') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                            @else
+                                {{-- Discount Form --}}
+                                <div class="space-y-2">
+                                    <div class="bg-white p-3 rounded border border-blue-200">
+                                        <label class="block text-xs font-medium text-gray-700 mb-2">Discount Type</label>
+                                        <select wire:model="discount_type" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                            <option value="percentage">Percentage Off (%)</option>
+                                            <option value="fixed">Fixed Amount (₱)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="bg-white p-3 rounded border border-blue-200">
+                                        <label class="block text-xs font-medium text-gray-700 mb-2">
+                                            Discount Value
+                                            @if($discount_type === 'percentage')
+                                                <span class="text-gray-500">(0-100%)</span>
+                                            @else
+                                                <span class="text-gray-500">(₱)</span>
+                                            @endif
+                                        </label>
+                                        <div class="flex gap-2">
+                                            <input 
+                                                type="number" 
+                                                min="0" 
+                                                step="0.01" 
+                                                wire:model.live="discount_value" 
+                                                placeholder="0"
+                                                class="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold text-blue-600">
+                                            <button 
+                                                wire:click="recalculate" 
+                                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition whitespace-nowrap">
+                                                Apply
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    @if($discount_value > 0)
+                                        <div class="bg-green-50 p-3 rounded border border-green-200">
+                                            <p class="text-xs text-gray-600">Discount Amount: <span class="font-bold text-green-600">₱{{ number_format($discounted_amount, 2) }}</span></p>
+                                        </div>
+                                    @endif
+
+                                    <div class="flex gap-2">
+                                        <button 
+                                            wire:click="resetDiscountForm" 
+                                            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded text-sm font-medium transition">
+                                            Close
+                                        </button>
+                                        @if($discount_value > 0)
+                                            <button 
+                                                wire:click="$set('discount_value', 0); recalculate()" 
+                                                class="flex-1 bg-red-200 hover:bg-red-300 text-red-700 px-3 py-2 rounded text-sm font-medium transition">
+                                                Remove Discount
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+                        @endif
+                    </div>
+
+                    {{-- QUICK PAYMENT SECTION --}}
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200 mt-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-xs font-bold text-blue-900 uppercase tracking-wide">Quick Payment</h3>
+                            <span class="text-lg font-bold text-blue-600">₱{{ number_format($total_due, 0) }}</span>
+                        </div>
+
+                        @if(!$showPaymentForm)
+                            <button wire:click="$set('showPaymentForm', true)" class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition rounded">
+                                Add Payment
+                            </button>
+                        @else
+                            <div class="space-y-3">
+                                {{-- Payment Amount --}}
+                                <div>
+                                    <label class="block text-xs font-medium text-blue-900 mb-1">Payment Amount (₱)</label>
+                                    <input type="number" wire:model="paymentAmount" placeholder="0" min="0" step="0.01" max="{{ $total_due - collect($existingPayments)->sum('amount') - collect($quickPayments)->sum('amount') }}" class="w-full px-3 py-2 border border-blue-300 text-sm focus:outline-none focus:border-blue-500 rounded bg-white">
+                                    @error('paymentAmount') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
+                                    <p class="text-xs text-blue-700 mt-1 font-medium">Remaining: ₱{{ number_format($total_due - collect($existingPayments)->sum('amount') - collect($quickPayments)->sum('amount'), 0) }}</p>
+                                </div>
+
+                                {{-- Payment Method --}}
+                                <div>
+                                    <label class="block text-xs font-medium text-blue-900 mb-1">Payment Method</label>
+                                    <select wire:model="paymentMethod" class="w-full px-3 py-2 border border-blue-300 text-sm focus:outline-none focus:border-blue-500 rounded bg-white">
+                                        <option value="cash">💵 Cash</option>
+                                        <option value="gcash">📱 GCash</option>
+                                        <option value="bank_transfer">🏦 Bank Transfer</option>
+                                        <option value="credit_card">💳 Credit Card</option>
+                                    </select>
+                                </div>
+
+                                {{-- Action Buttons --}}
+                                <div class="flex gap-2">
+                                    <button wire:click="addQuickPayment" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition rounded">
+                                        Add Payment
+                                    </button>
+                                    <button wire:click="$set('showPaymentForm', false); $set('paymentAmount', ''); $set('paymentNote', '')" class="flex-1 px-4 py-2 bg-white border border-blue-300 text-blue-700 hover:bg-blue-50 text-sm font-medium transition rounded">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Existing Payments (Already Transacted) --}}
+                        @if(!empty($existingPayments))
+                            <div class="mt-3 pt-3 border-t border-blue-200 space-y-2">
+                                <p class="text-xs font-bold text-green-700 uppercase">✓ Already Paid</p>
+                                @foreach($existingPayments as $payment)
+                                    <div class="flex items-center justify-between bg-green-50 p-2 rounded border border-green-200 text-xs">
+                                        <div class="flex-1">
+                                            <span class="font-medium text-gray-900">₱{{ number_format($payment['amount'], 0) }}</span>
+                                            <span class="text-gray-500 ml-2">via {{ ucfirst(str_replace('_', ' ', $payment['method'])) }}</span>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-gray-600 text-xs">{{ $payment['paid_at'] }}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                                <div class="flex justify-between text-xs font-bold text-green-700 pt-2 border-t border-green-200">
+                                    <span>Subtotal Paid:</span>
+                                    <span>₱{{ number_format(collect($existingPayments)->sum('amount'), 0) }}</span>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- New Payments (Added in this session) --}}
+                        @if(!empty($quickPayments))
+                            <div class="mt-3 pt-3 border-t border-blue-200 space-y-2">
+                                <p class="text-xs font-bold text-blue-900 uppercase">To Be Paid</p>
+                                @foreach($quickPayments as $index => $payment)
+                                    <div class="flex items-center justify-between bg-white p-2 rounded border border-blue-100 text-xs">
+                                        <div class="flex-1">
+                                            <span class="font-medium text-gray-900">₱{{ number_format($payment['amount'], 0) }}</span>
+                                            <span class="text-gray-500 ml-2">via {{ ucfirst(str_replace('_', ' ', $payment['method'])) }}</span>
+                                        </div>
+                                        <button wire:click="removeQuickPayment({{ $index }})" class="text-red-600 hover:text-red-800 font-bold">✕</button>
+                                    </div>
+                                @endforeach
+                                <div class="flex justify-between text-xs font-bold text-blue-900 pt-2 border-t border-blue-200">
+                                    <span>Total New Payments:</span>
+                                    <span>₱{{ number_format(collect($quickPayments)->sum('amount'), 0) }}</span>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Grand Total --}}
+                        @if(!empty($existingPayments) || !empty($quickPayments))
+                            <div class="mt-3 p-2 bg-white rounded border border-blue-300">
+                                <div class="flex justify-between text-xs font-bold text-blue-900">
+                                    <span>Total Paid (Including New):</span>
+                                    <span>₱{{ number_format(collect($existingPayments)->sum('amount') + collect($quickPayments)->sum('amount'), 0) }}</span>
+                                </div>
+                                <div class="flex justify-between text-xs font-bold text-red-600 mt-1">
+                                    <span>Still Due:</span>
+                                    <span>₱{{ number_format($total_due - collect($existingPayments)->sum('amount') - collect($quickPayments)->sum('amount'), 0) }}</span>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- CHECKOUT BUTTON --}}
+                    @if($customer_id && !empty($cartItems))
+                        <button wire:click="updateOrder" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition text-lg mt-4">
+                            Update Order
+                        </button>
+                    @else
+                        <button disabled class="w-full bg-gray-300 text-gray-500 font-bold py-3 px-4 rounded-lg cursor-not-allowed mt-4">
+                            {{ !$customer_id ? 'Select Customer' : 'Add Items' }}
+                        </button>
+                    @endif
+
+                    {{-- ACTION BUTTONS --}}
+                    <div class="flex gap-2 mt-3">
+                        @if(!empty($cartItems))
+                            <button wire:click="clearCart" class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-3 rounded transition">
+                                Clear Cart
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </div>
     </div>
-</div>
+

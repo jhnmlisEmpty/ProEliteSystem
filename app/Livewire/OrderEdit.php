@@ -6,12 +6,15 @@ use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\Order;
 use App\Models\OrderExpense;
+use App\Models\Payment;
 use App\Models\ProductLog;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Service;
 use App\Models\ServiceAssignment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 use Livewire\Component;
 
 class OrderEdit extends Component
@@ -63,6 +66,19 @@ class OrderEdit extends Component
     public $expenseChargeClient = 0;
     public $expenseBillable = false;
 
+    // Quick Payment
+    public $showPaymentForm = false;
+    public $paymentAmount = '';
+    public $paymentMethod = 'cash';
+    public $paymentNote = '';
+    public $quickPayments = [];
+    public $existingPayments = []; // Payments already transacted
+
+    // Discount Password
+    public $showDiscountForm = false;
+    public $discountPasswordVerified = false;
+    public $discountPassword = '';
+
     // Track original quantities for inventory adjustment
     public $originalProductQuantities = [];
 
@@ -85,7 +101,7 @@ class OrderEdit extends Component
     public function mount($id)
     {
         $this->orderId = $id;
-        $order = Order::with(['orderItems.product', 'orderItems.service', 'customer', 'expenses'])->findOrFail($id);
+        $order = Order::with(['orderItems.product', 'orderItems.service', 'customer', 'expenses', 'payments'])->findOrFail($id);
 
         // Load customer data
         $this->customer_id = $order->customer_id;
@@ -103,6 +119,16 @@ class OrderEdit extends Component
         // Load discount
         $this->discount_type = $order->discount_type ?? 'percentage';
         $this->discount_value = $order->discount_value ?? 0;
+        $this->discounted_amount = $order->discounted_amount ?? 0;
+
+        // Load existing payments
+        $this->existingPayments = $order->payments->map(fn($payment) => [
+            'id' => $payment->id,
+            'amount' => $payment->amount,
+            'method' => $payment->method,
+            'reference' => $payment->reference ?? '',
+            'paid_at' => $payment->paid_at?->format('M d, Y H:i'),
+        ])->toArray();
 
         // Load order items into cart
         foreach ($order->orderItems as $item) {
@@ -128,8 +154,16 @@ class OrderEdit extends Component
             } elseif ($item->service_id) {
                 $service = $item->service;
                 if ($service) {
-                    // Get assigned employees
-                    $assignments = ServiceAssignment::where('order_id', $this->orderId)->where('service_id', $service->id)->pluck('employee_id')->toArray();
+                    // Get assigned employees with their names
+                    $assignments = ServiceAssignment::where('order_id', $this->orderId)
+                        ->where('service_id', $service->id)
+                        ->with('employee')
+                        ->get()
+                        ->map(fn($assignment) => [
+                            'id' => $assignment->employee_id,
+                            'name' => $assignment->employee->name ?? 'Unknown',
+                        ])
+                        ->toArray();
                     
                     $itemId = 'service_' . $service->id . '_' . $item->id;
                     $this->cartItems[$itemId] = [
@@ -158,7 +192,8 @@ class OrderEdit extends Component
                 'description' => $expense->description,
                 'my_cost' => $expense->my_cost,
                 'charge_client' => $expense->charge_client,
-                'is_billable' => $expense->billable,
+                'is_billable' => $expense->is_billable,
+                'total_price' => $expense->is_billable ? $expense->charge_client : 0,
                 'expense_id' => $expense->id,
                 'created_at' => $expense->created_at,
             ];
@@ -586,6 +621,55 @@ class OrderEdit extends Component
     }
 
     /**
+     * QUICK PAYMENT METHODS
+     */
+    public function addQuickPayment()
+    {
+        if (empty($this->paymentAmount)) {
+            $this->addError('paymentAmount', 'Please enter a payment amount.');
+            return;
+        }
+
+        if ($this->paymentAmount <= 0) {
+            $this->addError('paymentAmount', 'Payment amount must be greater than 0.');
+            return;
+        }
+
+        // Calculate total payments from existing payments and new quick payments
+        $existingPaymentsTotal = collect($this->existingPayments)->sum('amount');
+        $newPaymentsTotal = collect($this->quickPayments)->sum('amount');
+        $totalPaymentsAlready = $existingPaymentsTotal + $newPaymentsTotal;
+        
+        // Calculate remaining balance
+        $remainingBalance = $this->total_due - $totalPaymentsAlready;
+        
+        // Check if new payment exceeds remaining balance
+        if ($this->paymentAmount > $remainingBalance) {
+            $this->addError('paymentAmount', 'Payment amount exceeds remaining balance of ₱' . number_format($remainingBalance, 2) . '. Total already paid: ₱' . number_format($totalPaymentsAlready, 2));
+            return;
+        }
+
+        // Add payment to quick payments array
+        $this->quickPayments[] = [
+            'amount' => (float) $this->paymentAmount,
+            'method' => $this->paymentMethod,
+            'note' => $this->paymentNote,
+        ];
+
+        // Reset form
+        $this->paymentAmount = '';
+        $this->paymentMethod = 'cash';
+        $this->paymentNote = '';
+        $this->resetErrorBag();
+    }
+
+    public function removeQuickPayment($index)
+    {
+        unset($this->quickPayments[$index]);
+        $this->quickPayments = array_values($this->quickPayments); // Reindex array
+    }
+
+    /**
      * DATABASE TRANSACTION MANAGER: Updates the complete order with financials
      */
     public function updateOrder()
@@ -601,7 +685,7 @@ class OrderEdit extends Component
             DB::transaction(function () {
                 $order = Order::findOrFail($this->orderId);
 
-                // Restore original product stock quantities
+                // First, restore all original product stock quantities
                 foreach ($this->originalProductQuantities as $productId => $originalQty) {
                     $product = Product::find($productId);
                     if ($product) {
@@ -631,7 +715,7 @@ class OrderEdit extends Component
                             throw new \Exception("Product {$item['product_id']} not found.");
                         }
 
-                        // Check stock availability
+                        // Check stock availability (after restoring original quantities)
                         if ($product->stock_qty < $item['quantity']) {
                             throw new \Exception("Insufficient stock for {$product->name}. Available: {$product->stock_qty}, Required: {$item['quantity']}");
                         }
@@ -648,16 +732,37 @@ class OrderEdit extends Component
                             'total_price' => $itemRevenue,
                         ]);
 
-                        // Update inventory - deduct stock
-                        $product->decrement('stock_qty', $item['quantity']);
-                        
-                        // Log the inventory change
-                        ProductLog::create([
-                            'product_id' => $product->id,
-                            'change_amount' => -$item['quantity'],
-                            'reason' => 'Order #' . $order->id . ' updated',
-                            'reference_id' => 'ORD-' . $order->id,
-                        ]);
+                        // Calculate inventory change
+                        $originalQty = $this->originalProductQuantities[$item['product_id']] ?? 0;
+                        $newQty = $item['quantity'];
+                        $quantityDifference = $newQty - $originalQty;
+
+                        // Update inventory based on difference
+                        if ($quantityDifference > 0) {
+                            // Quantity increased - reduce stock
+                            $product->decrement('stock_qty', $quantityDifference);
+                            $changeAmount = -$quantityDifference;
+                            $reason = 'Order #' . $order->id . ' updated - Quantity increased from ' . $originalQty . ' to ' . $newQty;
+                        } elseif ($quantityDifference < 0) {
+                            // Quantity decreased - add back stock
+                            $product->increment('stock_qty', abs($quantityDifference));
+                            $changeAmount = abs($quantityDifference);
+                            $reason = 'Order #' . $order->id . ' updated - Quantity decreased from ' . $originalQty . ' to ' . $newQty;
+                        } else {
+                            // Quantity unchanged - no change
+                            $changeAmount = 0;
+                            $reason = 'Order #' . $order->id . ' updated - Quantity unchanged (' . $newQty . ')';
+                        }
+
+                        // Log the inventory change only if there's a change
+                        if ($changeAmount !== 0) {
+                            ProductLog::create([
+                                'product_id' => $product->id,
+                                'change_amount' => $changeAmount,
+                                'reason' => $reason,
+                                'reference_id' => 'ORD-' . $order->id,
+                            ]);
+                        }
 
                         $totalGross += $itemRevenue;
                         $totalCost += $itemCost;
@@ -702,7 +807,7 @@ class OrderEdit extends Component
                             'description' => $item['description'],
                             'my_cost' => $expenseCost,
                             'charge_client' => $expenseCharge,
-                            'billable' => $item['is_billable'],
+                            'is_billable' => $item['is_billable'],
                         ]);
 
                         if ($item['is_billable']) {
@@ -713,7 +818,7 @@ class OrderEdit extends Component
                     }
                 }
 
-                // Update order
+                // Update order with new discount and financial values
                 $order->update([
                     'branch_id' => $this->branch_id,
                     'customer_id' => $this->customer_id,
@@ -729,6 +834,27 @@ class OrderEdit extends Component
                     'total_cost' => $totalCost,
                     'net_income' => ($totalGross - $this->discounted_amount) - $totalCost,
                 ]);
+
+                // Save quick payments if any (only new payments from the form)
+                if (!empty($this->quickPayments)) {
+                    foreach ($this->quickPayments as $payment) {
+                        Payment::create([
+                            'order_id' => $order->id,
+                            'amount' => $payment['amount'],
+                            'method' => $payment['method'],
+                            'reference' => $payment['note'],
+                            'paid_at' => now(),
+                        ]);
+                    }
+                    
+                    // Update payment status based on total paid
+                    $totalPaid = Payment::where('order_id', $order->id)->sum('amount');
+                    if ($totalPaid >= $this->total_due) {
+                        $order->update(['payment_status' => 'paid']);
+                    } elseif ($totalPaid > 0) {
+                        $order->update(['payment_status' => 'partial']);
+                    }
+                }
             });
 
             session()->flash('success', 'Order #' . $this->orderId . ' updated successfully!');
@@ -803,5 +929,42 @@ class OrderEdit extends Component
         if ($hasProducts && $hasServices) return 'both';
         if ($hasServices) return 'service';
         return 'product';
+    }
+
+    public function toggleDiscountForm()
+    {
+        $this->showDiscountForm = !$this->showDiscountForm;
+        if (!$this->showDiscountForm) {
+            $this->resetDiscountForm();
+        }
+    }
+
+    public function verifyDiscountPassword()
+    {
+        $this->validate([
+            'discountPassword' => 'required|string',
+        ]);
+
+        // Find any admin user and verify password
+        $adminUser = User::where('role', 'admin')
+            ->orWhere('role', 'Admin')
+            ->first();
+
+        if ($adminUser && Hash::check($this->discountPassword, $adminUser->password)) {
+            $this->discountPasswordVerified = true;
+            $this->discountPassword = '';
+        } else {
+            $this->addError('discountPassword', 'Invalid admin password');
+        }
+    }
+
+    public function resetDiscountForm()
+    {
+        $this->showDiscountForm = false;
+        $this->discountPasswordVerified = false;
+        $this->discountPassword = '';
+        $this->discount_value = 0;
+        $this->discounted_amount = 0;
+        $this->recalculate();
     }
 }

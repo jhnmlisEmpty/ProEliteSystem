@@ -581,6 +581,9 @@ class CreateOrder extends Component
                     'type' => $this->getOrderType(),
                     'status' => 'pending',
                     'payment_status' => 'unpaid',
+                    'discount_type' => $this->discount_type,
+                    'discount_value' => $this->discount_value,
+                    'discounted_amount' => $this->discounted_amount,
                     'total_amount' => $this->total_due,
                 ]);
 

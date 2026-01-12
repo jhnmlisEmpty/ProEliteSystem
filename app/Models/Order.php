@@ -23,6 +23,9 @@ class Order extends Model
         'status',
         'payment_status',
         'total_amount',
+        'discount_type',
+        'discount_value',
+        'discounted_amount',
         'total_gross',
         'total_cost',
         'net_income',
@@ -30,6 +33,8 @@ class Order extends Model
 
     protected $casts = [
         'total_amount' => 'integer',
+        'discount_value' => 'decimal:2',
+        'discounted_amount' => 'integer',
         'total_gross' => 'integer',
         'total_cost' => 'integer',
         'net_income' => 'integer',
