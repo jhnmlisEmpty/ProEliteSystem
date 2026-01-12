@@ -74,7 +74,7 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($products as $product)
-                    <tr class="hover:bg-gray-50 transition {{ $product->isLowStock() ? 'bg-red-50' : '' }}">
+                    <tr class="hover:bg-gray-50 transition {{ $product->isLowStock() ? 'bg-red-200 hover:bg-red-300' : '' }}">
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($product->image)
                                 <img src="{{ Storage::url($product->image) }}" 

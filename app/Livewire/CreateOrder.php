@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\Order;
 use App\Models\OrderExpense;
+use App\Models\Payment;
 use App\Models\ProductLog;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -13,6 +14,8 @@ use App\Models\Service;
 use App\Models\ServiceAssignment;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class CreateOrder extends Component
 {
@@ -60,6 +63,18 @@ class CreateOrder extends Component
     public $expenseMyCost = 0;
     public $expenseChargeClient = 0;
     public $expenseBillable = false;
+
+    // Quick Payment
+    public $showPaymentForm = false;
+    public $paymentAmount = '';
+    public $paymentMethod = 'cash';
+    public $paymentNote = '';
+    public $quickPayments = [];
+
+    // Discount Password
+    public $showDiscountForm = false;
+    public $discountPasswordVerified = false;
+    public $discountPassword = '';
 
     protected $rules = [
         'customer_id' => 'required|exists:customers,id',
@@ -412,6 +427,7 @@ class CreateOrder extends Component
         $this->cartProducts = [];
         $this->cartServices = [];
         $this->cartExpenses = [];
+
         $this->recalculate();
     }
 
@@ -489,6 +505,53 @@ class CreateOrder extends Component
     }
 
     /**
+     * QUICK PAYMENT METHODS
+     */
+    public function addQuickPayment()
+    {
+        if (empty($this->paymentAmount)) {
+            $this->addError('paymentAmount', 'Please enter a payment amount.');
+            return;
+        }
+
+        if ($this->paymentAmount <= 0) {
+            $this->addError('paymentAmount', 'Payment amount must be greater than 0.');
+            return;
+        }
+
+        // Calculate total payments already added
+        $totalPaymentsAlready = collect($this->quickPayments)->sum('amount');
+        
+        // Calculate remaining balance
+        $remainingBalance = $this->total_due - $totalPaymentsAlready;
+        
+        // Check if new payment exceeds remaining balance
+        if ($this->paymentAmount > $remainingBalance) {
+            $this->addError('paymentAmount', 'Payment amount exceeds remaining balance of ₱' . number_format($remainingBalance, 2) . '. Total already paid: ₱' . number_format($totalPaymentsAlready, 2));
+            return;
+        }
+
+        // Add payment to quick payments array
+        $this->quickPayments[] = [
+            'amount' => (float) $this->paymentAmount,
+            'method' => $this->paymentMethod,
+            'note' => $this->paymentNote,
+        ];
+
+        // Reset form
+        $this->paymentAmount = '';
+        $this->paymentMethod = 'cash';
+        $this->paymentNote = '';
+        $this->resetErrorBag();
+    }
+
+    public function removeQuickPayment($index)
+    {
+        unset($this->quickPayments[$index]);
+        $this->quickPayments = array_values($this->quickPayments); // Reindex array
+    }
+
+    /**
      * DATABASE TRANSACTION MANAGER: Saves the complete order with financials
      */
     public function saveOrder()
@@ -518,6 +581,9 @@ class CreateOrder extends Component
                     'type' => $this->getOrderType(),
                     'status' => 'pending',
                     'payment_status' => 'unpaid',
+                    'discount_type' => $this->discount_type,
+                    'discount_value' => $this->discount_value,
+                    'discounted_amount' => $this->discounted_amount,
                     'total_amount' => $this->total_due,
                 ]);
 
@@ -596,7 +662,7 @@ class CreateOrder extends Component
                         }
 
                         $totalGross += $itemRevenue;
-                        $totalCost += $itemCost;
+                        // $totalCost += $itemCost; Excluding service labor cost from total cost for now
                     } elseif ($item['type'] === 'expense') {
                         $expenseCost = (int) $item['my_cost'];
                         $expenseCharge = (int) ($item['is_billable'] ? $item['charge_client'] : 0);
@@ -625,6 +691,27 @@ class CreateOrder extends Component
                     'total_cost' => $totalCost,
                     'net_income' => ($totalGross - $this->discounted_amount) - $totalCost,
                 ]);
+
+                // Save quick payments if any
+                if (!empty($this->quickPayments)) {
+                    foreach ($this->quickPayments as $payment) {
+                        Payment::create([
+                            'order_id' => $order->id,
+                            'amount' => $payment['amount'],
+                            'method' => $payment['method'],
+                            'reference' => $payment['note'],
+                            'paid_at' => now(),
+                        ]);
+                    }
+                    
+                    // Update payment status based on total paid
+                    $totalPaid = collect($this->quickPayments)->sum('amount');
+                    if ($totalPaid >= $this->total_due) {
+                        $order->update(['payment_status' => 'paid']);
+                    } elseif ($totalPaid > 0) {
+                        $order->update(['payment_status' => 'partial']);
+                    }
+                }
 
                 return $order->id;
             });
@@ -669,6 +756,7 @@ class CreateOrder extends Component
         return Service::create([
             'name' => $serviceName,
             'base_labor_cost' => 0,
+            'branch_id' => $this->branch_id ?? auth()->user()->branch_id,
         ]);
     }
 
@@ -705,5 +793,43 @@ class CreateOrder extends Component
         if ($hasProducts && $hasServices) return 'both';
         if ($hasServices) return 'service';
         return 'product';
+    }
+
+    public function toggleDiscountForm()
+    {
+        $this->showDiscountForm = !$this->showDiscountForm;
+        if (!$this->showDiscountForm) {
+            $this->resetDiscountForm();
+        }
+    }
+
+    public function verifyDiscountPassword()
+    {
+        $this->validate([
+            'discountPassword' => 'required|string',
+        ]);
+
+        // Find any admin user and verify password
+        $adminUser = User::where('role', 'admin')
+            ->orWhere('role', 'Admin')
+            ->first();
+
+        if ($adminUser && Hash::check($this->discountPassword, $adminUser->password)) {
+            $this->discountPasswordVerified = true;
+            $this->discountPassword = '';
+        } else {
+            $this->addError('discountPassword', 'Invalid admin password');
+        }
+    }
+
+    public function resetDiscountForm()
+    {
+        $this->showDiscountForm = false;
+        $this->discountPasswordVerified = false;
+        $this->discountPassword = '';
+        $this->discount_value = 0;
+        $this->discount_amount = 0;
+        $this->recalculate();
+
     }
 }
