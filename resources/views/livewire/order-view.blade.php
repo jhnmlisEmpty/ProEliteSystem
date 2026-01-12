@@ -178,17 +178,17 @@
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Payment Method</label>
                                     <select wire:model="paymentMethod" class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-gray-400">
-                                        <option value="cash">Cash</option>
-                                        <option value="card">Card</option>
-                                        <option value="bank_transfer">Bank Transfer</option>
-                                        <option value="check">Check</option>
+                                        <option value="cash"> Cash</option>
+                                        <option value="gcash"> GCash</option>
+                                        <option value="bank_transfer"> Bank Transfer</option>
+                                        <option value="credit_card"> Credit Card</option>
                                     </select>
                                 </div>
 
-                                <div>
+                                <!-- <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Note (Optional)</label>
                                     <textarea wire:model="paymentNote" placeholder="Reference number, notes..." rows="2" class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-gray-400"></textarea>
-                                </div>
+                                </div> -->
 
                                 <div class="flex gap-2">
                                     <button wire:click="addPayment" class="flex-1 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm transition">

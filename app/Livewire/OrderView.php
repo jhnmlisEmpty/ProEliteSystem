@@ -31,7 +31,7 @@ class OrderView extends Component
 
     protected $rules = [
         'paymentAmount' => 'required|integer|min:1',
-        'paymentMethod' => 'required|in:cash,card,bank_transfer,check',
+        'paymentMethod' => 'required|in:cash,bank_transfer,credit_card,gcash',
         'paymentNote' => 'nullable|string|max:500',
     ];
 
@@ -96,7 +96,7 @@ class OrderView extends Component
     {
         $this->validate([
             'paymentAmount' => 'required|integer|min:1',
-            'paymentMethod' => 'required|in:cash,card,bank_transfer,check',
+            'paymentMethod' => 'required|in:cash,bank_transfer,credit_card,gcash',
             'paymentNote' => 'nullable|string|max:500',
         ]);
 
@@ -111,7 +111,7 @@ class OrderView extends Component
                 'order_id' => $this->order->id,
                 'amount' => $this->paymentAmount,
                 'method' => $this->paymentMethod,
-                'note' => $this->paymentNote,
+                'reference' => $this->paymentNote,
                 'paid_at' => now(),
             ]);
 
