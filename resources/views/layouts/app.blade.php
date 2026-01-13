@@ -34,49 +34,58 @@
                 <!-- Desktop Navigation -->
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="/" 
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('/') ? 'bg-gray-700 text-white' : '' }}">
-                            <x-heroicon-o-home class="w-5 h-5 inline-block mr-1" />
-                            Dashboard
-                        </a>
+                        @if(Auth::user()?->role !== 'order_creator')
+                            <a href="/" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('/') ? 'bg-gray-700 text-white' : '' }}">
+                                <x-heroicon-o-home class="w-5 h-5 inline-block mr-1" />
+                                Dashboard
+                            </a>
+                        @endif
+                        
                         <a href="{{ route('orders.index') }}" 
                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('orders*') ? 'bg-gray-700 text-white' : '' }}">
                             <x-heroicon-o-shopping-cart class="w-5 h-5 inline-block mr-1" />
                             Orders
                         </a>
                        
-                        <a href="{{ route('products.index') }}" 
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
-                            <x-heroicon-o-cube class="w-5 h-5 inline-block mr-1" />
-                            Products
-                        </a>
-                        <a href="{{ route('services.index') }}" 
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('services*') ? 'bg-gray-700 text-white' : '' }}">
-                            <x-heroicon-o-wrench-screwdriver class="w-5 h-5 inline-block mr-1" />
-                            Services
-                        </a>
-                        <a href="{{ route('customers.index') }}" 
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('customers*') ? 'bg-gray-700 text-white' : '' }}">
-                            <x-heroicon-o-users class="w-5 h-5 inline-block mr-1" />
-                            Customers
-                        </a>
-                        <a href="{{ route('expenses.index') }}" 
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('expenses*') ? 'bg-gray-700 text-white' : '' }}">
-                            <x-heroicon-o-banknotes class="w-5 h-5 inline-block mr-1" />
-                            Expenses
-                        </a>
-                        @if(Auth::user()?->role === 'admin')
-                            <a href="{{ route('users.index') }}" 
-                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('users*') ? 'bg-gray-700 text-white' : '' }}">
-                                <x-heroicon-o-identification class="w-5 h-5 inline-block mr-1" />
-                                Users
+                        @if(Auth::user()?->role !== 'order_creator')
+                            <a href="{{ route('products.index') }}" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
+                                <x-heroicon-o-cube class="w-5 h-5 inline-block mr-1" />
+                                Products
                             </a>
-                            <a href="{{ route('branches.index') }}" 
-                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('branches*') ? 'bg-gray-700 text-white' : '' }}">
-                                <x-heroicon-o-building-office class="w-5 h-5 inline-block mr-1" />
-                                Branches
+                            <a href="{{ route('services.index') }}" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('services*') ? 'bg-gray-700 text-white' : '' }}">
+                                <x-heroicon-o-wrench-screwdriver class="w-5 h-5 inline-block mr-1" />
+                                Services
                             </a>
-                        @endif                       
+                            <a href="{{ route('customers.index') }}" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('customers*') ? 'bg-gray-700 text-white' : '' }}">
+                                <x-heroicon-o-users class="w-5 h-5 inline-block mr-1" />
+                                Customers
+                            </a>
+                            <a href="{{ route('expenses.index') }}" 
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('expenses*') ? 'bg-gray-700 text-white' : '' }}">
+                                <x-heroicon-o-banknotes class="w-5 h-5 inline-block mr-1" />
+                                Expenses
+                            </a>
+                            @if(Auth::user()?->role === 'admin')
+                                <a href="{{ route('users.index') }}" 
+                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('users*') ? 'bg-gray-700 text-white' : '' }}">
+                                    <x-heroicon-o-identification class="w-5 h-5 inline-block mr-1" />
+                                    Users
+                                </a>
+                                <a href="{{ route('branches.index') }}" 
+                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('branches*') ? 'bg-gray-700 text-white' : '' }}">
+                                    <x-heroicon-o-building-office class="w-5 h-5 inline-block mr-1" />
+                                    Branches
+                                </a>
+                            @endif
+                        @endif
+                        <a href="{{ route('orders.create') }}" class="text-white bg-blue-500 hover:bg-blue-700 block px-3 py-2 rounded-md text-base font-medium {{ request()->is('orders/create') ? 'bg-blue-700' : '' }}">
+                            <x-heroicon-o-plus class="w-5 h-5 inline-block mr-1" />
+                            Create Order
+                        </a>                       
                     </div>
                 </div>
 
@@ -105,40 +114,48 @@
         <!-- Mobile menu -->
         <div class="md:hidden" x-show="mobileMenuOpen" style="display: none;">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                <a href="/" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('/') ? 'bg-gray-700 text-white' : '' }}">
-                    <x-heroicon-o-home class="w-5 h-5 inline-block mr-1" />
-                    Dashboard
-                </a>
+                @if(Auth::user()?->role !== 'order_creator')
+                    <a href="/" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('/') ? 'bg-gray-700 text-white' : '' }}">
+                        <x-heroicon-o-home class="w-5 h-5 inline-block mr-1" />
+                        Dashboard
+                    </a>
+                @endif
                 <a href="{{ route('orders.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('orders*') ? 'bg-gray-700 text-white' : '' }}">
                     <x-heroicon-o-shopping-cart class="w-5 h-5 inline-block mr-1" />
                     Orders
                 </a>
-                <a href="{{ route('products.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
-                    <x-heroicon-o-cube class="w-5 h-5 inline-block mr-1" />
-                    Products
-                </a>
-                <a href="{{ route('services.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('services*') ? 'bg-gray-700 text-white' : '' }}">
-                    <x-heroicon-o-wrench-screwdriver class="w-5 h-5 inline-block mr-1" />
-                    Services
-                </a>
-                <a href="{{ route('customers.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('customers*') ? 'bg-gray-700 text-white' : '' }}">
-                    <x-heroicon-o-users class="w-5 h-5 inline-block mr-1" />
-                    Customers
-                </a>
-                <a href="{{ route('expenses.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('expenses*') ? 'bg-gray-700 text-white' : '' }}">
-                    <x-heroicon-o-banknotes class="w-5 h-5 inline-block mr-1" />
-                    Expenses
-                </a>
-                @if(Auth::user()?->role === 'admin')
-                    <a href="{{ route('users.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('users*') ? 'bg-gray-700 text-white' : '' }}">
-                        <x-heroicon-o-identification class="w-5 h-5 inline-block mr-1" />
-                        Users
+                @if(Auth::user()?->role !== 'order_creator')
+                    <a href="{{ route('products.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
+                        <x-heroicon-o-cube class="w-5 h-5 inline-block mr-1" />
+                        Products
                     </a>
-                    <a href="{{ route('branches.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('branches*') ? 'bg-gray-700 text-white' : '' }}">
-                        <x-heroicon-o-building-office class="w-5 h-5 inline-block mr-1" />
-                        Branches
+                    <a href="{{ route('services.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('services*') ? 'bg-gray-700 text-white' : '' }}">
+                        <x-heroicon-o-wrench-screwdriver class="w-5 h-5 inline-block mr-1" />
+                        Services
                     </a>
+                    <a href="{{ route('customers.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('customers*') ? 'bg-gray-700 text-white' : '' }}">
+                        <x-heroicon-o-users class="w-5 h-5 inline-block mr-1" />
+                        Customers
+                    </a>
+                    <a href="{{ route('expenses.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('expenses*') ? 'bg-gray-700 text-white' : '' }}">
+                        <x-heroicon-o-banknotes class="w-5 h-5 inline-block mr-1" />
+                        Expenses
+                    </a>
+                    @if(Auth::user()?->role === 'admin')
+                        <a href="{{ route('users.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('users*') ? 'bg-gray-700 text-white' : '' }}">
+                            <x-heroicon-o-identification class="w-5 h-5 inline-block mr-1" />
+                            Users
+                        </a>
+                        <a href="{{ route('branches.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('branches*') ? 'bg-gray-700 text-white' : '' }}">
+                            <x-heroicon-o-building-office class="w-5 h-5 inline-block mr-1" />
+                            Branches
+                        </a>
+                    @endif
                 @endif
+                <a href="{{ route('orders.create') }}" class="text-white bg-blue-500 hover:bg-blue-700 block px-3 py-2 rounded-md text-base font-medium {{ request()->is('orders/create') ? 'bg-blue-700' : '' }}">
+                    <x-heroicon-o-plus class="w-5 h-5 inline-block mr-1" />
+                    Create Order
+                </a>
 
                 <hr class="my-2 border-gray-700">
                 <div class="px-3 py-2">
