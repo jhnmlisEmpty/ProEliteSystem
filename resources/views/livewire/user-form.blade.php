@@ -10,45 +10,47 @@
 
     <!-- Form -->
     <form wire:submit="save" class="space-y-6">
-        <!-- Name -->
-        <div>
-            <label class="block text-sm font-medium text-gray-900 mb-1">Name <span class="text-red-500">*</span></label>
-            <p class="text-sm text-gray-600 mb-2">Full name used for identification.</p>
-            <input wire:model="name" type="text" placeholder="Enter full name" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('name') border-red-500 @enderror">
-            @error('name') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        <!-- Name & Email (Side by Side) -->
+        <div class="grid grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-1">Name <span class="text-red-500">*</span></label>
+                <p class="text-sm text-gray-600 mb-2">Full name used for identification.</p>
+                <input wire:model="name" type="text" placeholder="Enter full name" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('name') border-red-500 @enderror">
+                @error('name') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-1">Email <span class="text-red-500">*</span></label>
+                <p class="text-sm text-gray-600 mb-2">Login email and primary contact.</p>
+                <input wire:model="email" type="email" placeholder="Enter email address" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('email') border-red-500 @enderror">
+                @error('email') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
         </div>
 
-        <!-- Email -->
-        <div>
-            <label class="block text-sm font-medium text-gray-900 mb-1">Email <span class="text-red-500">*</span></label>
-            <p class="text-sm text-gray-600 mb-2">Login email and primary contact.</p>
-            <input wire:model="email" type="email" placeholder="Enter email address" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('email') border-red-500 @enderror">
-            @error('email') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-        </div>
+        <!-- Role & Branch (Side by Side) -->
+        <div class="grid grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-1">Role <span class="text-red-500">*</span></label>
+                <p class="text-sm text-gray-600 mb-2">Access level for system features.</p>
+                <select wire:model="role" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('role') border-red-500 @enderror">
+                    @foreach($roles as $r)
+                        <option value="{{ $r }}">{{ ucfirst($r) }}</option>
+                    @endforeach
+                </select>
+                @error('role') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
 
-        <!-- Role -->
-        <div>
-            <label class="block text-sm font-medium text-gray-900 mb-1">Role <span class="text-red-500">*</span></label>
-            <p class="text-sm text-gray-600 mb-2">Access level for system features.</p>
-            <select wire:model="role" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('role') border-red-500 @enderror">
-                @foreach($roles as $r)
-                    <option value="{{ $r }}">{{ ucfirst($r) }}</option>
-                @endforeach
-            </select>
-            @error('role') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-        </div>
-
-        <!-- Branch -->
-        <div>
-            <label class="block text-sm font-medium text-gray-900 mb-1">Branch</label>
-            <p class="text-sm text-gray-600 mb-2">Assign the user to a branch (optional for admins).</p>
-            <select wire:model="branch_id" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('branch_id') border-red-500 @enderror">
-                <option value="">No Branch</option>
-                @foreach($branches as $branch)
-                    <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                @endforeach
-            </select>
-            @error('branch_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-1">Branch</label>
+                <p class="text-sm text-gray-600 mb-2">Assign the user to a branch (optional for admins).</p>
+                <select wire:model="branch_id" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('branch_id') border-red-500 @enderror">
+                    <option value="">No Branch</option>
+                    @foreach($branches as $branch)
+                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                    @endforeach
+                </select>
+                @error('branch_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
         </div>
 
         <!-- Password -->

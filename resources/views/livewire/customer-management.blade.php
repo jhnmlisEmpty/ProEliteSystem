@@ -47,6 +47,7 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Orders</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent</th>
@@ -60,26 +61,44 @@
                             <div class="text-sm font-medium text-gray-900">{{ $customer->name }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->phone }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            @if($customer->vehicle_type || $customer->plate_number)
+                                <div class="text-sm">
+                                    @if($customer->vehicle_type)
+                                        <p class="font-medium">{{ $customer->vehicle_type }}</p>
+                                    @endif
+                                    @if($customer->plate_number)
+                                        <p class="text-gray-600">{{ $customer->plate_number }}</p>
+                                    @endif
+                                </div>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 text-sm text-gray-900 max-w-md">
-                            <p class="truncate" title="{{ $customer->address }}">{{ $customer->address }}</p>
+                            <p class="truncate" title="{{ $customer->address }}">{{ $customer->address ?: '-' }}</p>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ number_format($customer->total_orders) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱{{ number_format($customer->total_spent) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="/customers/{{ $customer->id }}/edit" wire:navigate
-                               class="text-blue-600 hover:text-blue-900 mr-3 font-medium">
-                                Edit
-                            </a>
-                            <button wire:click="delete({{ $customer->id }})" 
-                                    wire:confirm="Are you sure you want to delete this customer?"
-                                    class="text-red-600 hover:text-red-900 font-medium">
-                                Delete
-                            </button>
+                            @if(auth()->user()->role === 'admin')
+                                <a href="/customers/{{ $customer->id }}/edit" wire:navigate
+                                   class="text-blue-600 hover:text-blue-900 mr-3 font-medium">
+                                    Edit
+                                </a>
+                                <button wire:click="delete({{ $customer->id }})" 
+                                        wire:confirm="Are you sure you want to delete this customer?"
+                                        class="text-red-600 hover:text-red-900 font-medium">
+                                    Delete
+                                </button>
+                            @else
+                                <span class="text-gray-400 text-sm">View Only</span>
+                            @endif
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center">
+                        <td colspan="7" class="px-6 py-12 text-center">
                             <x-heroicon-o-users class="w-12 h-12 text-gray-400 mx-auto mb-4" />
                             <p class="text-gray-500">No customers found</p>
                             <a href="/customers/create" wire:navigate
@@ -101,10 +120,22 @@
                     <div>
                         <h3 class="text-sm font-medium text-gray-900">{{ $customer->name }}</h3>
                         <p class="text-xs text-gray-500 mt-1">{{ $customer->phone }}</p>
+                        @if($customer->vehicle_type || $customer->plate_number)
+                            <div class="text-xs text-gray-600 mt-1">
+                                @if($customer->vehicle_type)
+                                    <span class="font-medium">{{ $customer->vehicle_type }}</span>
+                                @endif
+                                @if($customer->plate_number)
+                                    <span>- {{ $customer->plate_number }}</span>
+                                @endif
+                            </div>
+                        @endif
                     </div>
                 </div>
 
-                <p class="text-sm text-gray-700 mb-2">{{ $customer->address }}</p>
+                @if($customer->address)
+                    <p class="text-sm text-gray-700 mb-2">{{ $customer->address }}</p>
+                @endif
 
                 <div class="grid grid-cols-2 gap-2 text-sm mb-3">
                     <div>
@@ -117,17 +148,21 @@
                     </div>
                 </div>
 
-                <div class="flex space-x-3">
-                    <a href="/customers/{{ $customer->id }}/edit" wire:navigate
-                       class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                        Edit
-                    </a>
-                    <button wire:click="delete({{ $customer->id }})" 
-                            wire:confirm="Are you sure you want to delete this customer?"
-                            class="text-sm text-red-600 hover:text-red-800 font-medium">
-                        Delete
-                    </button>
-                </div>
+                @if(auth()->user()->role === 'admin')
+                    <div class="flex space-x-3">
+                        <a href="/customers/{{ $customer->id }}/edit" wire:navigate
+                           class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                            Edit
+                        </a>
+                        <button wire:click="delete({{ $customer->id }})" 
+                                wire:confirm="Are you sure you want to delete this customer?"
+                                class="text-sm text-red-600 hover:text-red-800 font-medium">
+                            Delete
+                        </button>
+                    </div>
+                @else
+                    <span class="text-gray-400 text-sm">View Only</span>
+                @endif
             </div>
         @empty
             <div class="bg-white rounded-lg shadow-sm p-8 text-center">

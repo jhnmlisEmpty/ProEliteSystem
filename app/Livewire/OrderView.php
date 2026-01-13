@@ -20,8 +20,6 @@ class OrderView extends Component
 
     // Edit mode properties
     public $isEditMode = false;
-    public $editVehicleType = '';
-    public $editPlateNumber = '';
     public $editCustomerName = '';
 
     // Status change
@@ -36,8 +34,6 @@ class OrderView extends Component
     ];
 
     protected $editRules = [
-        'editVehicleType' => 'nullable|string|max:100',
-        'editPlateNumber' => 'nullable|string|max:20',
         'editCustomerName' => 'required|string|min:2',
     ];
 
@@ -67,8 +63,6 @@ class OrderView extends Component
 
     private function initializeEditFields()
     {
-        $this->editVehicleType = $this->order->vehicle_type;
-        $this->editPlateNumber = $this->order->plate_number;
         $this->editCustomerName = $this->order->customer_name;
         $this->newStatus = $this->order->status;
     }
@@ -190,8 +184,6 @@ class OrderView extends Component
 
         try {
             $this->order->update([
-                'vehicle_type' => $this->editVehicleType,
-                'plate_number' => $this->editPlateNumber,
                 'customer_name' => $this->editCustomerName,
             ]);
 

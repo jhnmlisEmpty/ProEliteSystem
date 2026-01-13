@@ -16,8 +16,14 @@ class CustomerForm extends Component
     #[Validate('required|string|max:50')]
     public $phone = '';
 
-    #[Validate('required|string')]
+    #[Validate('nullable|string')]
     public $address = '';
+
+    #[Validate('nullable|string|max:255')]
+    public $vehicle_type = '';
+
+    #[Validate('nullable|string|max:255')]
+    public $plate_number = '';
 
     public function mount(?int $id = null): void
     {
@@ -26,6 +32,8 @@ class CustomerForm extends Component
             $this->name = $this->customer->name;
             $this->phone = $this->customer->phone;
             $this->address = $this->customer->address;
+            $this->vehicle_type = $this->customer->vehicle_type;
+            $this->plate_number = $this->customer->plate_number;
         }
     }
 

@@ -15,7 +15,9 @@
                 <p class="text-sm text-gray-600 mt-1">Created {{ $order->created_at->format('M d, Y') }}</p>
             </div>
             <div class="flex gap-3">
-                <a href="{{ route('orders.edit', $order->id) }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium">Edit Order</a>
+                @if(auth()->user()->role === 'admin')
+                    <a href="{{ route('orders.edit', $order->id) }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium">Edit Order</a>
+                @endif
                 <a href="{{ route('orders.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 text-sm">Back to Orders</a>
                 <button onclick="window.print()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 text-sm">Print Invoice</button>
             </div>
@@ -65,6 +67,7 @@
             <div class="text-xs text-gray-400 mt-1">Includes billable fees</div>
         </div>
 
+        @if(auth()->user()->role === 'admin')
         {{-- Total Expenses --}}
         <div class="bg-white border border-gray-200 p-5">
             <div class="text-xs font-medium text-gray-500 uppercase mb-2">Total Expenses</div>
@@ -83,6 +86,7 @@
             </div>
             <div class="text-2xl font-semibold text-gray-900">₱{{ number_format($order->net_income) }}</div>
         </div>
+        @endif
     </div>
 
     {{-- Quick Actions --}}
@@ -221,19 +225,19 @@
                         </div>
                         <div>
                             <p class="text-xs text-gray-600">Phone</p>
-                            <p class="font-semibold text-gray-900">{{ $order->customer->phone ?? 'N/A' }}</p>
+                            <p class="font-semibold text-gray-900">{{ $order->customer?->phone ?? 'N/A' }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-gray-600">Location</p>
-                            <p class="font-semibold text-gray-900">{{ $order->customer->address ?? 'N/A' }}</p>
+                            <p class="font-semibold text-gray-900">{{ $order->customer?->address ?? 'N/A' }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-gray-600">Vehicle Type</p>
-                            <p class="font-semibold text-gray-900">{{ $order->vehicle_type ?? 'N/A' }}</p>
+                            <p class="font-semibold text-gray-900">{{ $order->customer?->vehicle_type ?? 'N/A' }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-gray-600">Plate Number</p>
-                            <p class="font-semibold text-gray-900">{{ $order->plate_number ?? 'N/A' }}</p>
+                            <p class="font-semibold text-gray-900">{{ $order->customer?->plate_number ?? 'N/A' }}</p>
                         </div>
                     </div>
                 </div>
@@ -260,7 +264,9 @@
                                         <p class="text-xs text-gray-500 mt-1">SKU: {{ $item->product->sku ?? 'N/A' }}</p>
                                         <p class="text-sm text-gray-600 mt-1">Stock Deducted: {{ $item->quantity }} unit{{ $item->quantity > 1 ? 's' : '' }}</p>
                                         <div class="flex gap-4 mt-2 text-sm">
+                                            @if(auth()->user()->role === 'admin')
                                             <span class="text-gray-600">Base Price: <span class="font-medium">₱{{ number_format($item->product->buy_price ?? 0) }}</span></span>
+                                            @endif
                                             <span class="text-gray-600">Sell Price: <span class="font-medium">₱{{ number_format($item->product->sell_price ?? 0) }}</span></span>
                                         </div>
                                     </div>

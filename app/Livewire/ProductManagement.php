@@ -37,6 +37,12 @@ class ProductManagement extends Component
 
     public function delete($id)
     {
+        // Only admins can delete products
+        if (!auth()->user()->isAdmin()) {
+            session()->flash('error', 'Unauthorized: Only administrators can delete products.');
+            return;
+        }
+
         $product = Product::findOrFail($id);
         
         // Delete image if exists

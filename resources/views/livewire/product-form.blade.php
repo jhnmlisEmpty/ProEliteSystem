@@ -60,22 +60,23 @@
             @error('image') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
         </div>
 
-        <!-- Product Name -->
-        <div>
-            <label class="block text-sm font-medium text-gray-900 mb-1">Product Name <span class="text-red-500">*</span></label>
-            <p class="text-sm text-gray-600 mb-2">Display name shown across inventory and sales.</p>
-            <input wire:model="name" type="text" placeholder="Enter product name" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('name') border-red-500 @enderror">
-            <p class="text-xs text-gray-500 mt-1">The product's display name in the system</p>
-            @error('name') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-        </div>
+        <!-- Product Name & SKU (Side by Side) -->
+        <div class="grid grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-1">Product Name <span class="text-red-500">*</span></label>
+                <p class="text-sm text-gray-600 mb-2">Display name shown across inventory and sales.</p>
+                <input wire:model="name" type="text" placeholder="Enter product name" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('name') border-red-500 @enderror">
+                <p class="text-xs text-gray-500 mt-1">The product's display name in the system</p>
+                @error('name') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
 
-        <!-- SKU -->
-        <div>
-            <label class="block text-sm font-medium text-gray-900 mb-1">SKU <span class="text-red-500">*</span></label>
-            <p class="text-sm text-gray-600 mb-2">Unique identifier for tracking and searches.</p>
-            <input wire:model="sku" type="text" placeholder="Enter SKU code" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('sku') border-red-500 @enderror">
-            <p class="text-xs text-gray-500 mt-1">Unique product identifier for inventory tracking</p>
-            @error('sku') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-1">SKU <span class="text-red-500">*</span></label>
+                <p class="text-sm text-gray-600 mb-2">Unique identifier for tracking and searches.</p>
+                <input wire:model="sku" type="text" placeholder="Enter SKU code" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('sku') border-red-500 @enderror">
+                <p class="text-xs text-gray-500 mt-1">Unique product identifier for inventory tracking</p>
+                @error('sku') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
         </div>
 
         <!-- Type & Stock (Side by Side) -->
@@ -124,32 +125,33 @@
             </div>
         </div>
 
-        <!-- Alert Limit -->
-        <div>
-            <label class="block text-sm font-medium text-gray-900 mb-1">Alert Limit <span class="text-red-500">*</span></label>
-            <p class="text-sm text-gray-600 mb-2">Threshold to trigger low-stock warnings.</p>
-            <input wire:model="alert_limit" type="number" step="1" min="0" placeholder="10" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('alert_limit') border-red-500 @enderror">
-            <p class="text-xs text-gray-500 mt-1">Low stock threshold for notifications</p>
-            @error('alert_limit') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-        </div>
+        <!-- Alert Limit & Branch (Side by Side) -->
+        <div class="grid grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-1">Alert Limit <span class="text-red-500">*</span></label>
+                <p class="text-sm text-gray-600 mb-2">Threshold to trigger low-stock warnings.</p>
+                <input wire:model="alert_limit" type="number" step="1" min="0" placeholder="10" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('alert_limit') border-red-500 @enderror">
+                <p class="text-xs text-gray-500 mt-1">Low stock threshold for notifications</p>
+                @error('alert_limit') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
 
-        <!-- Branch Selection -->
-        <div>
-            <label class="block text-sm font-medium text-gray-900 mb-1">Branch <span class="text-red-500">*</span></label>
-            <p class="text-sm text-gray-600 mb-2">Assign this product to a specific branch.</p>
-            @if($canSelectBranch)
-                <select wire:model="branch_id" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('branch_id') border-red-500 @enderror">
-                    <option value="">Select Branch</option>
-                    @foreach($branches as $branch)
-                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                    @endforeach
-                </select>
-                <p class="text-xs text-gray-500 mt-1">Select the branch where this product will be available</p>
-            @else
-                <input type="text" value="{{ $branches->firstWhere('id', $branch_id)?->name ?? 'Unknown Branch' }}" disabled class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100 text-gray-600">
-                <p class="text-xs text-gray-500 mt-1">Your branch is automatically assigned</p>
-            @endif
-            @error('branch_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            <div>
+                <label class="block text-sm font-medium text-gray-900 mb-1">Branch <span class="text-red-500">*</span></label>
+                <p class="text-sm text-gray-600 mb-2">Assign this product to a specific branch.</p>
+                @if($canSelectBranch)
+                    <select wire:model="branch_id" class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('branch_id') border-red-500 @enderror">
+                        <option value="">Select Branch</option>
+                        @foreach($branches as $branch)
+                            <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Select the branch where this product will be available</p>
+                @else
+                    <input type="text" value="{{ $branches->firstWhere('id', $branch_id)?->name ?? 'Unknown Branch' }}" disabled class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-100 text-gray-600">
+                    <p class="text-xs text-gray-500 mt-1">Your branch is automatically assigned</p>
+                @endif
+                @error('branch_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
         </div>
 
         <!-- Submit Button -->

@@ -19,7 +19,7 @@
 <body class="font-sans antialiased bg-gray-50">
     <!-- Top Navigation Bar -->
     <nav class="bg-gray-900 shadow-lg sticky top-0 z-50" x-data="{ mobileMenuOpen: false, userMenuOpen: false }">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Brand -->
                 <div class="flex items-center">
@@ -59,6 +59,11 @@
                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('customers*') ? 'bg-gray-700 text-white' : '' }}">
                             <x-heroicon-o-users class="w-5 h-5 inline-block mr-1" />
                             Customers
+                        </a>
+                        <a href="{{ route('expenses.index') }}" 
+                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('expenses*') ? 'bg-gray-700 text-white' : '' }}">
+                            <x-heroicon-o-banknotes class="w-5 h-5 inline-block mr-1" />
+                            Expenses
                         </a>
                         @if(Auth::user()?->role === 'admin')
                             <a href="{{ route('users.index') }}" 
@@ -119,6 +124,10 @@
                 <a href="{{ route('customers.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('customers*') ? 'bg-gray-700 text-white' : '' }}">
                     <x-heroicon-o-users class="w-5 h-5 inline-block mr-1" />
                     Customers
+                </a>
+                <a href="{{ route('expenses.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('expenses*') ? 'bg-gray-700 text-white' : '' }}">
+                    <x-heroicon-o-banknotes class="w-5 h-5 inline-block mr-1" />
+                    Expenses
                 </a>
                 @if(Auth::user()?->role === 'admin')
                     <a href="{{ route('users.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('users*') ? 'bg-gray-700 text-white' : '' }}">
