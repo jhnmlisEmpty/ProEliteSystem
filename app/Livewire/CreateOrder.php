@@ -16,9 +16,13 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\UpholsteryOrder;
+use Livewire\WithFileUploads;
 
 class CreateOrder extends Component
 {
+    use WithFileUploads;
+
     // Customer Information
     public $customer_id = '';
     public $customer_name = '';
@@ -63,6 +67,20 @@ class CreateOrder extends Component
     public $expenseMyCost = 0;
     public $expenseChargeClient = 0;
     public $expenseBillable = false;
+
+    // Upholstery form
+    public $upholsteryYearModel = '';
+    public $upholsteryInstallationDate = '';
+    public $upholsteryServices = [
+        'seat_cover' => false,
+        'ceiling' => false,
+        'sidings' => false,
+        'rubber_mattings' => false,
+        'front_mattings' => false,
+    ];
+    public $upholsteryDescription = '';
+    public $upholsteryPhoto;
+    public $upholsteryTotalAmount = 0;
 
     // Quick Payment
     public $showPaymentForm = false;
@@ -334,6 +352,87 @@ class CreateOrder extends Component
         ];
 
         $this->recalculate();
+    }
+
+    public function addUpholstery(): void
+    {
+        $this->validate([
+            'upholsteryYearModel' => 'required|string',
+            'upholsteryInstallationDate' => 'required|date',
+            'upholsteryTotalAmount' => 'required|integer|min:1',
+        ], [
+            'upholsteryYearModel.required' => 'Year model is required',
+            'upholsteryInstallationDate.required' => 'Installation date is required',
+            'upholsteryTotalAmount.required' => 'Total amount is required',
+            'upholsteryTotalAmount.min' => 'Total amount must be at least 1',
+        ]);
+
+        // Check if at least one service is selected
+        $hasService = false;
+        foreach ($this->upholsteryServices as $service => $selected) {
+            if ($selected) {
+                $hasService = true;
+                break;
+            }
+        }
+
+        if (!$hasService) {
+            $this->addError('upholsteryServices', 'Please select at least one service');
+            return;
+        }
+
+        $itemId = 'upholstery_' . time();
+
+        // Get selected services labels
+        $serviceLabels = [
+            'seat_cover' => 'Seat Cover',
+            'ceiling' => 'Ceiling',
+            'sidings' => 'Sidings',
+            'rubber_mattings' => 'Rubber Mattings',
+            'front_mattings' => 'Front Mattings',
+        ];
+
+        $selectedServices = [];
+        foreach ($this->upholsteryServices as $key => $selected) {
+            if ($selected) {
+                $selectedServices[] = $serviceLabels[$key];
+            }
+        }
+
+        $this->cartItems[$itemId] = [
+            'id' => $itemId,
+            'type' => 'upholstery',
+            'name' => 'Upholstery - ' . $this->upholsteryYearModel . ' (' . implode(', ', $selectedServices) . ')',
+            'year_model' => $this->upholsteryYearModel,
+            'installation_date' => $this->upholsteryInstallationDate,
+            'services' => $this->upholsteryServices,
+            'description' => $this->upholsteryDescription,
+            'photo' => $this->upholsteryPhoto,
+            'unit_price' => $this->upholsteryTotalAmount,
+            'total_price' => $this->upholsteryTotalAmount,
+            'quantity' => 1,
+            'created_at' => now(),
+        ];
+
+        $this->recalculate();
+        $this->clearUpholsteryForm();
+    }
+
+    public function clearUpholsteryForm(): void
+    {
+        $this->upholsteryYearModel = '';
+        $this->upholsteryInstallationDate = '';
+        $this->upholsteryServices = [
+            'seat_cover' => false,
+            'ceiling' => false,
+            'sidings' => false,
+            'rubber_mattings' => false,
+            'front_mattings' => false,
+        ];
+        $this->upholsteryDescription = '';
+        $this->upholsteryPhoto = null;
+        $this->upholsteryTotalAmount = 0;
+        $this->resetErrorBag();
     }
 
     public function addExpense(): void
@@ -667,6 +766,42 @@ class CreateOrder extends Component
 
                         $totalGross += $itemRevenue;
                         // $totalCost += $itemCost; Excluding service labor cost from total cost for now
+                    } elseif ($item['type'] === 'upholstery') {
+                        $itemRevenue = (int) $item['unit_price'];
+                        
+                        // Upload photo if provided
+                        $photoPath = null;
+                        if (isset($item['photo']) && $item['photo']) {
+                            $photoPath = $item['photo']->store('upholstery-photos', 'public');
+                        }
+                        
+                        // Create the UpholsteryOrder record
+                        $upholstery = UpholsteryOrder::create([
+                            'order_id' => $order->id,
+                            'unit_type' => $this->newCustomerVehicleType ?? 'Unknown',
+                            'unit_year_model' => $item['year_model'],
+                            'unit_color' => '',  // Can be added later if needed
+                            'services' => $item['services'],
+                            'description' => $item['description'] ?? '',
+                            'photo_path' => $photoPath,
+                            'installation_date' => $item['installation_date'],
+                            'downpayment' => 0,  // Will be updated after payments
+                            'balance' => $itemRevenue,  // Will be updated after discount and payments
+                        ]);
+                        
+                        // Create OrderItem linked to the upholstery
+                        OrderItem::create([
+                            'order_id' => $order->id,
+                            'product_id' => null,
+                            'service_id' => null,
+                            'upholstery_id' => $upholstery->id,
+                            'quantity' => 1,
+                            'unit_price' => $itemRevenue,
+                            'total_price' => $itemRevenue,
+                        ]);
+
+                        $totalGross += $itemRevenue;
+                        // Upholstery has no direct cost in this model
                     } elseif ($item['type'] === 'expense') {
                         $expenseCost = (int) $item['my_cost'];
                         $expenseCharge = (int) ($item['is_billable'] ? $item['charge_client'] : 0);
@@ -696,7 +831,8 @@ class CreateOrder extends Component
                     'net_income' => ($totalGross - $this->discounted_amount) - $totalCost,
                 ]);
 
-                // Save quick payments if any
+                // Calculate total paid from quick payments
+                $totalPaid = 0;
                 if (!empty($this->quickPayments)) {
                     foreach ($this->quickPayments as $payment) {
                         Payment::create([
@@ -706,16 +842,19 @@ class CreateOrder extends Component
                             'reference' => $payment['note'],
                             'paid_at' => now(),
                         ]);
+                        $totalPaid += $payment['amount'];
                     }
                     
                     // Update payment status based on total paid
-                    $totalPaid = collect($this->quickPayments)->sum('amount');
                     if ($totalPaid >= $this->total_due) {
                         $order->update(['payment_status' => 'paid']);
                     } elseif ($totalPaid > 0) {
                         $order->update(['payment_status' => 'partial']);
                     }
                 }
+
+                // Update upholstery balance after payments
+                $this->updateUpholsteryBalances($order, $totalPaid);
 
                 return $order->id;
             });
@@ -778,6 +917,48 @@ class CreateOrder extends Component
         }
 
         return $crewMembers;
+    }
+
+    /**
+     * Update upholstery balance based on order total and payments
+     */
+    private function updateUpholsteryBalances($order, $totalPaid)
+    {
+        $upholsteryItems = OrderItem::where('order_id', $order->id)
+            ->where('upholstery_id', '!=', null)
+            ->with('upholstery')
+            ->get();
+
+        if ($upholsteryItems->isEmpty()) {
+            return;
+        }
+
+        $orderTotalGross = $order->total_gross;
+        $orderTotalAmount = $order->total_amount; // After discount
+
+        // Update each upholstery record proportionally
+        foreach ($upholsteryItems as $item) {
+            if ($item->upholstery) {
+                // Calculate this upholstery item's proportion of the order
+                $upholsteryProportion = $orderTotalGross > 0 
+                    ? $item->total_price / $orderTotalGross 
+                    : 0;
+
+                // Calculate upholstery amount after discount
+                $upholsteryAfterDiscount = $upholsteryProportion * $orderTotalAmount;
+
+                // Calculate how much has been paid towards this upholstery
+                $upholsteryPaidAmount = $upholsteryProportion * $totalPaid;
+
+                // Calculate remaining balance
+                $upholsteryBalance = max(0, $upholsteryAfterDiscount - $upholsteryPaidAmount);
+
+                $item->upholstery->update([
+                    'balance' => (int) round($upholsteryBalance),
+                    'downpayment' => (int) round($upholsteryPaidAmount),
+                ]);
+            }
+        }
     }
 
     /**
