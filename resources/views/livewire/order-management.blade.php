@@ -339,7 +339,9 @@
                             </div>
                             <div class="flex gap-2">
                                 <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg font-medium transition">View</a>
-                                <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg font-medium transition">Edit</a>
+                                @if(auth()->user()->role === 'admin')
+                                    <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg font-medium transition">Edit</a>
+                                @endif
                             </div>
                         </div>
                     @empty
