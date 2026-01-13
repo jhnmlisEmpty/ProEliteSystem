@@ -14,6 +14,7 @@ class OrderItem extends Model
         'order_id',
         'product_id',
         'service_id',
+        'upholstery_id',
         'quantity',
         'unit_price',
         'total_price',
@@ -41,6 +42,11 @@ class OrderItem extends Model
         return $this->belongsTo(Service::class);
     }
 
+    public function upholstery(): BelongsTo
+    {
+        return $this->belongsTo(UpholsteryOrder::class, 'upholstery_id');
+    }
+
     // Accessors
     public function getItemNameAttribute()
     {
@@ -49,6 +55,9 @@ class OrderItem extends Model
         }
         if ($this->service_id) {
             return $this->service->name ?? 'Unknown Service';
+        }
+        if ($this->upholstery_id) {
+            return $this->upholstery->title ?? 'Unknown Upholstery';
         }
         return 'Unknown Item';
     }
@@ -60,6 +69,9 @@ class OrderItem extends Model
         }
         if ($this->service_id) {
             return 'service';
+        }
+        if ($this->upholstery_id) {
+            return 'upholstery';
         }
         return 'unknown';
     }

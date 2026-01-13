@@ -23,69 +23,72 @@
             <div class="flex items-center justify-between h-16">
                 <!-- Brand -->
                 <div class="flex items-center">
-                    <a href="/" class="flex items-center space-x-2">
-                        <img src="{{ asset('logo.png') }}" alt="PRO ELITE" class="h-8 w-auto">
+                    <a href="/" class="flex items-center space-x-1">
+                        <img src="{{ asset('logo.png') }}" alt="PRO ELITE" class="h-6 w-auto">
                         <div>
-                            <span class="text-md font-bold text-yellow-400 italic tracking-tight block">PRO ELITE SYSTEM - {{ optional(Auth::user()->branch)->name ?? 'Overall' }}</span>
+                            <span class="text-xs font-bold text-yellow-400 italic tracking-tight block">PRO ELITE SYSTEM - {{ optional(Auth::user()->branch)->name ?? 'Overall' }}</span>
                         </div>
                     </a>
                 </div>
 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:block">
-                    <div class="ml-10 flex items-baseline space-x-4">
+                    <div class="ml-10 flex items-baseline space-x-2">
                         @if(Auth::user()?->role !== 'order_creator')
                             <a href="/" 
-                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('/') ? 'bg-gray-700 text-white' : '' }}">
-                                <x-heroicon-o-home class="w-5 h-5 inline-block mr-1" />
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('/') ? 'bg-gray-700 text-white' : '' }}">
+                                <x-heroicon-o-home class="w-4 h-4 inline-block mr-1" />
                                 Dashboard
                             </a>
                         @endif
                         
                         <a href="{{ route('orders.index') }}" 
-                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('orders*') ? 'bg-gray-700 text-white' : '' }}">
-                            <x-heroicon-o-shopping-cart class="w-5 h-5 inline-block mr-1" />
+                           class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('orders*') ? 'bg-gray-700 text-white' : '' }}">
+                            <x-heroicon-o-shopping-cart class="w-4 h-4 inline-block mr-1" />
                             Orders
                         </a>
                        
                         @if(Auth::user()?->role !== 'order_creator')
                             <a href="{{ route('products.index') }}" 
-                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
-                                <x-heroicon-o-cube class="w-5 h-5 inline-block mr-1" />
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
+                                <x-heroicon-o-cube class="w-4 h-4 inline-block mr-1" />
                                 Products
                             </a>
                             <a href="{{ route('services.index') }}" 
-                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('services*') ? 'bg-gray-700 text-white' : '' }}">
-                                <x-heroicon-o-wrench-screwdriver class="w-5 h-5 inline-block mr-1" />
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('services*') ? 'bg-gray-700 text-white' : '' }}">
+                                <x-heroicon-o-wrench-screwdriver class="w-4 h-4 inline-block mr-1" />
                                 Services
                             </a>
                             <a href="{{ route('customers.index') }}" 
-                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('customers*') ? 'bg-gray-700 text-white' : '' }}">
-                                <x-heroicon-o-users class="w-5 h-5 inline-block mr-1" />
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('customers*') ? 'bg-gray-700 text-white' : '' }}">
+                                <x-heroicon-o-users class="w-4 h-4 inline-block mr-1" />
                                 Customers
                             </a>
                             <a href="{{ route('expenses.index') }}" 
-                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('expenses*') ? 'bg-gray-700 text-white' : '' }}">
-                                <x-heroicon-o-banknotes class="w-5 h-5 inline-block mr-1" />
+                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('expenses*') ? 'bg-gray-700 text-white' : '' }}">
+                                <x-heroicon-o-banknotes class="w-4 h-4 inline-block mr-1" />
                                 Expenses
                             </a>
                             @if(Auth::user()?->role === 'admin')
                                 <a href="{{ route('users.index') }}" 
-                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('users*') ? 'bg-gray-700 text-white' : '' }}">
-                                    <x-heroicon-o-identification class="w-5 h-5 inline-block mr-1" />
+                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('users*') ? 'bg-gray-700 text-white' : '' }}">
+                                    <x-heroicon-o-identification class="w-4 h-4 inline-block mr-1" />
                                     Users
                                 </a>
                                 <a href="{{ route('branches.index') }}" 
-                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition {{ request()->is('branches*') ? 'bg-gray-700 text-white' : '' }}">
-                                    <x-heroicon-o-building-office class="w-5 h-5 inline-block mr-1" />
+                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('branches*') ? 'bg-gray-700 text-white' : '' }}">
+                                    <x-heroicon-o-building-office class="w-4 h-4 inline-block mr-1" />
                                     Branches
                                 </a>
                             @endif
                         @endif
-                        <a href="{{ route('orders.create') }}" class="text-white bg-blue-500 hover:bg-blue-700 block px-3 py-2 rounded-md text-base font-medium {{ request()->is('orders/create') ? 'bg-blue-700' : '' }}">
-                            <x-heroicon-o-plus class="w-5 h-5 inline-block mr-1" />
-                            Create Order
-                        </a>                       
+                        
+                        @if(Auth::user()?->role === 'order_creator')
+                            <a href="{{ route('orders.create') }}" class="text-white bg-blue-500 hover:bg-blue-700 px-2 py-1 rounded-md text-xs font-medium transition">
+                                <x-heroicon-o-plus class="w-4 h-4 inline-block mr-1" />
+                                Create Order
+                            </a>
+                        @endif
                     </div>
                 </div>
 
@@ -93,8 +96,8 @@
                 <div class="hidden md:block">
                     <form method="POST" action="{{ route('logout') }}" class="inline">
                         @csrf
-                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm font-medium transition flex items-center">
-                            <x-heroicon-o-arrow-left-on-rectangle class="w-5 h-5 mr-1" />
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-md text-xs font-medium transition flex items-center">
+                            <x-heroicon-o-arrow-left-on-rectangle class="w-4 h-4 mr-1" />
                             Logout
                         </button>
                     </form>
@@ -115,55 +118,57 @@
         <div class="md:hidden" x-show="mobileMenuOpen" style="display: none;">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                 @if(Auth::user()?->role !== 'order_creator')
-                    <a href="/" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('/') ? 'bg-gray-700 text-white' : '' }}">
-                        <x-heroicon-o-home class="w-5 h-5 inline-block mr-1" />
+                    <a href="/" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-2 py-1 rounded-md text-xs font-medium {{ request()->is('/') ? 'bg-gray-700 text-white' : '' }}">
+                        <x-heroicon-o-home class="w-4 h-4 inline-block mr-1" />
                         Dashboard
                     </a>
                 @endif
-                <a href="{{ route('orders.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('orders*') ? 'bg-gray-700 text-white' : '' }}">
-                    <x-heroicon-o-shopping-cart class="w-5 h-5 inline-block mr-1" />
+                <a href="{{ route('orders.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-2 py-1 rounded-md text-xs font-medium {{ request()->is('orders*') ? 'bg-gray-700 text-white' : '' }}">
+                    <x-heroicon-o-shopping-cart class="w-4 h-4 inline-block mr-1" />
                     Orders
                 </a>
                 @if(Auth::user()?->role !== 'order_creator')
-                    <a href="{{ route('products.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
-                        <x-heroicon-o-cube class="w-5 h-5 inline-block mr-1" />
+                    <a href="{{ route('products.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-2 py-1 rounded-md text-xs font-medium {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
+                        <x-heroicon-o-cube class="w-4 h-4 inline-block mr-1" />
                         Products
                     </a>
-                    <a href="{{ route('services.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('services*') ? 'bg-gray-700 text-white' : '' }}">
-                        <x-heroicon-o-wrench-screwdriver class="w-5 h-5 inline-block mr-1" />
+                    <a href="{{ route('services.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-2 py-1 rounded-md text-xs font-medium {{ request()->is('services*') ? 'bg-gray-700 text-white' : '' }}">
+                        <x-heroicon-o-wrench-screwdriver class="w-4 h-4 inline-block mr-1" />
                         Services
                     </a>
-                    <a href="{{ route('customers.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('customers*') ? 'bg-gray-700 text-white' : '' }}">
-                        <x-heroicon-o-users class="w-5 h-5 inline-block mr-1" />
+                    <a href="{{ route('customers.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-2 py-1 rounded-md text-xs font-medium {{ request()->is('customers*') ? 'bg-gray-700 text-white' : '' }}">
+                        <x-heroicon-o-users class="w-4 h-4 inline-block mr-1" />
                         Customers
                     </a>
-                    <a href="{{ route('expenses.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('expenses*') ? 'bg-gray-700 text-white' : '' }}">
-                        <x-heroicon-o-banknotes class="w-5 h-5 inline-block mr-1" />
+                    <a href="{{ route('expenses.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-2 py-1 rounded-md text-xs font-medium {{ request()->is('expenses*') ? 'bg-gray-700 text-white' : '' }}">
+                        <x-heroicon-o-banknotes class="w-4 h-4 inline-block mr-1" />
                         Expenses
                     </a>
                     @if(Auth::user()?->role === 'admin')
-                        <a href="{{ route('users.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('users*') ? 'bg-gray-700 text-white' : '' }}">
-                            <x-heroicon-o-identification class="w-5 h-5 inline-block mr-1" />
+                        <a href="{{ route('users.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-2 py-1 rounded-md text-xs font-medium {{ request()->is('users*') ? 'bg-gray-700 text-white' : '' }}">
+                            <x-heroicon-o-identification class="w-4 h-4 inline-block mr-1" />
                             Users
                         </a>
-                        <a href="{{ route('branches.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium {{ request()->is('branches*') ? 'bg-gray-700 text-white' : '' }}">
-                            <x-heroicon-o-building-office class="w-5 h-5 inline-block mr-1" />
+                        <a href="{{ route('branches.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-2 py-1 rounded-md text-xs font-medium {{ request()->is('branches*') ? 'bg-gray-700 text-white' : '' }}">
+                            <x-heroicon-o-building-office class="w-4 h-4 inline-block mr-1" />
                             Branches
                         </a>
                     @endif
                 @endif
-                <a href="{{ route('orders.create') }}" class="text-white bg-blue-500 hover:bg-blue-700 block px-3 py-2 rounded-md text-base font-medium {{ request()->is('orders/create') ? 'bg-blue-700' : '' }}">
-                    <x-heroicon-o-plus class="w-5 h-5 inline-block mr-1" />
-                    Create Order
-                </a>
+                @if(Auth::user()?->role === 'order_creator')
+                    <a href="{{ route('orders.create') }}" class="text-white bg-blue-500 hover:bg-blue-700 block px-2 py-1 rounded-md text-xs font-medium {{ request()->is('orders/create') ? 'bg-blue-700' : '' }}">
+                        <x-heroicon-o-plus class="w-4 h-4 inline-block mr-1" />
+                        Create Order
+                    </a>
+                @endif
 
                 <hr class="my-2 border-gray-700">
-                <div class="px-3 py-2">
-                    <p class="text-gray-300 text-sm font-medium mb-2">{{ Auth::user()->name }}</p>
+                <div class="px-2 py-1">
+                    <p class="text-gray-300 text-xs font-medium mb-2">{{ Auth::user()->name }}</p>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="w-full text-left text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition">
-                            <x-heroicon-o-arrow-left-on-rectangle class="w-5 h-5 inline-block mr-1" />
+                        <button type="submit" class="w-full text-left text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition">
+                            <x-heroicon-o-arrow-left-on-rectangle class="w-4 h-4 inline-block mr-1" />
                             Logout
                         </button>
                     </form>

@@ -316,6 +316,101 @@
                 </div>
             @endif
 
+            {{-- Upholstery Services --}}
+            @if($order->orderItems->where('upholstery_id', '!=', null)->count() > 0)
+                <div class="bg-white border border-gray-200">
+                    <div class="px-6 py-3 border-b border-gray-200 bg-purple-50 border-purple-200">
+                        <h2 class="text-sm font-semibold text-purple-700 uppercase tracking-wide">Upholstery Services</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-6">
+                            @foreach($order->orderItems->where('upholstery_id', '!=', null) as $item)
+                                @php
+                                    $upholstery = $item->upholstery;
+                                @endphp
+                                <div class="border border-purple-100 rounded-lg p-4 bg-purple-50/30">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex-1">
+                                            <h3 class="font-semibold text-gray-900 text-lg">{{ $upholstery->unit_type ?? 'N/A' }} - {{ $upholstery->unit_year_model }}</h3>
+                                            @if($upholstery->unit_color)
+                                                <p class="text-sm text-gray-600 mt-1">Color: {{ $upholstery->unit_color }}</p>
+                                            @endif
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-bold text-gray-900 text-xl">₱{{ number_format($item->total_price) }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-600 uppercase mb-2">Installation Date</p>
+                                            <p class="text-sm text-gray-900">{{ $upholstery->installation_date ? $upholstery->installation_date->format('M d, Y') : 'N/A' }}</p>
+                                        </div>
+                                        
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-600 uppercase mb-2">Services Included</p>
+                                            <div class="flex flex-wrap gap-2">
+                                                @if($upholstery->services)
+                                                    @foreach($upholstery->services as $key => $value)
+                                                        @if($value)
+                                                            @php
+                                                                $serviceLabels = [
+                                                                    'seat_cover' => 'Seat Cover',
+                                                                    'ceiling' => 'Ceiling',
+                                                                    'sidings' => 'Sidings',
+                                                                    'rubber_mattings' => 'Rubber Mattings',
+                                                                    'front_mattings' => 'Front Mattings',
+                                                                ];
+                                                            @endphp
+                                                            <span class="inline-flex items-center px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded border border-purple-200">
+                                                                {{ $serviceLabels[$key] ?? $key }}
+                                                            </span>
+                                                        @endif
+                                                    @endforeach
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @if($upholstery->description)
+                                        <div class="mb-4">
+                                            <p class="text-xs font-medium text-gray-600 uppercase mb-1">Description</p>
+                                            <p class="text-sm text-gray-700 bg-white p-3 rounded border border-gray-200">{{ $upholstery->description }}</p>
+                                        </div>
+                                    @endif
+
+                                    @if($upholstery->photo_path)
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-600 uppercase mb-2">Photo</p>
+                                            <img src="{{ asset('storage/' . $upholstery->photo_path) }}" alt="Upholstery Photo" class="h-32 w-auto rounded border border-gray-200 shadow-sm">
+                                        </div>
+                                    @endif
+
+                                    @if($upholstery->downpayment > 0 || $upholstery->balance > 0)
+                                        <div class="mt-4 pt-4 border-t border-purple-200">
+                                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                                @if($upholstery->downpayment > 0)
+                                                    <div>
+                                                        <p class="text-xs text-gray-600">Downpayment</p>
+                                                        <p class="font-semibold text-gray-900">₱{{ number_format($upholstery->downpayment) }}</p>
+                                                    </div>
+                                                @endif
+                                                @if($upholstery->balance > 0)
+                                                    <div>
+                                                        <p class="text-xs text-gray-600">Balance</p>
+                                                        <p class="font-semibold text-gray-900">₱{{ number_format($upholstery->balance) }}</p>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- Misc. Expenses --}}
             @if($order->expenses->count() > 0)
                 <div class="bg-white border border-gray-200">

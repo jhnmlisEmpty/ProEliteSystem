@@ -129,6 +129,10 @@
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
                         Services
                     </button>
+                    <button wire:click="setTab('upholstery')" class="flex-1 px-4 py-3 rounded-md font-medium transition {{ $activeTab === 'upholstery' ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V7a2 2 0 012-2h6a2 2 0 012 2v2M7 11a2 2 0 11-4 0 2 2 0 014 0zm14 0a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        Upholstery
+                    </button>
                     <!-- <button wire:click="setTab('expenses')" class="flex-1 px-4 py-3 rounded-md font-medium transition {{ $activeTab === 'expenses' ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         Expenses
@@ -262,37 +266,105 @@
                             @endif
                         </div>
                     </div>
-                @else
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-2">Item Description</label>
-                            <input type="text" wire:model="expenseDescription" placeholder="e.g., Rush Fee, Special Bulb" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-red-50 p-3 rounded border border-red-100">
-                                <label class="block text-xs font-bold text-red-800 uppercase mb-1">My Cost</label>
-                                <div class="relative">
-                                    <span class="absolute left-2 top-1.5 text-red-400 text-sm">₱</span>
-                                    <input type="number" min="0" step="0.01" wire:model="expenseMyCost" placeholder="0.00" class="w-full pl-6 pr-3 py-2 text-sm border border-red-200 rounded focus:outline-none focus:border-red-500 bg-white text-red-600 font-medium">
-                                </div>
+
+                {{-- UPHOLSTERY TAB --}}
+                @elseif($activeTab === 'upholstery')
+                    {{-- UPHOLSTERY TAB --}}
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V7a2 2 0 012-2h6a2 2 0 012 2v2M7 11a2 2 0 11-4 0 2 2 0 014 0zm14 0a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            Upholstery Service
+                        </h3>
+
+                        <div class="space-y-4">
+                            {{-- Year Model --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Year Model <span class="text-red-500">*</span></label>
+                                <input type="text" wire:model="upholsteryYearModel" placeholder="e.g., 2020 Toyota Vios" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                @error('upholsteryYearModel') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                             </div>
-                            <div class="bg-blue-50 p-3 rounded border border-blue-100">
-                                <div class="flex justify-between mb-1">
-                                    <label class="block text-xs font-bold text-blue-800 uppercase">Charge Client</label>
-                                    <label class="flex items-center gap-1 cursor-pointer text-[10px] text-blue-600">
-                                        <input type="checkbox" class="w-3 h-3 text-blue-600 rounded" wire:click="$toggle('expenseBillable')">
-                                        <span>Billable</span>
+
+                            {{-- Installation Date --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Initial Date of Installation <span class="text-red-500">*</span></label>
+                                <input type="date" wire:model="upholsteryInstallationDate" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                @error('upholsteryInstallationDate') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
+                            </div>
+
+                            {{-- Services Checkboxes --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Services <span class="text-red-500">*</span></label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" wire:model="upholsteryServices.seat_cover" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                        <span class="text-sm text-gray-700">Seat Cover</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" wire:model="upholsteryServices.ceiling" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                        <span class="text-sm text-gray-700">Ceiling</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" wire:model="upholsteryServices.sidings" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                        <span class="text-sm text-gray-700">Sidings</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" wire:model="upholsteryServices.rubber_mattings" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                        <span class="text-sm text-gray-700">Rubber Mattings</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" wire:model="upholsteryServices.front_mattings" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                        <span class="text-sm text-gray-700">Front Mattings</span>
                                     </label>
                                 </div>
-                                <div class="relative">
-                                    <span class="absolute left-2 top-1.5 text-blue-400 text-sm">₱</span>
-                                    <input type="number" min="0" step="0.01" wire:model="expenseChargeClient" placeholder="0.00" class="w-full pl-6 pr-3 py-2 text-sm border border-blue-200 rounded focus:outline-none focus:border-blue-500 bg-white text-blue-600 font-bold" @disabled(!$expenseBillable)>
-                                </div>
+                                @error('upholsteryServices') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                             </div>
+
+                            {{-- Description --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <textarea wire:model="upholsteryDescription" rows="3" placeholder="Additional details or special requests..." class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                            </div>
+
+                            {{-- Photo Upload --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Photo (Optional)</label>
+                                <input type="file" wire:model="upholsteryPhoto" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                @error('upholsteryPhoto') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
+                                
+                                <div wire:loading wire:target="upholsteryPhoto" class="mt-2 text-sm text-gray-600">
+                                    Uploading photo...
+                                </div>
+
+                                @if ($upholsteryPhoto)
+                                    <div class="mt-2">
+                                        <p class="text-xs text-gray-600 mb-1">Preview:</p>
+                                        <img src="{{ $upholsteryPhoto->temporaryUrl() }}" alt="Preview" class="h-32 w-32 object-cover rounded border border-gray-300 shadow-sm">
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- Total Amount --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Total Amount <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2 text-gray-400">₱</span>
+                                    <input type="number" min="1" wire:model="upholsteryTotalAmount" placeholder="0" class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold text-blue-700">
+                                </div>
+                                @error('upholsteryTotalAmount') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
+                            </div>
+
+                            {{-- Add Button --}}
+                            <button type="button" wire:click="addUpholstery" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition">
+                                + Add Upholstery to Order
+                            </button>
+
+                            {{-- Clear Button --}}
+                            @if($upholsteryYearModel || $upholsteryInstallationDate || $upholsteryTotalAmount > 0)
+                                <button type="button" wire:click="clearUpholsteryForm" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 rounded-md transition text-sm">
+                                    Clear Form
+                                </button>
+                            @endif
                         </div>
-                        <button type="button" wire:click="addExpense" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-2 rounded text-sm transition">
-                            Add Expense
-                        </button>
                     </div>
                 @endif
             </div>
@@ -374,6 +446,35 @@
                                                     @endphp
                                                     {{ $crewNames }}
                                                 </p>
+                                            @endif
+                                        </div>
+                                        <div class="text-right ml-2">
+                                            <button wire:click="removeItemFromCart('{{ $key }}')" class="text-red-600 hover:text-red-800 mb-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            </button>
+                                            <p class="font-bold text-gray-900">₱{{ number_format($item['total_price'], 2) }}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- UPHOLSTERY SECTION --}}
+                    @php
+                        $summaryUpholstery = array_filter($cartItems, fn($item) => $item['type'] === 'upholstery');
+                    @endphp
+                    @if(!empty($summaryUpholstery))
+                        <div>
+                            <h3 class="text-xs font-bold text-purple-600 uppercase tracking-wide mb-2">UPHOLSTERY</h3>
+                            <div class="space-y-2">
+                                @foreach($summaryUpholstery as $key => $item)
+                                    <div class="flex justify-between items-start pb-2 border-b border-gray-100">
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-900">{{ $item['name'] }}</p>
+                                            <p class="text-xs text-gray-600">Installation: {{ date('M d, Y', strtotime($item['installation_date'])) }}</p>
+                                            @if($item['description'])
+                                                <p class="text-xs text-gray-500 italic mt-1">{{ Str::limit($item['description'], 50) }}</p>
                                             @endif
                                         </div>
                                         <div class="text-right ml-2">

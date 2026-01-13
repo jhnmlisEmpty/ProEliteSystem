@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\UpholsteryOrder;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 
@@ -50,6 +51,7 @@ class OrderView extends Component
             'customer',
             'orderItems.product',
             'orderItems.service',
+            'orderItems.upholstery',
             'payments',
             'expenses',
             'serviceAssignments.employee',
@@ -101,22 +103,69 @@ class OrderView extends Component
         }
 
         try {
-            Payment::create([
-                'order_id' => $this->order->id,
-                'amount' => $this->paymentAmount,
-                'method' => $this->paymentMethod,
-                'reference' => $this->paymentNote,
-                'paid_at' => now(),
-            ]);
+            DB::transaction(function () {
+                Payment::create([
+                    'order_id' => $this->order->id,
+                    'amount' => $this->paymentAmount,
+                    'method' => $this->paymentMethod,
+                    'reference' => $this->paymentNote,
+                    'paid_at' => now(),
+                ]);
 
-            // Update order payment status
-            $this->updatePaymentStatus();
+                // Update order payment status
+                $this->updatePaymentStatus();
+
+                // Update upholstery balance if order has upholstery
+                $this->updateUpholsteryBalance();
+            });
 
             session()->flash('success', 'Payment of ₱' . number_format($this->paymentAmount) . ' recorded successfully!');
             $this->resetPaymentForm();
             $this->loadOrder();
         } catch (\Exception $e) {
             $this->addError('submit', 'Failed to record payment: ' . $e->getMessage());
+        }
+    }
+
+    private function updateUpholsteryBalance()
+    {
+        // Get all upholstery items for this order
+        $upholsteryItems = $this->order->orderItems()
+            ->where('upholstery_id', '!=', null)
+            ->with('upholstery')
+            ->get();
+
+        if ($upholsteryItems->isEmpty()) {
+            return;
+        }
+
+        // Calculate total paid (payment already created in DB, so getTotalPaid includes it)
+        $totalPaid = $this->getTotalPaid();
+        $orderTotalGross = $this->order->total_gross;
+        $orderTotalAmount = $this->order->total_amount; // After discount
+
+        // Update each upholstery record's balance proportionally
+        foreach ($upholsteryItems as $item) {
+            if ($item->upholstery) {
+                // Calculate this upholstery item's proportion of the order
+                $upholsteryProportion = $orderTotalGross > 0 
+                    ? $item->total_price / $orderTotalGross 
+                    : 0;
+
+                // Calculate upholstery amount after discount
+                $upholsteryAfterDiscount = $upholsteryProportion * $orderTotalAmount;
+
+                // Calculate how much has been paid towards this upholstery
+                $upholsteryPaidAmount = $upholsteryProportion * $totalPaid;
+
+                // Calculate remaining balance
+                $upholsteryBalance = max(0, $upholsteryAfterDiscount - $upholsteryPaidAmount);
+
+                $item->upholstery->update([
+                    'balance' => (int) round($upholsteryBalance),
+                    'downpayment' => (int) round($upholsteryPaidAmount),
+                ]);
+            }
         }
     }
 
