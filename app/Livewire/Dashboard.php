@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Filter;
 use App\Models\OrderExpense;
+use App\Models\Expense;
 use App\Models\Branch;
 use Carbon\Carbon;
 
@@ -23,11 +24,14 @@ class Dashboard extends Component
 
     // Sales (range)
     public $grossSales = 0; // sum of orders.total_gross
-    public $netSales = 0;   // sum of orders.total_amount
+    public $netSales = 0;   // sum of orders.net_income
+    public $finalNetSales = 0; // netSales - totalBusinessExpenses
+    public $todaySales = 0; // sum of today's orders total_amount
     public $totalProductSales = 0; // sum of order_items total where product
     public $totalServiceSales = 0; // sum of order_items total where service
     public $expenseInternal = 0;   // sum of order_expenses.my_cost
     public $expenseCharged = 0;    // sum of order_expenses.charge_client
+    public $totalBusinessExpenses = 0; // sum of standalone Expense table amounts
 
     // Customer metrics
     public $topCustomers = [];
@@ -44,7 +48,8 @@ class Dashboard extends Component
     public function mount()
     {
         $user = auth()->user();
-        $this->canSelectBranch = $user && $user->role !== 'user';
+        // Only admins can view cross-branch data; others are locked to their branch
+        $this->canSelectBranch = $user && $user->role === 'admin';
 
         $this->branches = Branch::active()->orderBy('name')->get();
         $this->loadOrCreateFilter();
@@ -105,6 +110,13 @@ class Dashboard extends Component
         $this->grossSales = (int) ($ordersRange->sum('total_gross') ?? 0);
         $this->netSales = (int) ($ordersRange->sum('net_income') ?? 0);
 
+        // Today's sales (total order amount)
+        $todayStart = Carbon::today()->startOfDay();
+        $todayEnd = Carbon::today()->endOfDay();
+        $todayOrders = Order::query()->whereBetween('created_at', [$todayStart, $todayEnd]);
+        if ($this->branchId) $todayOrders->where('branch_id', $this->branchId);
+        $this->todaySales = (int) ($todayOrders->sum('total_amount') ?? 0);
+
         $orderItemsRange = OrderItem::whereHas('order', function($q) use ($start, $end){
             $q->whereBetween('created_at', [$start, $end]);
             if ($this->branchId) $q->where('branch_id', $this->branchId);
@@ -118,6 +130,14 @@ class Dashboard extends Component
         });
         $this->expenseInternal = (int) ($expensesRange->sum('my_cost') ?? 0);
         $this->expenseCharged = (int) ($expensesRange->sum('charge_client') ?? 0);
+
+        // Load standalone business expenses
+        $standaloneExpensesRange = Expense::whereBetween('created_at', [$start, $end]);
+        if ($this->branchId) $standaloneExpensesRange->where('branch_id', $this->branchId);
+        $this->totalBusinessExpenses = (int) ($standaloneExpensesRange->sum('amount') ?? 0);
+
+        // Calculate final net sales = net income - business expenses
+        $this->finalNetSales = $this->netSales - $this->totalBusinessExpenses;
     }
 
     private function loadCustomerMetrics()
@@ -189,6 +209,16 @@ class Dashboard extends Component
         ];
     }
 
+    public function switchBranch($branchId)
+    {
+        if (! $this->canSelectBranch) {
+            return;
+        }
+
+        $this->branchId = $branchId === 'all' ? null : $branchId;
+        $this->applyFilters();
+    }
+
     public function applyFilters()
     {
         if (! $this->canSelectBranch) {
@@ -198,14 +228,13 @@ class Dashboard extends Component
         $this->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'branchId' => 'nullable|integer|exists:branches,id',
         ]);
         
         // Store the filter dates in database
         $this->storeFilter();
         
-        // Full page refresh
-        return redirect()->route('dashboard.index');
+        // Force full page reload
+        $this->redirect(route('dashboard.index'), navigate: false);
     }
 
     /**
@@ -213,6 +242,10 @@ class Dashboard extends Component
      */
     private function storeFilter()
     {
+        $branchId = $this->canSelectBranch
+            ? ($this->branchId ?: null)
+            : auth()->user()?->branch_id;
+
         Filter::updateOrCreate(
             [
                 'filter_type' => 'dashboard',
@@ -221,7 +254,7 @@ class Dashboard extends Component
             [
                 'start_date' => $this->start_date,
                 'end_date' => $this->end_date,
-                'branch_id' => $this->branchId ?: null,
+                'branch_id' => $branchId,
             ]
         );
     }

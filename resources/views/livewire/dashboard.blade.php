@@ -11,52 +11,67 @@
             </x-slot>
         </x-page-header>
 
+        @if($canSelectBranch)
         <!-- FILTERS -->
         <div class="mb-4 bg-white rounded-lg shadow p-4">
-            <div class="grid grid-cols-1 {{ $canSelectBranch ? 'md:grid-cols-4' : 'md:grid-cols-3' }} gap-3 items-end">
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">From</label>
-                    <input type="date" wire:model="start_date" class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">To</label>
-                    <input type="date" wire:model="end_date" class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
+            <div class="flex flex-wrap items-end gap-3">
                 @if($canSelectBranch)
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Branch</label>
-                        <select wire:model="branchId" class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">All Branches</option>
-                            @foreach($branches as $branch)
-                                <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                            @endforeach
-                        </select>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="block text-xs font-medium text-gray-700 mb-1 w-full">Branch</span>
+                        <button 
+                            wire:click="switchBranch('all')" 
+                            class="px-4 py-2 rounded-lg text-sm font-medium transition {{ !$branchId ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            All Branches
+                        </button>
+                        @foreach($branches as $branch)
+                            <button 
+                                wire:click="switchBranch({{ $branch->id }})" 
+                                class="px-4 py-2 rounded-lg text-sm font-medium transition {{ $branchId == $branch->id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                {{ $branch->name }}
+                            </button>
+                        @endforeach
                     </div>
                 @endif
-                <div class="flex gap-2  ">
+
+                <div class="flex flex-wrap items-end gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">From</label>
+                        <input type="date" wire:model="start_date" class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">To</label>
+                        <input type="date" wire:model="end_date" class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
                     <button wire:click="applyFilters" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition w-full md:w-auto">
                         Apply Filters
                     </button>
                 </div>
             </div>
-            <p class="text-xs text-gray-500 mt-2">Filters persist in database. Select range and branch, then click Apply.</p>
+            <p class="text-xs text-gray-500 mt-2">Filters persist in database. Select date range and click Apply.</p>
         </div>
 
-        
-
+        <!-- ADMIN-ONLY SECTIONS -->
         <!-- SALES SUMMARY (RANGE) -->
         <div class="mb-4">
             <h2 class="text-sm font-semibold text-gray-900 mb-2">Sales Summary (Filtered Range)</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="bg-white rounded-lg shadow p-3 border-l-4 border-amber-500">
+                    <p class="text-xs text-gray-600 font-medium">Today's Sales</p>
+                    <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($todaySales, 0) }}</p>
+                    <p class="text-xs text-gray-400 mt-1 italic">Orders created today</p>
+                </div>
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-blue-500">
                     <p class="text-xs text-gray-600 font-medium">Gross Sales</p>
                     <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($grossSales, 0) }}</p>
                     <p class="text-xs text-gray-400 mt-1 italic">Sum of order gross totals</p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-green-500">
-                    <p class="text-xs text-gray-600 font-medium">Net Sales</p>
-                    <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($netSales, 0) }}</p>
-                    <p class="text-xs text-gray-400 mt-1 italic">Sum of order net totals</p>
+                    <p class="text-xs text-gray-600 font-medium">Net Sales (After Expenses)</p>
+                    <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($finalNetSales, 0) }}</p>
+                    <p class="text-xs text-gray-400 mt-1 italic">₱{{ number_format($netSales, 0) }} - ₱{{ number_format($totalBusinessExpenses, 0) }} = ₱{{ number_format($finalNetSales, 0) }}</p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-purple-500">
                     <p class="text-xs text-gray-600 font-medium">Inventory Value</p>
@@ -68,7 +83,7 @@
 
         <!-- SALES BREAKDOWN & EXPENSES -->
         <div class="mb-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-3">
                 <div class="bg-white rounded-lg shadow p-3">
                     <p class="text-xs text-gray-600 font-medium">Total Product Sale</p>
                     <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($totalProductSales, 0) }}</p>
@@ -77,13 +92,17 @@
                     <p class="text-xs text-gray-600 font-medium">Total Service Sale</p>
                     <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($totalServiceSales, 0) }}</p>
                 </div>
-                <div class="bg-white rounded-lg shadow p-3">
+                <!-- <div class="bg-white rounded-lg shadow p-3">
                     <p class="text-xs text-gray-600 font-medium">Total Expense (Internal)</p>
                     <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($expenseInternal, 0) }}</p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-3">
                     <p class="text-xs text-gray-600 font-medium">Total Expense (Charged)</p>
                     <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($expenseCharged, 0) }}</p>
+                </div> -->
+                <div class="bg-white rounded-lg shadow p-3">
+                    <p class="text-xs text-gray-600 font-medium">Total Business Expenses</p>
+                    <p class="text-xl font-bold text-red-600 mt-0.5">₱{{ number_format($totalBusinessExpenses, 0) }}</p>
                 </div>
             </div>
         </div>
@@ -108,10 +127,23 @@
                 </div>
             </div>
         </div>
+        @endif
 
-        <!-- INVENTORY & TOP CUSTOMER -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
-            <!-- Stock Alert -->
+        <!-- DAILY SALES SUMMARY (FOR NON-ADMIN) -->
+        @if(!$canSelectBranch)
+        <div class="mb-4">
+            <h2 class="text-sm font-semibold text-gray-900 mb-2">Daily Sales Summary</h2>
+            <div class="bg-white rounded-lg shadow p-3 border-l-4 border-amber-500">
+                <p class="text-xs text-gray-600 font-medium">Today's Sales</p>
+                <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($todaySales, 0) }}</p>
+                <p class="text-xs text-gray-400 mt-1 italic">Total orders created today in your branch</p>
+            </div>
+        </div>
+        @endif
+
+        <!-- STOCK ALERT -->
+        <div class="mb-4">
+            <div class="{{ $canSelectBranch ? 'grid grid-cols-1 lg:grid-cols-2 gap-3' : '' }}">
             <div>
                 <h2 class="text-sm font-semibold text-gray-900 mb-2">Stock Alert</h2>
                 <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -136,6 +168,7 @@
                 </div>
             </div>
 
+            @if($canSelectBranch)
             <!-- Top Customers -->
             <div>
                 <h2 class="text-sm font-semibold text-gray-900 mb-2">Top Customers</h2>
@@ -160,8 +193,11 @@
                     </div>
                 </div>
             </div>
+            @endif
+            </div>
         </div>
 
+        @if($canSelectBranch)
         <!-- TOP PRODUCTS -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <!-- Top Selling Products -->
@@ -189,7 +225,9 @@
                 </div>
             </div>
         </div>
+        @endif
 
+    @if($canSelectBranch)
     <!-- Chart.js Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
@@ -299,4 +337,5 @@
 
         window.addEventListener('livewire:update', () => ChartManager.refresh());
     </script>
+    @endif
 </div>

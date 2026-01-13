@@ -149,7 +149,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="font-medium text-gray-900">{{ $order->customer_name }}</div>
-                                <div class="text-sm text-gray-600">{{ $order->customer->phone ?? 'N/A' }}</div>
+                                <div class="text-sm text-gray-600">{{ $order->customer?->phone ?? 'N/A' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">
@@ -157,9 +157,9 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4">
-                                @if($order->vehicle_type || $order->plate_number)
-                                    <div class="text-sm text-gray-900">{{ $order->vehicle_type }}</div>
-                                    <div class="text-sm text-gray-600">{{ $order->plate_number }}</div>
+                                @if($order->customer && ($order->customer->vehicle_type || $order->customer->plate_number))
+                                    <div class="text-sm text-gray-900">{{ $order->customer->vehicle_type }}</div>
+                                    <div class="text-sm text-gray-600">{{ $order->customer->plate_number }}</div>
                                 @else
                                     <span class="text-gray-400 text-sm">-</span>
                                 @endif
@@ -190,9 +190,11 @@
                             <td class="px-6 py-4">
                                 <div class="flex gap-3">
                                     <a href="{{ route('orders.view', $order->id) }}" class="text-blue-600 hover:text-blue-700 font-medium text-sm">View</a>
-                                    <a href="{{ route('orders.edit', $order->id) }}" class="text-gray-700 hover:text-gray-900 font-medium text-sm">Edit</a>
-                                    @if($order->status === 'pending')
-                                        <button wire:click="delete({{ $order->id }})" wire:confirm="Are you sure you want to delete this order?" class="text-red-600 hover:text-red-700 font-medium text-sm">Delete</button>
+                                    @if(auth()->user()->role === 'admin')
+                                        <a href="{{ route('orders.edit', $order->id) }}" class="text-gray-700 hover:text-gray-900 font-medium text-sm">Edit</a>
+                                        @if($order->status === 'pending')
+                                            <button wire:click="delete({{ $order->id }})" wire:confirm="Are you sure you want to delete this order?" class="text-red-600 hover:text-red-700 font-medium text-sm">Delete</button>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
@@ -251,19 +253,21 @@
                         @endif
                     </div>
 
-                    @if($order->vehicle_type || $order->plate_number)
+                    @if($order->customer && ($order->customer->vehicle_type || $order->customer->plate_number))
                         <div class="text-sm text-gray-600 mb-4 pb-4 border-b border-gray-200">
-                            {{ $order->vehicle_type }} - {{ $order->plate_number }}
+                            {{ $order->customer->vehicle_type }} - {{ $order->customer->plate_number }}
                         </div>
                     @endif
 
                     <div class="flex gap-2">
                         <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium transition">View</a>
-                        @if(in_array($order->status, ['pending','in_progress']))
-                            <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition">Edit</a>
-                        @endif
-                        @if($order->status === 'pending')
-                            <button wire:click="delete({{ $order->id }})" wire:confirm="Are you sure?" class="flex-1 text-center bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition">Delete</button>
+                        @if(auth()->user()->role === 'admin')
+                            @if(in_array($order->status, ['pending','in_progress']))
+                                <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition">Edit</a>
+                            @endif
+                            @if($order->status === 'pending')
+                                <button wire:click="delete({{ $order->id }})" wire:confirm="Are you sure?" class="flex-1 text-center bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition">Delete</button>
+                            @endif
                         @endif
                     </div>
                 </div>
@@ -326,8 +330,8 @@
                                     <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">Paid</span>
                                 @endif
                             </div>
-                            @if($order->vehicle_type || $order->plate_number)
-                                <div class="text-sm text-gray-600 mb-3">{{ $order->vehicle_type }} - {{ $order->plate_number }}</div>
+                            @if($order->customer && ($order->customer->vehicle_type || $order->customer->plate_number))
+                                <div class="text-sm text-gray-600 mb-3">{{ $order->customer->vehicle_type }} - {{ $order->customer->plate_number }}</div>
                             @endif
                             <div class="grid grid-cols-2 gap-2 mb-3">
                                 <button wire:click="updateOrderStatus({{ $order->id }}, 'in_progress')" class="px-2 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition">In Progress</button>
@@ -384,8 +388,8 @@
                                     <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">Paid</span>
                                 @endif
                             </div>
-                            @if($order->vehicle_type || $order->plate_number)
-                                <div class="text-sm text-gray-600 mb-3">{{ $order->vehicle_type }} - {{ $order->plate_number }}</div>
+                            @if($order->customer && ($order->customer->vehicle_type || $order->customer->plate_number))
+                                <div class="text-sm text-gray-600 mb-3">{{ $order->customer->vehicle_type }} - {{ $order->customer->plate_number }}</div>
                             @endif
                             <div class="grid grid-cols-2 gap-2 mb-3">
                                 <button wire:click="updateOrderStatus({{ $order->id }}, 'completed')" class="px-2 py-1.5 text-xs bg-green-600 hover:bg-green-700 text-white rounded font-medium transition">Complete</button>
@@ -393,7 +397,9 @@
                             </div>
                             <div class="flex gap-2">
                                 <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg font-medium transition">View</a>
-                                <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg font-medium transition">Edit</a>
+                                @if(auth()->user()->role === 'admin')
+                                    <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg font-medium transition">Edit</a>
+                                @endif
                             </div>
                         </div>
                     @empty
@@ -442,16 +448,15 @@
                                     <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">Paid</span>
                                 @endif
                             </div>
-                            @if($order->vehicle_type || $order->plate_number)
-                                <div class="text-sm text-gray-600 mb-3">{{ $order->vehicle_type }} - {{ $order->plate_number }}</div>
+                            @if($order->customer && ($order->customer->vehicle_type || $order->customer->plate_number))
+                                <div class="text-sm text-gray-600 mb-3">{{ $order->customer->vehicle_type }} - {{ $order->customer->plate_number }}</div>
                             @endif
-                            <div class="grid grid-cols-2 gap-2 mb-3">
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'in_progress')" class="px-2 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition">In Progress</button>
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'pending')" class="px-2 py-1.5 text-xs bg-yellow-600 hover:bg-yellow-700 text-white rounded font-medium transition">Pending</button>
                             </div>
                             <div class="flex gap-2">
                                 <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg font-medium transition">View</a>
-                                <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg font-medium transition">Edit</a>
+                                @if(auth()->user()->role === 'admin')
+                                    <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg font-medium transition">Edit</a>
+                                @endif
                             </div>
                         </div>
                     @empty

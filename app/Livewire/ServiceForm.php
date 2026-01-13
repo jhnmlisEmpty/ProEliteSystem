@@ -16,25 +16,13 @@ class ServiceForm extends Component
 
     #[Validate('required|integer|min:0')]
     public $base_labor_cost = null;
-    
-    #[Validate('required|exists:branches,id')]
-    public $branch_id;
 
     public function mount(?int $id = null): void
     {
-        // Set default branch based on user role
-        if (!$id) {
-            $user = auth()->user();
-            if ($user->role === 'user') {
-                $this->branch_id = $user->branch_id;
-            }
-        }
-        
         if ($id) {
             $this->service = Service::findOrFail($id);
             $this->name = $this->service->name;
             $this->base_labor_cost = $this->service->base_labor_cost;
-            $this->branch_id = $this->service->branch_id;
         }
     }
 

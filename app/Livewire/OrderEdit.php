@@ -24,8 +24,6 @@ class OrderEdit extends Component
     // Customer Information
     public $customer_id = '';
     public $customer_name = '';
-    public $vehicle_type = '';
-    public $plate_number = '';
     public $customerSearch = '';
     public $branch_id;
 
@@ -47,6 +45,8 @@ class OrderEdit extends Component
     public $newCustomerName = '';
     public $newCustomerPhone = '';
     public $newCustomerAddress = '';
+    public $newCustomerVehicleType = '';
+    public $newCustomerPlateNumber = '';
     public $activeTab = 'products';
 
     // Product selection
@@ -85,8 +85,6 @@ class OrderEdit extends Component
     protected $rules = [
         'customer_id' => 'required|exists:customers,id',
         'customer_name' => 'required|string|min:2',
-        'vehicle_type' => 'nullable|string|max:100',
-        'plate_number' => 'nullable|string|max:20',
         'branch_id' => 'required|exists:branches,id',
     ];
 
@@ -106,14 +104,14 @@ class OrderEdit extends Component
         // Load customer data
         $this->customer_id = $order->customer_id;
         $this->customer_name = $order->customer_name;
-        $this->vehicle_type = $order->vehicle_type ?? '';
-        $this->plate_number = $order->plate_number ?? '';
         $this->branch_id = $order->branch_id;
         
         if ($order->customer) {
             $this->newCustomerName = $order->customer->name;
             $this->newCustomerPhone = $order->customer->phone;
             $this->newCustomerAddress = $order->customer->address;
+            $this->newCustomerVehicleType = $order->customer->vehicle_type;
+            $this->newCustomerPlateNumber = $order->customer->plate_number;
         }
 
         // Load discount
@@ -231,7 +229,6 @@ class OrderEdit extends Component
             ->get();
 
         $services = Service::query()
-            ->when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
             ->when($this->serviceSearch, function ($query) {
                 $query->where('name', 'like', '%' . $this->serviceSearch . '%');
             })
@@ -564,6 +561,8 @@ class OrderEdit extends Component
             $this->newCustomerName = $customer->name;
             $this->newCustomerPhone = $customer->phone;
             $this->newCustomerAddress = $customer->address;
+            $this->newCustomerVehicleType = $customer->vehicle_type;
+            $this->newCustomerPlateNumber = $customer->plate_number;
             $this->customerSearch = '';
         } else {
             $this->addError('customer_id', 'Customer not found or access denied.');
@@ -594,7 +593,9 @@ class OrderEdit extends Component
         $validated = $this->validate([
             'newCustomerName' => 'required|string|min:2',
             'newCustomerPhone' => 'required|string',
-            'newCustomerAddress' => 'required|string',
+            'newCustomerAddress' => 'nullable|string',
+            'newCustomerVehicleType' => 'nullable|string|max:255',
+            'newCustomerPlateNumber' => 'nullable|string|max:255',
         ]);
 
         if ($this->customer_id) {
@@ -604,6 +605,8 @@ class OrderEdit extends Component
                     'name' => $validated['newCustomerName'],
                     'phone' => $validated['newCustomerPhone'],
                     'address' => $validated['newCustomerAddress'],
+                    'vehicle_type' => $validated['newCustomerVehicleType'],
+                    'plate_number' => $validated['newCustomerPlateNumber'],
                 ]);
                 $this->customer_name = $customer->name;
                 $this->customerSearch = '';
@@ -613,6 +616,8 @@ class OrderEdit extends Component
                 'name' => $validated['newCustomerName'],
                 'phone' => $validated['newCustomerPhone'],
                 'address' => $validated['newCustomerAddress'],
+                'vehicle_type' => $validated['newCustomerVehicleType'],
+                'plate_number' => $validated['newCustomerPlateNumber'],
                 'branch_id' => auth()->user()->branch_id,
             ]);
 
@@ -823,8 +828,6 @@ class OrderEdit extends Component
                     'branch_id' => $this->branch_id,
                     'customer_id' => $this->customer_id,
                     'customer_name' => $this->customer_name,
-                    'vehicle_type' => $this->vehicle_type,
-                    'plate_number' => $this->plate_number,
                     'type' => $this->getOrderType(),
                     'discount_type' => $this->discount_type,
                     'discount_value' => $this->discount_value,

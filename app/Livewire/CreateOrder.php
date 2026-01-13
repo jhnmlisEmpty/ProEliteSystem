@@ -22,8 +22,6 @@ class CreateOrder extends Component
     // Customer Information
     public $customer_id = '';
     public $customer_name = '';
-    public $vehicle_type = '';
-    public $plate_number = '';
     public $customerSearch = '';
     public $branch_id;
 
@@ -45,6 +43,8 @@ class CreateOrder extends Component
     public $newCustomerName = '';
     public $newCustomerPhone = '';
     public $newCustomerAddress = '';
+    public $newCustomerVehicleType = '';
+    public $newCustomerPlateNumber = '';
     public $activeTab = 'products';
 
     // Product selection
@@ -79,8 +79,6 @@ class CreateOrder extends Component
     protected $rules = [
         'customer_id' => 'required|exists:customers,id',
         'customer_name' => 'required|string|min:2',
-        'vehicle_type' => 'nullable|string|max:100',
-        'plate_number' => 'nullable|string|max:20',
         'branch_id' => 'required|exists:branches,id',
     ];
 
@@ -96,7 +94,8 @@ class CreateOrder extends Component
     {
         // Set default branch based on user role
         $user = auth()->user();
-        if ($user->role === 'user') {
+        // Automatically select branch for non-admin users
+        if ($user->role !== 'admin') {
             $this->branch_id = $user->branch_id;
         }
     }
@@ -130,7 +129,6 @@ class CreateOrder extends Component
             ->get();
 
         $services = Service::query()
-            ->when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
             ->when($this->serviceSearch, function ($query) {
                 $query->where('name', 'like', '%' . $this->serviceSearch . '%');
             })
@@ -145,7 +143,7 @@ class CreateOrder extends Component
             ->get();
         
         $branches = \App\Models\Branch::where('is_active', true)->orderBy('name')->get();
-        $canSelectBranch = in_array(auth()->user()->role, ['admin', 'manager']);
+        $canSelectBranch = auth()->user()->role === 'admin';
 
         return view('livewire.create-order', [
             'customers' => $customers,
@@ -448,6 +446,8 @@ class CreateOrder extends Component
             $this->newCustomerName = $customer->name;
             $this->newCustomerPhone = $customer->phone;
             $this->newCustomerAddress = $customer->address;
+            $this->newCustomerVehicleType = $customer->vehicle_type;
+            $this->newCustomerPlateNumber = $customer->plate_number;
             $this->customerSearch = '';
         } else {
             $this->addError('customer_id', 'Customer not found or access denied.');
@@ -478,7 +478,9 @@ class CreateOrder extends Component
         $validated = $this->validate([
             'newCustomerName' => 'required|string|min:2',
             'newCustomerPhone' => 'required|string',
-            'newCustomerAddress' => 'required|string',
+            'newCustomerAddress' => 'nullable|string',
+            'newCustomerVehicleType' => 'nullable|string|max:255',
+            'newCustomerPlateNumber' => 'nullable|string|max:255',
         ]);
 
         if ($this->customer_id) {
@@ -488,6 +490,8 @@ class CreateOrder extends Component
                     'name' => $validated['newCustomerName'],
                     'phone' => $validated['newCustomerPhone'],
                     'address' => $validated['newCustomerAddress'],
+                    'vehicle_type' => $validated['newCustomerVehicleType'],
+                    'plate_number' => $validated['newCustomerPlateNumber'],
                 ]);
                 $this->customer_name = $customer->name;
                 $this->customerSearch = '';
@@ -497,6 +501,8 @@ class CreateOrder extends Component
                 'name' => $validated['newCustomerName'],
                 'phone' => $validated['newCustomerPhone'],
                 'address' => $validated['newCustomerAddress'],
+                'vehicle_type' => $validated['newCustomerVehicleType'],
+                'plate_number' => $validated['newCustomerPlateNumber'],
                 'branch_id' => auth()->user()->branch_id,
             ]);
 
@@ -576,8 +582,6 @@ class CreateOrder extends Component
                     'branch_id' => $this->branch_id,
                     'customer_id' => $this->customer_id,
                     'customer_name' => $this->customer_name,
-                    'vehicle_type' => $this->vehicle_type,
-                    'plate_number' => $this->plate_number,
                     'type' => $this->getOrderType(),
                     'status' => 'pending',
                     'payment_status' => 'unpaid',
@@ -756,7 +760,6 @@ class CreateOrder extends Component
         return Service::create([
             'name' => $serviceName,
             'base_labor_cost' => 0,
-            'branch_id' => $this->branch_id ?? auth()->user()->branch_id,
         ]);
     }
 
