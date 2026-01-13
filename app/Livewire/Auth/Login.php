@@ -22,6 +22,12 @@ class Login extends Component
 
         if (Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
             session()->regenerate();
+
+            $user = Auth::user();
+            if ($user && $user->role === 'order_creator') {
+                return redirect()->route('orders.create');
+            }
+
             return redirect()->intended('/');
         }
 

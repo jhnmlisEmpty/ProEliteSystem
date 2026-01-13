@@ -97,6 +97,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if the user is an order creator only.
+     */
+    public function isOrderCreator(): bool
+    {
+        return $this->role === 'order_creator';
+    }
+
+    /**
      * Check if the user can access all branches.
      */
     public function canAccessAllBranches(): bool

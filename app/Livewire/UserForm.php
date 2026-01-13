@@ -16,7 +16,7 @@ class UserForm extends Component
     public $branch_id = null;
     public $password = '';
 
-    public array $roles = ['admin', 'manager', 'employee'];
+    public array $roles = ['admin', 'manager', 'employee','order_creator'];
     public $branches;
 
     public function mount(?int $id = null): void
@@ -44,7 +44,7 @@ class UserForm extends Component
         return [
             'name' => 'required|string|max:255',
             'email' => $emailRule,
-            'role' => 'required|in:admin,manager,employee,user',
+            'role' => 'required|in:admin,manager,employee,order_creator',
             'branch_id' => 'nullable|exists:branches,id',
             'password' => $passwordRule,
         ];
