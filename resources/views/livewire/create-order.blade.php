@@ -324,12 +324,6 @@
                                     Uploading photo...
                                 </div>
 
-                                @if ($upholsteryPhoto)
-                                    <div class="mt-2">
-                                        <p class="text-xs text-gray-600 mb-1">Preview:</p>
-                                        <img src="{{ $upholsteryPhoto->temporaryUrl() }}" alt="Preview" class="h-32 w-32 object-cover rounded border border-gray-300 shadow-sm">
-                                    </div>
-                                @endif
                             </div>
 
                             {{-- Total Amount --}}

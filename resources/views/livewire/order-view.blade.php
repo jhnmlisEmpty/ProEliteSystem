@@ -386,7 +386,7 @@
                                         </div>
                                     @endif
 
-                                    @if($upholstery->downpayment > 0 || $upholstery->balance > 0)
+                                    <!-- @if($upholstery->downpayment > 0 || $upholstery->balance > 0)
                                         <div class="mt-4 pt-4 border-t border-purple-200">
                                             <div class="grid grid-cols-2 gap-4 text-sm">
                                                 @if($upholstery->downpayment > 0)
@@ -403,7 +403,7 @@
                                                 @endif
                                             </div>
                                         </div>
-                                    @endif
+                                    @endif -->
                                 </div>
                             @endforeach
                         </div>
