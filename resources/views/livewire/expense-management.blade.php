@@ -35,7 +35,7 @@
 
     {{-- Filters Section --}}
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-200">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <!-- Search -->
             <div class="md:col-span-2">
                 <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
@@ -128,14 +128,14 @@
                             @if(auth()->user()->role === 'admin')
                                 <div class="flex items-center justify-end gap-2">
                                     <a href="{{ route('expenses.edit', $expense->id) }}" 
-                                       class="text-blue-600 hover:text-blue-900 transition"
+                                       class="text-blue-600 hover:text-blue-900 mr-3 font-medium"
                                        title="Edit">
-                                        <x-heroicon-o-pencil class="w-5 h-5" />
+                                        Edit
                                     </a>
                                     <button wire:click="confirmDelete({{ $expense->id }})" 
-                                            class="text-red-600 hover:text-red-900 transition"
+                                            class="text-red-600 hover:text-red-900 font-medium"
                                             title="Delete">
-                                        <x-heroicon-o-trash class="w-5 h-5" />
+                                            Delete
                                     </button>
                                 </div>
                             @else

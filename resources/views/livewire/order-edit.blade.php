@@ -582,37 +582,23 @@
                             @else
                                 {{-- Discount Form --}}
                                 <div class="space-y-2">
-                                    <div class="bg-white p-3 rounded border border-blue-200">
-                                        <label class="block text-xs font-medium text-gray-700 mb-2">Discount Type</label>
-                                        <select wire:model="discount_type" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                            <option value="percentage">Percentage Off (%)</option>
-                                            <option value="fixed">Fixed Amount (₱)</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="bg-white p-3 rounded border border-blue-200">
-                                        <label class="block text-xs font-medium text-gray-700 mb-2">
-                                            Discount Value
-                                            @if($discount_type === 'percentage')
-                                                <span class="text-gray-500">(0-100%)</span>
-                                            @else
-                                                <span class="text-gray-500">(₱)</span>
-                                            @endif
-                                        </label>
-                                        <div class="flex gap-2">
-                                            <input 
-                                                type="number" 
-                                                min="0" 
-                                                step="0.01" 
-                                                wire:model.live="discount_value" 
-                                                placeholder="0"
-                                                class="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold text-blue-600">
-                                            <button 
-                                                wire:click="recalculate" 
-                                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition whitespace-nowrap">
-                                                Apply
-                                            </button>
-                                        </div>
+                                    <select wire:model="discount_type" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option value="percentage">Percentage Off (%)</option>
+                                        <option value="fixed">Fixed Amount (₱)</option>
+                                    </select>
+                                    <div class="flex gap-2">
+                                        <input 
+                                            type="number" 
+                                            min="0" 
+                                            step="0.01" 
+                                            wire:model.live="discount_value" 
+                                            placeholder="0"
+                                            class="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold text-blue-600">
+                                        <button 
+                                            wire:click="recalculate" 
+                                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition whitespace-nowrap">
+                                            Apply
+                                        </button>
                                     </div>
 
                                     @if($discount_value > 0)
