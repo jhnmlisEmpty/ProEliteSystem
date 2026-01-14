@@ -24,9 +24,10 @@
                 <!-- Brand -->
                 <div class="flex items-center">
                     <a href="/" class="flex items-center space-x-1">
-                        <img src="{{ asset('logo.png') }}" alt="PRO ELITE" class="h-6 w-auto">
-                        <div>
-                            <span class="text-xs font-bold text-yellow-400 italic tracking-tight block">PRO ELITE SYSTEM - {{ optional(Auth::user()->branch)->name ?? 'Overall' }}</span>
+                        <img src="{{ asset('logo.png') }}" alt="PRO ELITE" class="h-10 w-auto">
+                        <div class="ml-2">
+                            <span class="text-xs font-bold text-yellow-400 italic tracking-tight">PRO ELITE SYSTEM - {{ optional(Auth::user()->branch)->name ?? 'Overall' }}</span>
+                            <span class="text-xs text-gray-400 block">{{ Auth::user()->name }}</span>
                         </div>
                     </a>
                 </div>

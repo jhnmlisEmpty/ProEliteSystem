@@ -59,8 +59,31 @@
                             <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $user->email }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ ucfirst($user->role ?? 'user') }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-900">{{ optional($user->branch)->name ?? '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            @php
+                                $roleColors = [
+                                    'admin' => 'bg-red-100 text-red-800',
+                                    'manager' => 'bg-blue-100 text-blue-800',
+                                    'order_creator' => 'bg-purple-100 text-purple-800',
+                                    'employee' => 'bg-green-100 text-green-800',
+                                ];
+                                $role = $user->role ?? 'employee';
+                                $colorClass = $roleColors[$role] ?? 'bg-gray-100 text-gray-800';
+                                $roleDisplay = ucwords(str_replace('_', ' ', $role));
+                            @endphp
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium {{ $colorClass }}">
+                                {{ $roleDisplay }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm">
+                            @if($user->branch)
+                                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                    {{ $user->branch->name }}
+                                </span>
+                            @else
+                                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">-</span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <a href="/users/{{ $user->id }}/edit" wire:navigate
                                class="text-blue-600 hover:text-blue-900 mr-3 font-medium">
@@ -102,12 +125,31 @@
 
                 <div class="grid grid-cols-2 gap-2 text-sm mb-3">
                     <div>
-                        <span class="text-gray-500">Role:</span>
-                        <span class="font-medium text-gray-900">{{ ucfirst($user->role ?? 'user') }}</span>
+                        <span class="text-gray-500 block mb-1">Role:</span>
+                        @php
+                            $roleColors = [
+                                'admin' => 'bg-red-100 text-red-800',
+                                'manager' => 'bg-blue-100 text-blue-800',
+                                'order_creator' => 'bg-purple-100 text-purple-800',
+                                'employee' => 'bg-green-100 text-green-800',
+                            ];
+                            $role = $user->role ?? 'employee';
+                            $colorClass = $roleColors[$role] ?? 'bg-gray-100 text-gray-800';
+                            $roleDisplay = ucwords(str_replace('_', ' ', $role));
+                        @endphp
+                        <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium {{ $colorClass }}">
+                            {{ $roleDisplay }}
+                        </span>
                     </div>
                     <div>
-                        <span class="text-gray-500">Branch:</span>
-                        <span class="font-medium text-gray-900">{{ optional($user->branch)->name ?? '-' }}</span>
+                        <span class="text-gray-500 block mb-1">Branch:</span>
+                        @if($user->branch)
+                            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                {{ $user->branch->name }}
+                            </span>
+                        @else
+                            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">-</span>
+                        @endif
                     </div>
                 </div>
 
