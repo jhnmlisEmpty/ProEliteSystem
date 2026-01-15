@@ -85,6 +85,12 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            @if($user->role === 'employee')
+                                <a href="/employees/{{ $user->id }}/services" wire:navigate
+                                   class="text-green-600 hover:text-green-900 mr-3 font-medium">
+                                    Services
+                                </a>
+                            @endif
                             <a href="/users/{{ $user->id }}/edit" wire:navigate
                                class="text-blue-600 hover:text-blue-900 mr-3 font-medium">
                                 Edit

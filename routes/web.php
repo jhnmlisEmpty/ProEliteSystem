@@ -22,6 +22,7 @@ use App\Livewire\BranchManagement;
 use App\Livewire\BranchForm;
 use App\Livewire\ExpenseManagement;
 use App\Livewire\ExpenseForm;
+use App\Livewire\EmployeeServices;
 
 // Guest routes
 Route::get('/login', Login::class)->name('login');
@@ -62,6 +63,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/users', UserManagement::class)->name('users.index')->middleware('admin');
         Route::get('/users/create', UserForm::class)->name('users.create')->middleware('admin');
         Route::get('/users/{id}/edit', UserForm::class)->name('users.edit')->middleware('admin');
+        
+        // Employee Services
+        Route::get('/employees/{id}/services', EmployeeServices::class)->name('employees.services')->middleware('admin');
 
         // Branches
         Route::get('/branches', BranchManagement::class)->name('branches.index')->middleware('admin');
