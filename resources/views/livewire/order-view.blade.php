@@ -195,10 +195,10 @@
                                 <div>
                                     <label class="block text-xs font-bold text-gray-700 mb-2 uppercase">Payment Method</label>
                                     <select wire:model="paymentMethod" class="w-full px-4 py-3 border-2 border-green-200 rounded-lg text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200">
-                                        <option value="cash">💵 Cash</option>
-                                        <option value="gcash">📱 GCash</option>
-                                        <option value="bank_transfer">🏦 Bank Transfer</option>
-                                        <option value="credit_card">💳 Credit Card</option>
+                                        <option value="cash">Cash</option>
+                                        <option value="gcash">GCash</option>
+                                        <option value="bank_transfer">Bank Transfer</option>
+                                        <option value="credit_card">Credit Card</option>
                                     </select>
                                 </div>
 
