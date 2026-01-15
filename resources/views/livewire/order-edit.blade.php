@@ -133,6 +133,10 @@
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V7a2 2 0 012-2h6a2 2 0 012 2v2M7 11a2 2 0 11-4 0 2 2 0 014 0zm14 0a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                         Upholstery
                     </button>
+                    <button wire:click="setTab('vip')" class="flex-1 px-4 py-3 rounded-md font-medium transition {{ $activeTab === 'vip' ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        VIP
+                    </button>
                     <!-- <button wire:click="setTab('expenses')" class="flex-1 px-4 py-3 rounded-md font-medium transition {{ $activeTab === 'expenses' ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         Expenses
@@ -366,6 +370,110 @@
                             @endif
                         </div>
                     </div>
+                @elseif($activeTab === 'vip')
+                    {{-- VIP TAB --}}
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            VIP Package
+                        </h3>
+
+                        <div class="space-y-4">
+                            {{-- Stepboard Section --}}
+                            <div class="bg-white rounded-lg p-3 border border-gray-200">
+                                <h4 class="font-semibold text-gray-800 mb-2">Stepboard</h4>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Number of Pcs</label>
+                                        <input type="number" min="0" wire:model.live="vipStepboardPcs" @change="$wire.calculateVipComponentTotal()" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Amount (₱)</label>
+                                        <input type="number" min="0" wire:model.live="vipStepboardAmount" @change="$wire.calculateVipComponentTotal()" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-semibold text-blue-700">
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Engine Bay Section --}}
+                            <div class="bg-white rounded-lg p-3 border border-gray-200">
+                                <h4 class="font-semibold text-gray-800 mb-2">Engine Bay</h4>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Number of Pcs</label>
+                                        <input type="number" min="0" wire:model.live="vipEngineBayPcs" @change="$wire.calculateVipComponentTotal()" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Amount (₱)</label>
+                                        <input type="number" min="0" wire:model.live="vipEngineBayAmount" @change="$wire.calculateVipComponentTotal()" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-semibold text-blue-700">
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Console Box Section --}}
+                            <div class="bg-white rounded-lg p-3 border border-gray-200">
+                                <h4 class="font-semibold text-gray-800 mb-2">Console Box</h4>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Number of Pcs</label>
+                                        <input type="number" min="0" wire:model.live="vipConsoleBoxPcs" @change="$wire.calculateVipComponentTotal()" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Amount (₱)</label>
+                                        <input type="number" min="0" wire:model.live="vipConsoleBoxAmount" @change="$wire.calculateVipComponentTotal()" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-semibold text-blue-700">
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Component Total Display --}}
+                            @if($vipComponentTotal > 0)
+                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                    <p class="text-sm font-semibold text-gray-700">Components Total: <span class="text-blue-600">₱{{ number_format($vipComponentTotal, 2) }}</span></p>
+                                </div>
+                            @endif
+
+                            {{-- Description --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <textarea wire:model="vipDescription" rows="2" placeholder="Additional details or special notes..." class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                            </div>
+
+                            {{-- Photo Upload --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Photo (Optional)</label>
+                                <input type="file" wire:model="vipPhoto" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                @error('vipPhoto') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
+                                
+                                <div wire:loading wire:target="vipPhoto" class="mt-2 text-sm text-gray-600">
+                                    Uploading photo...
+                                </div>
+                            </div>
+
+                            {{-- Total Amount --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Total Amount <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2 text-gray-400">₱</span>
+                                    <input type="number" min="{{ $vipComponentTotal }}" wire:model="vipTotalAmount" placeholder="0" class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold text-blue-700">
+                                </div>
+                                @if($vipComponentTotal > 0)
+                                    <p class="text-xs text-gray-600 mt-1">Minimum: ₱{{ number_format($vipComponentTotal, 2) }}</p>
+                                @endif
+                                @error('vipTotalAmount') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
+                            </div>
+
+                            {{-- Add Button --}}
+                            <button type="button" wire:click="addVip" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition">
+                                + Add VIP Package to Order
+                            </button>
+
+                            {{-- Clear Button --}}
+                            @if($vipComponentTotal > 0 || $vipDescription || $vipTotalAmount > 0)
+                                <button type="button" wire:click="clearVipForm" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 rounded-md transition text-sm">
+                                    Clear Form
+                                </button>
+                            @endif
+                        </div>
+                    </div>
                 @endif
             </div>
         </div>
@@ -473,6 +581,47 @@
                                         <div class="flex-1">
                                             <p class="font-medium text-gray-900">{{ $item['name'] }}</p>
                                             <p class="text-xs text-gray-600">Installation: {{ date('M d, Y', strtotime($item['installation_date'])) }}</p>
+                                            @if($item['description'])
+                                                <p class="text-xs text-gray-500 italic mt-1">{{ Str::limit($item['description'], 50) }}</p>
+                                            @endif
+                                        </div>
+                                        <div class="text-right ml-2">
+                                            <button wire:click="removeItemFromCart('{{ $key }}')" class="text-red-600 hover:text-red-800 mb-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            </button>
+                                            <p class="font-bold text-gray-900">₱{{ number_format($item['total_price'], 2) }}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- VIP SECTION --}}
+                    @php
+                        $summaryVip = array_filter($cartItems, fn($item) => $item['type'] === 'vip');
+                    @endphp
+                    @if(!empty($summaryVip))
+                        <div>
+                            <h3 class="text-xs font-bold text-yellow-600 uppercase tracking-wide mb-2">VIP PACKAGE</h3>
+                            <div class="space-y-2">
+                                @foreach($summaryVip as $key => $item)
+                                    <div class="flex justify-between items-start pb-2 border-b border-gray-100">
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-900">{{ $item['name'] }}</p>
+                                            @if($item['stepboard_pcs'] > 0 || $item['engine_bay_pcs'] > 0 || $item['console_box_pcs'] > 0)
+                                                <p class="text-xs text-gray-600 mt-1">
+                                                    @if($item['stepboard_pcs'] > 0)
+                                                        <span class="inline-block mr-2">Stepboard: {{ $item['stepboard_pcs'] }} pcs (₱{{ number_format($item['stepboard_amount'], 2) }})</span>
+                                                    @endif
+                                                    @if($item['engine_bay_pcs'] > 0)
+                                                        <span class="inline-block mr-2">Engine Bay: {{ $item['engine_bay_pcs'] }} pcs (₱{{ number_format($item['engine_bay_amount'], 2) }})</span>
+                                                    @endif
+                                                    @if($item['console_box_pcs'] > 0)
+                                                        <span class="inline-block">Console Box: {{ $item['console_box_pcs'] }} pcs (₱{{ number_format($item['console_box_amount'], 2) }})</span>
+                                                    @endif
+                                                </p>
+                                            @endif
                                             @if($item['description'])
                                                 <p class="text-xs text-gray-500 italic mt-1">{{ Str::limit($item['description'], 50) }}</p>
                                             @endif

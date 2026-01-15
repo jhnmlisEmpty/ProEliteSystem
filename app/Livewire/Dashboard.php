@@ -27,6 +27,8 @@ class Dashboard extends Component
     public $netSales = 0;   // sum of orders.net_income
     public $finalNetSales = 0; // netSales - totalBusinessExpenses
     public $todaySales = 0; // sum of today's orders total_amount
+    public $completedOrdersSales = 0; // sum of completed orders total_amount
+    public $completedOrdersCount = 0; // count of completed orders
     public $totalProductSales = 0; // sum of order_items total where product
     public $totalServiceSales = 0; // sum of order_items total where service
     public $expenseInternal = 0;   // sum of order_expenses.my_cost
@@ -113,9 +115,11 @@ class Dashboard extends Component
         // Today's sales (total order amount)
         $todayStart = Carbon::today()->startOfDay();
         $todayEnd = Carbon::today()->endOfDay();
-        $todayOrders = Order::query()->whereBetween('created_at', [$todayStart, $todayEnd]);
+        $todayOrders = Order::query()->where('status', 'completed')->whereBetween('created_at', [$todayStart, $todayEnd]);
         if ($this->branchId) $todayOrders->where('branch_id', $this->branchId);
         $this->todaySales = (int) ($todayOrders->sum('total_amount') ?? 0);
+
+       
 
         $orderItemsRange = OrderItem::whereHas('order', function($q) use ($start, $end){
             $q->whereBetween('created_at', [$start, $end]);

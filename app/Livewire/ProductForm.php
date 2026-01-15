@@ -17,7 +17,7 @@ class ProductForm extends Component
     #[Validate('required|string|max:255')]
     public $name = '';
     
-    #[Validate('required|string|max:255')]
+    #[Validate('required|string|max:255|unique:products,sku')]
     public $sku = '';
     
     #[Validate('nullable|image|max:2048')]

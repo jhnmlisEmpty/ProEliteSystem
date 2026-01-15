@@ -84,6 +84,18 @@ class OrderEdit extends Component
     public $upholsteryPhoto;
     public $upholsteryTotalAmount = 0;
 
+    // VIP form
+    public $vipStepboardPcs = 0;
+    public $vipStepboardAmount = 0;
+    public $vipEngineBayPcs = 0;
+    public $vipEngineBayAmount = 0;
+    public $vipConsoleBoxPcs = 0;
+    public $vipConsoleBoxAmount = 0;
+    public $vipDescription = '';
+    public $vipPhoto;
+    public $vipTotalAmount = 0;
+    public $vipComponentTotal = 0;
+
     // Quick Payment
     public $showPaymentForm = false;
     public $paymentAmount = '';
@@ -117,7 +129,7 @@ class OrderEdit extends Component
     public function mount($id)
     {
         $this->orderId = $id;
-        $order = Order::with(['orderItems.product', 'orderItems.service', 'orderItems.upholstery', 'customer', 'expenses', 'payments'])->findOrFail($id);
+        $order = Order::with(['orderItems.product', 'orderItems.service', 'orderItems.upholstery', 'orderItems.vip', 'customer', 'expenses', 'payments'])->findOrFail($id);
 
         // Load customer data
         $this->customer_id = $order->customer_id;
@@ -228,6 +240,30 @@ class OrderEdit extends Component
                         'services' => $upholstery->services,
                         'description' => $upholstery->description,
                         'photo_path' => $upholstery->photo_path,
+                        'unit_price' => $item->unit_price,
+                        'total_price' => $item->total_price,
+                        'quantity' => 1,
+                        'order_item_id' => $item->id,
+                        'created_at' => $item->created_at,
+                    ];
+                }
+            } elseif ($item->vip_id) {
+                $vip = $item->vip;
+                if ($vip) {
+                    $itemId = 'vip_' . $vip->id . '_' . $item->id;
+                    $this->cartItems[$itemId] = [
+                        'id' => $itemId,
+                        'type' => 'vip',
+                        'vip_id' => $vip->id,
+                        'name' => 'VIP Package',
+                        'stepboard_pcs' => $vip->stepboard_pcs,
+                        'stepboard_amount' => $vip->stepboard_amount,
+                        'engine_bay_pcs' => $vip->engine_bay_pcs,
+                        'engine_bay_amount' => $vip->engine_bay_amount,
+                        'console_box_pcs' => $vip->console_box_pcs,
+                        'console_box_amount' => $vip->console_box_amount,
+                        'description' => $vip->description,
+                        'photo' => $vip->photo,
                         'unit_price' => $item->unit_price,
                         'total_price' => $item->total_price,
                         'quantity' => 1,
@@ -614,6 +650,78 @@ class OrderEdit extends Component
         $this->resetErrorBag();
     }
 
+    public function addVip(): void
+    {
+        // Calculate component total
+        $componentTotal = $this->vipStepboardAmount + $this->vipEngineBayAmount + $this->vipConsoleBoxAmount;
+
+        $this->validate([
+            'vipStepboardPcs' => 'required|integer|min:0',
+            'vipStepboardAmount' => 'required|integer|min:0',
+            'vipEngineBayPcs' => 'required|integer|min:0',
+            'vipEngineBayAmount' => 'required|integer|min:0',
+            'vipConsoleBoxPcs' => 'required|integer|min:0',
+            'vipConsoleBoxAmount' => 'required|integer|min:0',
+            'vipTotalAmount' => 'required|integer|min:' . $componentTotal,
+        ], [
+            'vipTotalAmount.min' => 'Total amount cannot be lower than the sum of all components (₱' . $componentTotal . ')',
+        ]);
+
+        $itemId = 'vip_' . time();
+
+        // Upload photo if provided
+        $photoPath = null;
+        if ($this->vipPhoto) {
+            $photoPath = $this->vipPhoto->store('vip-photos', 'public');
+        }
+
+        $this->cartItems[$itemId] = [
+            'id' => $itemId,
+            'type' => 'vip',
+            'name' => 'VIP Package',
+            'stepboard_pcs' => $this->vipStepboardPcs,
+            'stepboard_amount' => $this->vipStepboardAmount,
+            'engine_bay_pcs' => $this->vipEngineBayPcs,
+            'engine_bay_amount' => $this->vipEngineBayAmount,
+            'console_box_pcs' => $this->vipConsoleBoxPcs,
+            'console_box_amount' => $this->vipConsoleBoxAmount,
+            'description' => $this->vipDescription,
+            'photo' => $photoPath,
+            'unit_price' => $this->vipTotalAmount,
+            'total_price' => $this->vipTotalAmount,
+            'quantity' => 1,
+            'created_at' => now(),
+        ];
+
+        $this->recalculate();
+        $this->clearVipForm();
+    }
+
+    public function clearVipForm(): void
+    {
+        $this->vipStepboardPcs = 0;
+        $this->vipStepboardAmount = 0;
+        $this->vipEngineBayPcs = 0;
+        $this->vipEngineBayAmount = 0;
+        $this->vipConsoleBoxPcs = 0;
+        $this->vipConsoleBoxAmount = 0;
+        $this->vipDescription = '';
+        $this->vipPhoto = null;
+        $this->vipTotalAmount = 0;
+        $this->vipComponentTotal = 0;
+        $this->resetErrorBag();
+    }
+
+    public function calculateVipComponentTotal(): void
+    {
+        $this->vipComponentTotal = $this->vipStepboardAmount + $this->vipEngineBayAmount + $this->vipConsoleBoxAmount;
+        
+        // Auto-update total amount if it's lower than component total
+        if ($this->vipTotalAmount < $this->vipComponentTotal) {
+            $this->vipTotalAmount = $this->vipComponentTotal;
+        }
+    }
+
     /**
      * EVENT LISTENER: Removes an item from cart
      */
@@ -846,6 +954,10 @@ class OrderEdit extends Component
                         // Delete the upholstery record when order item is deleted
                         UpholsteryOrder::where('id', $item->upholstery_id)->delete();
                     }
+                    if ($item->vip_id) {
+                        // Delete the VIP record when order item is deleted
+                        \App\Models\Vip::where('id', $item->vip_id)->delete();
+                    }
                 }
                 $order->orderItems()->delete();
                 $order->expenses()->delete();
@@ -975,6 +1087,41 @@ class OrderEdit extends Component
                             'product_id' => null,
                             'service_id' => null,
                             'upholstery_id' => $upholstery->id,
+                            'quantity' => 1,
+                            'unit_price' => $itemRevenue,
+                            'total_price' => $itemRevenue,
+                        ]);
+
+                        $totalGross += $itemRevenue;
+                    } elseif ($item['type'] === 'vip') {
+                        $itemRevenue = (int) $item['unit_price'];
+                        
+                        // Upload photo if provided
+                        $photoPath = null;
+                        if (isset($item['photo']) && $item['photo']) {
+                            $photoPath = $item['photo'];
+                        }
+                        
+                        // Create the VIP record
+                        $vip = \App\Models\Vip::create([
+                            'stepboard_pcs' => $item['stepboard_pcs'],
+                            'stepboard_amount' => $item['stepboard_amount'],
+                            'engine_bay_pcs' => $item['engine_bay_pcs'],
+                            'engine_bay_amount' => $item['engine_bay_amount'],
+                            'console_box_pcs' => $item['console_box_pcs'],
+                            'console_box_amount' => $item['console_box_amount'],
+                            'description' => $item['description'] ?? '',
+                            'photo' => $photoPath,
+                            'total_amount' => $itemRevenue,
+                        ]);
+                        
+                        // Create OrderItem linked to the VIP
+                        OrderItem::create([
+                            'order_id' => $order->id,
+                            'product_id' => null,
+                            'service_id' => null,
+                            'upholstery_id' => null,
+                            'vip_id' => $vip->id,
                             'quantity' => 1,
                             'unit_price' => $itemRevenue,
                             'total_price' => $itemRevenue,
