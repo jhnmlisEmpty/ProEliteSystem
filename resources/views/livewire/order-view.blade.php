@@ -411,6 +411,106 @@
                 </div>
             @endif
 
+            {{-- VIP Packages --}}
+            @if($order->orderItems->where('vip_id', '!=', null)->count() > 0)
+                <div class="bg-white border border-gray-200">
+                    <div class="px-6 py-3 border-b border-gray-200 bg-indigo-50 border-indigo-200">
+                        <h2 class="text-sm font-semibold text-indigo-700 uppercase tracking-wide">VIP Packages</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-6">
+                            @foreach($order->orderItems->where('vip_id', '!=', null) as $item)
+                                @php
+                                    $vip = $item->vip;
+                                @endphp
+                                <div class="border border-indigo-100 rounded-lg p-4 bg-indigo-50/30">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex-1">
+                                            <h3 class="font-semibold text-gray-900 text-lg">VIP Package</h3>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-bold text-gray-900 text-xl">₱{{ number_format($item->total_price) }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                        {{-- Stepboard --}}
+                                        <div class="bg-white p-3 rounded border border-indigo-100">
+                                            <p class="text-xs font-medium text-gray-600 uppercase mb-2">Stepboard</p>
+                                            <div class="space-y-1">
+                                                <p class="text-sm text-gray-900"><span class="font-medium">{{ $vip->stepboard_pcs }}</span> pcs</p>
+                                                <p class="text-sm font-semibold text-indigo-600">₱{{ number_format($vip->stepboard_amount) }}</p>
+                                            </div>
+                                        </div>
+
+                                        {{-- Engine Bay --}}
+                                        <div class="bg-white p-3 rounded border border-indigo-100">
+                                            <p class="text-xs font-medium text-gray-600 uppercase mb-2">Engine Bay</p>
+                                            <div class="space-y-1">
+                                                <p class="text-sm text-gray-900"><span class="font-medium">{{ $vip->engine_bay_pcs }}</span> pcs</p>
+                                                <p class="text-sm font-semibold text-indigo-600">₱{{ number_format($vip->engine_bay_amount) }}</p>
+                                            </div>
+                                        </div>
+
+                                        {{-- Console Box --}}
+                                        <div class="bg-white p-3 rounded border border-indigo-100">
+                                            <p class="text-xs font-medium text-gray-600 uppercase mb-2">Console Box</p>
+                                            <div class="space-y-1">
+                                                <p class="text-sm text-gray-900"><span class="font-medium">{{ $vip->console_box_pcs }}</span> pcs</p>
+                                                <p class="text-sm font-semibold text-indigo-600">₱{{ number_format($vip->console_box_amount) }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- Total Breakdown --}}
+                                    <div class="bg-white p-3 rounded border border-indigo-200 mb-4">
+                                        <p class="text-xs font-medium text-gray-600 uppercase mb-2">Total Breakdown</p>
+                                        <div class="space-y-1 text-sm">
+                                            @if($vip->stepboard_amount > 0)
+                                                <div class="flex justify-between text-gray-700">
+                                                    <span>Stepboard:</span>
+                                                    <span>₱{{ number_format($vip->stepboard_amount) }}</span>
+                                                </div>
+                                            @endif
+                                            @if($vip->engine_bay_amount > 0)
+                                                <div class="flex justify-between text-gray-700">
+                                                    <span>Engine Bay:</span>
+                                                    <span>₱{{ number_format($vip->engine_bay_amount) }}</span>
+                                                </div>
+                                            @endif
+                                            @if($vip->console_box_amount > 0)
+                                                <div class="flex justify-between text-gray-700">
+                                                    <span>Console Box:</span>
+                                                    <span>₱{{ number_format($vip->console_box_amount) }}</span>
+                                                </div>
+                                            @endif
+                                            <div class="flex justify-between font-semibold text-indigo-700 pt-2 border-t border-indigo-100">
+                                                <span>Total Amount:</span>
+                                                <span>₱{{ number_format($vip->total_amount) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @if($vip->description)
+                                        <div class="mb-4">
+                                            <p class="text-xs font-medium text-gray-600 uppercase mb-1">Description</p>
+                                            <p class="text-sm text-gray-700 bg-white p-3 rounded border border-gray-200">{{ $vip->description }}</p>
+                                        </div>
+                                    @endif
+
+                                    @if($vip->photo)
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-600 uppercase mb-2">Photo</p>
+                                            <img src="{{ asset('storage/' . $vip->photo) }}" alt="VIP Package Photo" class="h-32 w-auto rounded border border-gray-200 shadow-sm">
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- Misc. Expenses --}}
             @if($order->expenses->count() > 0)
                 <div class="bg-white border border-gray-200">

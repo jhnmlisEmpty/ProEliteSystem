@@ -14,6 +14,7 @@ class OrderManagement extends Component
     public $statusFilter = '';
     public $paymentFilter = '';
     public $branchFilter = '';
+    public $itemTypeFilter = '';
     public $view = 'table'; // 'table' or 'kanban'
     public $tableTab = 'all'; // 'all', 'pending', 'in_progress', 'completed', 'cancelled'
     public $showAllPending = false; // Toggle for showing all pending orders in kanban
@@ -102,7 +103,7 @@ class OrderManagement extends Component
 
     public function render()
     {
-        $baseQuery = Order::with(['customer', 'orderItems'])
+        $baseQuery = Order::with(['customer', 'orderItems', 'expenses'])
             ->when($this->search, function ($q) {
                 $q->where('customer_name', 'like', '%' . $this->search . '%')
                     ->orWhere('plate_number', 'like', '%' . $this->search . '%')
@@ -116,6 +117,20 @@ class OrderManagement extends Component
             })
             ->when($this->branchFilter, function ($q) {
                 $q->where('branch_id', $this->branchFilter);
+            })
+            ->when($this->itemTypeFilter, function ($q) {
+                $itemType = $this->itemTypeFilter;
+                $q->whereHas('orderItems', function ($subQuery) use ($itemType) {
+                    if ($itemType === 'product') {
+                        $subQuery->whereNotNull('product_id');
+                    } elseif ($itemType === 'service') {
+                        $subQuery->whereNotNull('service_id');
+                    } elseif ($itemType === 'upholstery') {
+                        $subQuery->whereNotNull('upholstery_id');
+                    } elseif ($itemType === 'vip') {
+                        $subQuery->whereNotNull('vip_id');
+                    }
+                });
             });
 
         // For table view with tabs

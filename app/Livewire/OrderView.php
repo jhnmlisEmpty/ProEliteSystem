@@ -52,6 +52,7 @@ class OrderView extends Component
             'orderItems.product',
             'orderItems.service',
             'orderItems.upholstery',
+            'orderItems.vip',
             'payments',
             'expenses',
             'serviceAssignments.employee',

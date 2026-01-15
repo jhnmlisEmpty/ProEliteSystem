@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class OrderItem extends Model
 {
@@ -15,6 +16,7 @@ class OrderItem extends Model
         'product_id',
         'service_id',
         'upholstery_id',
+        'vip_id',
         'quantity',
         'unit_price',
         'total_price',
@@ -47,6 +49,11 @@ class OrderItem extends Model
         return $this->belongsTo(UpholsteryOrder::class, 'upholstery_id');
     }
 
+    public function vip(): BelongsTo
+    {
+        return $this->belongsTo(Vip::class);
+    }
+
     // Accessors
     public function getItemNameAttribute()
     {
@@ -58,6 +65,9 @@ class OrderItem extends Model
         }
         if ($this->upholstery_id) {
             return $this->upholstery->title ?? 'Unknown Upholstery';
+        }
+        if ($this->vip_id) {
+            return 'VIP Package';
         }
         return 'Unknown Item';
     }
@@ -72,6 +82,9 @@ class OrderItem extends Model
         }
         if ($this->upholstery_id) {
             return 'upholstery';
+        }
+        if ($this->vip_id) {
+            return 'vip';
         }
         return 'unknown';
     }

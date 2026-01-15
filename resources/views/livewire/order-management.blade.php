@@ -60,7 +60,7 @@
 
     {{-- Filters --}}
     <div class="bg-white rounded-lg shadow p-6 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-{{ $canFilterBranch ? '4' : '3' }} gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-{{ $canFilterBranch ? '5' : '4' }} gap-4">
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Order ID or customer..." class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
@@ -72,6 +72,16 @@
                     <option value="unpaid">Unpaid</option>
                     <option value="partial">Partial</option>
                     <option value="paid">Paid</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Order Items</label>
+                <select wire:model.live="itemTypeFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Items</option>
+                    <option value="product">Products</option>
+                    <option value="service">Services</option>
+                    <option value="upholstery">Upholstery</option>
+                    <option value="vip">VIP Packages</option>
                 </select>
             </div>
             @if($canFilterBranch)
@@ -135,7 +145,9 @@
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Customer</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Branch</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Vehicle</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Order Items</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Total</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Balance</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Payment</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Actions</th>
@@ -165,7 +177,40 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4">
+                                <div class="flex flex-wrap gap-1">
+                                    @php
+                                        $hasProducts = $order->orderItems->where('product_id', '!=', null)->count() > 0;
+                                        $hasServices = $order->orderItems->where('service_id', '!=', null)->count() > 0;
+                                        $hasUpholstery = $order->orderItems->where('upholstery_id', '!=', null)->count() > 0;
+                                        $hasVip = $order->orderItems->where('vip_id', '!=', null)->count() > 0;
+                                        $hasExpenses = $order->expenses->count() > 0;
+                                    @endphp
+                                    @if($hasProducts)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Products</span>
+                                    @endif
+                                    @if($hasServices)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Services</span>
+                                    @endif
+                                    @if($hasUpholstery)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">Upholstery</span>
+                                    @endif
+                                    @if($hasVip)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">VIP</span>
+                                    @endif
+                                    @if($hasExpenses)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Expenses</span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
                                 <span class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                @php
+                                    $totalPaid = $order->payments()->sum('amount') ?? 0;
+                                    $balance = $order->total_amount - $totalPaid;
+                                @endphp
+                                <span class="font-semibold {{ $balance > 0 ? 'text-orange-600' : 'text-green-600' }}">₱{{ number_format($balance) }}</span>
                             </td>
                             <td class="px-6 py-4">
                                 @if($order->status === 'pending')
@@ -226,6 +271,11 @@
                         </div>
                         <div class="text-right">
                             <div class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</div>
+                            @php
+                                $totalPaid = $order->payments()->sum('amount') ?? 0;
+                                $balance = $order->total_amount - $totalPaid;
+                            @endphp
+                            <div class="text-sm {{ $balance > 0 ? 'text-orange-600' : 'text-green-600' }} font-medium">Balance: ₱{{ number_format($balance) }}</div>
                         </div>
                     </div>
 
@@ -314,11 +364,47 @@
                 <div class="p-4 space-y-3 flex-1">
                     @forelse($pendingOrders as $order)
                         <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-                            <div class="flex justify-between items-start mb-3">
-                                <div class="font-semibold text-gray-900">Order #{{ $order->id }}</div>
-                                <div class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</div>
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="font-semibold text-gray-900 text-lg">Order #{{ $order->id }}</div>
+                                <div class="flex flex-wrap gap-1 ml-2">
+                                    @php
+                                        $hasProducts = $order->orderItems->where('product_id', '!=', null)->count() > 0;
+                                        $hasServices = $order->orderItems->where('service_id', '!=', null)->count() > 0;
+                                        $hasUpholstery = $order->orderItems->where('upholstery_id', '!=', null)->count() > 0;
+                                        $hasVip = $order->orderItems->where('vip_id', '!=', null)->count() > 0;
+                                        $hasExpenses = $order->expenses->count() > 0;
+                                    @endphp
+                                    @if($hasProducts)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">PRODUCTS</span>
+                                    @endif
+                                    @if($hasServices)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">SERVICES</span>
+                                    @endif
+                                    @if($hasUpholstery)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">UPHOLSTERY</span>
+                                    @endif
+                                    @if($hasVip)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">VIP PACKAGE</span>
+                                    @endif
+                                    @if($hasExpenses)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">EXPENSES</span>
+                                    @endif
+                                </div>
                             </div>
-                            <div class="text-sm text-gray-700 mb-3">{{ $order->customer_name }}</div>
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <div class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</div>
+                                </div>
+                                <div class="text-right">
+                                    @php
+                                        $totalPaid = $order->payments()->sum('amount') ?? 0;
+                                        $balance = $order->total_amount - $totalPaid;
+                                    @endphp
+                                    <div class="text-sm {{ $balance > 0 ? 'text-orange-600' : 'text-green-600' }} font-medium">Balance: ₱{{ number_format($balance) }}</div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-700 mb-2">{{ $order->customer_name }}</div>
+                            <div class="text-xs text-gray-600 mb-2">{{ $order->customer?->phone ?? 'N/A' }}</div>
                             <div class="flex flex-wrap gap-2 mb-3">
                                 <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">{{ $order->branch?->name ?? 'N/A' }}</span>
                                 <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">Pending</span>
@@ -374,11 +460,47 @@
                 <div class="p-4 space-y-3 flex-1">
                     @forelse($inProgressOrders as $order)
                         <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-                            <div class="flex justify-between items-start mb-3">
-                                <div class="font-semibold text-gray-900">Order #{{ $order->id }}</div>
-                                <div class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</div>
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="font-semibold text-gray-900 text-lg">Order #{{ $order->id }}</div>
+                                <div class="flex flex-wrap gap-1 ml-2">
+                                    @php
+                                        $hasProducts = $order->orderItems->where('product_id', '!=', null)->count() > 0;
+                                        $hasServices = $order->orderItems->where('service_id', '!=', null)->count() > 0;
+                                        $hasUpholstery = $order->orderItems->where('upholstery_id', '!=', null)->count() > 0;
+                                        $hasVip = $order->orderItems->where('vip_id', '!=', null)->count() > 0;
+                                        $hasExpenses = $order->expenses->count() > 0;
+                                    @endphp
+                                    @if($hasProducts)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">PRODUCTS</span>
+                                    @endif
+                                    @if($hasServices)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">SERVICES</span>
+                                    @endif
+                                    @if($hasUpholstery)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">UPHOLSTERY</span>
+                                    @endif
+                                    @if($hasVip)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">VIP PACKAGE</span>
+                                    @endif
+                                    @if($hasExpenses)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">EXPENSES</span>
+                                    @endif
+                                </div>
                             </div>
-                            <div class="text-sm text-gray-700 mb-3">{{ $order->customer_name }}</div>
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <div class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</div>
+                                </div>
+                                <div class="text-right">
+                                    @php
+                                        $totalPaid = $order->payments()->sum('amount') ?? 0;
+                                        $balance = $order->total_amount - $totalPaid;
+                                    @endphp
+                                    <div class="text-sm {{ $balance > 0 ? 'text-orange-600' : 'text-green-600' }} font-medium">Balance: ₱{{ number_format($balance) }}</div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-700 mb-2">{{ $order->customer_name }}</div>
+                            <div class="text-xs text-gray-600 mb-2">{{ $order->customer?->phone ?? 'N/A' }}</div>
                             <div class="flex flex-wrap gap-2 mb-3">
                                 <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">{{ $order->branch?->name ?? 'N/A' }}</span>
                                 <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">In Progress</span>
@@ -434,11 +556,47 @@
                 <div class="p-4 space-y-3 flex-1">
                     @forelse($completedOrders as $order)
                         <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-                            <div class="flex justify-between items-start mb-3">
-                                <div class="font-semibold text-gray-900">Order #{{ $order->id }}</div>
-                                <div class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</div>
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="font-semibold text-gray-900 text-lg">Order #{{ $order->id }}</div>
+                                <div class="flex flex-wrap gap-1 ml-2">
+                                    @php
+                                        $hasProducts = $order->orderItems->where('product_id', '!=', null)->count() > 0;
+                                        $hasServices = $order->orderItems->where('service_id', '!=', null)->count() > 0;
+                                        $hasUpholstery = $order->orderItems->where('upholstery_id', '!=', null)->count() > 0;
+                                        $hasVip = $order->orderItems->where('vip_id', '!=', null)->count() > 0;
+                                        $hasExpenses = $order->expenses->count() > 0;
+                                    @endphp
+                                    @if($hasProducts)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">PRODUCTS</span>
+                                    @endif
+                                    @if($hasServices)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">SERVICES</span>
+                                    @endif
+                                    @if($hasUpholstery)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">UPHOLSTERY</span>
+                                    @endif
+                                    @if($hasVip)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">VIP PACKAGE</span>
+                                    @endif
+                                    @if($hasExpenses)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">EXPENSES</span>
+                                    @endif
+                                </div>
                             </div>
-                            <div class="text-sm text-gray-700 mb-3">{{ $order->customer_name }}</div>
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <div class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</div>
+                                </div>
+                                <div class="text-right">
+                                    @php
+                                        $totalPaid = $order->payments()->sum('amount') ?? 0;
+                                        $balance = $order->total_amount - $totalPaid;
+                                    @endphp
+                                    <div class="text-sm {{ $balance > 0 ? 'text-orange-600' : 'text-green-600' }} font-medium">Balance: ₱{{ number_format($balance) }}</div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-700 mb-2">{{ $order->customer_name }}</div>
+                            <div class="text-xs text-gray-600 mb-2">{{ $order->customer?->phone ?? 'N/A' }}</div>
                             <div class="flex flex-wrap gap-2 mb-3">
                                 <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">{{ $order->branch?->name ?? 'N/A' }}</span>
                                 <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">Completed</span>
