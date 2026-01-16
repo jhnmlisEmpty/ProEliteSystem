@@ -23,6 +23,7 @@ use App\Livewire\BranchForm;
 use App\Livewire\ExpenseManagement;
 use App\Livewire\ExpenseForm;
 use App\Livewire\EmployeeServices;
+use App\Livewire\DailyReport;
 
 // Guest routes
 Route::get('/login', Login::class)->name('login');
@@ -44,6 +45,7 @@ Route::middleware('auth')->group(function () {
     // All other routes - blocked for order_creator
     Route::middleware('denyOrderCreator')->group(function () {
         Route::get('/', Dashboard::class)->name('dashboard.index');
+            Route::get('/reports/daily', DailyReport::class)->name('reports.daily');
 
         Route::get('/products', ProductManagement::class)->name('products.index');
         Route::get('/products/create', ProductForm::class)->name('products.create')->middleware('admin');
