@@ -64,7 +64,7 @@ class OrderItem extends Model
             return $this->service->name ?? 'Unknown Service';
         }
         if ($this->upholstery_id) {
-            return $this->upholstery->title ?? 'Unknown Upholstery';
+            return $this->upholstery->title ?? 'Upholstery';
         }
         if ($this->vip_id) {
             return 'VIP Package';

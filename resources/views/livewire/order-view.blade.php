@@ -14,7 +14,7 @@
                 </div>
                 <p class="text-sm text-gray-600 mt-2">Created {{ $order->created_at->format('M d, Y') }} • <span class="font-semibold text-gray-900">Branch: {{ $order->branch->name ?? 'N/A' }}</span></p>
             </div>
-            <div class="flex gap-3">
+            <div class="flex gap-3 print-hide">
                 @if(auth()->user()->role === 'admin')
                     <a href="{{ route('orders.edit', $order->id) }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium">Edit Order</a>
                 @endif
@@ -62,21 +62,21 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         {{-- Total Revenue (Gross) --}}
         <div class="bg-white border border-gray-200 p-4">
-            <div class="text-xs font-medium text-gray-500 uppercase mb-1">Total Revenue (Gross)</div>
+            <div class="text-xs font-medium text-gray-500 uppercase mb-1">Total</div>
             <div class="text-2xl font-semibold text-gray-900">₱{{ number_format($order->total_gross) }}</div>
             <div class="text-xs text-gray-400 mt-1">Includes billable fees</div>
         </div>
 
         @if(auth()->user()->role === 'admin')
         {{-- Total Expenses --}}
-        <div class="bg-white border border-gray-200 p-4">
+        <div class="bg-white border border-gray-200 p-4 print-hide">
             <div class="text-xs font-medium text-gray-500 uppercase mb-1">Total Expenses</div>
             <div class="text-2xl font-semibold text-gray-900">₱{{ number_format($order->total_cost) }}</div>
             <div class="text-xs text-gray-400 mt-1">Inventory + Labor</div>
         </div>
 
         {{-- Net Profit --}}
-        <div class="bg-white border border-gray-200 p-4">
+        <div class="bg-white border border-gray-200 p-4 print-hide">
             <div class="flex items-center justify-between mb-1">
                 <div class="text-xs font-medium text-gray-500 uppercase">Net Profit</div>
                 @php
@@ -90,7 +90,7 @@
     </div>
 
     {{-- Quick Actions --}}
-    <div class="space-y-3 mb-4">
+    <div class="space-y-3 mb-4 print-hide">
         {{-- Status Management --}}
         <div class="bg-white border border-gray-200">
             <div class="px-6 py-3 border-b border-gray-200 bg-gray-50">
@@ -293,12 +293,12 @@
                                             <p class="text-sm text-gray-900 font-semibold">₱{{ number_format($item->unit_price) }}</p>
                                         </div>
                                         @if(auth()->user()->role === 'admin')
-                                        <div>
+                                        <div class="print-hide">
                                             <p class="text-xs font-medium text-gray-600 uppercase mb-1">Base Price (Cost)</p>
                                             <p class="text-sm text-gray-900 font-semibold text-red-600">₱{{ number_format($item->product->buy_price ?? 0) }}</p>
                                         </div>
                                         @endif
-                                        <div>
+                                        <div class="print-hide">
                                             <p class="text-xs font-medium text-gray-600 uppercase mb-1">Sell Price</p>
                                             <p class="text-sm text-gray-900 font-semibold text-blue-600">₱{{ number_format($item->product->sell_price ?? 0) }}</p>
                                         </div>
@@ -561,4 +561,36 @@
             @endif
         </div>
     </div>
+    <style>
+        @media print {
+            nav,
+            .sticky,
+            .print-hide {
+                display: none !important;
+            }
+
+            body {
+                background: #fff;
+            }
+
+            main {
+                padding-top: 0 !important;
+            }
+
+            .shadow,
+            .shadow-md,
+            .shadow-lg,
+            .shadow-xl {
+                box-shadow: none !important;
+            }
+
+            section,
+            table,
+            tr {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
 </div>
+
+
