@@ -2,10 +2,10 @@
     <x-page-header title="Daily Report" subtitle="Sales, supply movement, and expenses for a single day" :showDate="false">
         <x-slot name="actions">
             <div class="flex items-center gap-2 print-hide">
-                <label class="text-xs font-medium text-gray-200">Report Date</label>
-                <input type="date" wire:model.live="reportDate" class="px-3 py-2 text-xs rounded-md bg-gray-800 border border-gray-700 text-white focus:ring-2 focus:ring-amber-400 focus:border-amber-400">
-                <button wire:click="$set('reportDate', '{{ now()->format('Y-m-d') }}')" class="px-3 py-2 bg-amber-500 text-gray-900 text-xs font-semibold rounded-md hover:bg-amber-400 transition">Today</button>
-                <button type="button" onclick="window.print()" class="px-3 py-2 bg-gray-100 text-gray-900 text-xs font-semibold rounded-md hover:bg-white border border-gray-300 transition">Print</button>
+                <label class="text-xs font-medium text-gray-600">Report Date</label>
+                <input type="date" wire:model.live="reportDate" class="px-3 py-2 text-xs rounded-md bg-gray-200 border border-gray-700 text-gray-900 focus:ring-2 focus:ring-amber-400 focus:border-amber-400">
+                <button wire:click="$set('reportDate', '{{ now()->format('Y-m-d') }}')" class="px-3 py-2 bg-gray-300 text-gray-900 text-xs font-semibold rounded-md hover:bg-gray-400 transition">Today</button>
+                <button type="button" onclick="window.print()" class="px-3 py-2 bg-blue-600 text-gray-200 text-xs font-semibold rounded-md hover:bg-white border border-gray-300 transition">Print</button>
             </div>
         </x-slot>
     </x-page-header>
