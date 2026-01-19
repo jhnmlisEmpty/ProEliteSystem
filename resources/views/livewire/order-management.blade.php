@@ -136,15 +136,14 @@
             </div>
         </div>
 
-        {{-- Desktop Table --}}
-        <div class="hidden md:block bg-white rounded-lg shadow overflow-hidden">
+        {{-- Desktop Table with horizontal overflow --}}
+        <div class="bg-white rounded-lg shadow overflow-x-auto">
             <table class="w-full">
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 bg-purple-100">Customer Info</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Order #</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Customer</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Branch</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Vehicle</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Order Items</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Total</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Balance</th>
@@ -154,27 +153,46 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
+                    @php
+                        $lastCustomer = null;
+                        $customerOrders = $orders->groupBy('customer_name');
+                    @endphp
                     @forelse($orders as $order)
+                        @php
+                            $isFirstOrderForCustomer = $lastCustomer !== $order->customer_name;
+                            $customerOrderCount = $isFirstOrderForCustomer ? $customerOrders[$order->customer_name]->count() : 0;
+                            $lastCustomer = $order->customer_name;
+                        @endphp
                         <tr class="hover:bg-gray-50 transition">
+                            {{-- Customer Info (only on first row) --}}
+                            @if($isFirstOrderForCustomer)
+                                <td class="px-6 py-5 bg-gray-50 border-r border-gray-300 align-middle" rowspan="{{ $customerOrderCount }}" style="min-width: 210px;">
+                                    <div>
+                                        <div class="font-bold text-gray-900 text-base uppercase mb-2">
+                                            {{ $order->customer_name }}
+                                        </div>
+                                        
+                                        <div class="text-xs text-gray-600 font-medium mb-1">
+                                            ( {{ $order->customer?->phone ?? 'N/A' }} | {{ $order->customer?->address ?? 'N/A' }} )
+                                        </div>
+                                        
+                                        @if($order->customer && ($order->customer->plate_number || $order->customer->vehicle_type))
+                                            <div class="text-xs text-gray-700 font-medium">
+                                                {{ $order->customer->plate_number }} - {{ $order->customer->vehicle_type }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </td>
+                            @endif
+                            
+                            {{-- Order Details --}}
                             <td class="px-6 py-4">
                                 <span class="font-semibold text-gray-900">#{{ $order->id }}</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="font-medium text-gray-900">{{ $order->customer_name }}</div>
-                                <div class="text-sm text-gray-600">{{ $order->customer?->phone ?? 'N/A' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">
                                     {{ $order->branch?->name ?? 'N/A' }}
                                 </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                @if($order->customer && ($order->customer->vehicle_type || $order->customer->plate_number))
-                                    <div class="text-sm text-gray-900">{{ $order->customer->vehicle_type }}</div>
-                                    <div class="text-sm text-gray-600">{{ $order->customer->plate_number }}</div>
-                                @else
-                                    <span class="text-gray-400 text-sm">-</span>
-                                @endif
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex flex-wrap gap-1">
@@ -258,77 +276,6 @@
                     @endforelse
                 </tbody>
             </table>
-        </div>
-
-        {{-- Mobile Cards --}}
-        <div class="md:hidden space-y-4">
-            @forelse($orders as $order)
-                <div class="bg-white rounded-lg shadow p-4 border border-gray-200">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <div class="font-semibold text-gray-900">Order #{{ $order->id }}</div>
-                            <div class="text-sm text-gray-600 mt-1">{{ $order->customer_name }}</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</div>
-                            @php
-                                $totalPaid = $order->payments()->sum('amount') ?? 0;
-                                $balance = $order->total_amount - $totalPaid;
-                            @endphp
-                            <div class="text-sm {{ $balance > 0 ? 'text-orange-600' : 'text-green-600' }} font-medium">Balance: ₱{{ number_format($balance) }}</div>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">
-                            {{ $order->branch?->name ?? 'N/A' }}
-                        </span>
-
-                        @if($order->status === 'pending')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
-                        @elseif($order->status === 'in_progress')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">In Progress</span>
-                        @elseif($order->status === 'completed')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Completed</span>
-                        @else
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Cancelled</span>
-                        @endif
-
-                        @if($order->payment_status === 'unpaid')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Unpaid</span>
-                        @elseif($order->payment_status === 'partial')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Partial</span>
-                        @else
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Paid</span>
-                        @endif
-                    </div>
-
-                    @if($order->customer && ($order->customer->vehicle_type || $order->customer->plate_number))
-                        <div class="text-sm text-gray-600 mb-4 pb-4 border-b border-gray-200">
-                            {{ $order->customer->vehicle_type }} - {{ $order->customer->plate_number }}
-                        </div>
-                    @endif
-
-                    <div class="flex gap-2">
-                        <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium transition">View</a>
-                        @if(auth()->user()->role === 'admin')
-                            @if(in_array($order->status, ['pending','in_progress']))
-                                <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition">Edit</a>
-                            @endif
-                            @if($order->status === 'pending')
-                                <button wire:click="delete({{ $order->id }})" wire:confirm="Are you sure?" class="flex-1 text-center bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition">Delete</button>
-                            @endif
-                        @endif
-                    </div>
-                </div>
-            @empty
-                <div class="bg-white rounded-lg shadow p-8 text-center">
-                    <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                    </svg>
-                    <p class="text-gray-500 font-medium">No orders found</p>
-                </div>
-            @endforelse
         </div>
 
         {{-- Pagination --}}

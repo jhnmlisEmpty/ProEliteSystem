@@ -133,7 +133,7 @@ class OrderManagement extends Component
                 });
             });
 
-        // For table view with tabs
+        // For table view with tabs - always group by customer
         if ($this->view === 'table') {
             $query = clone $baseQuery;
             
@@ -141,7 +141,10 @@ class OrderManagement extends Component
                 $query->where('status', $this->tableTab);
             }
             
-            $orders = $query->orderBy('created_at', 'desc')->paginate(15);
+            // Always order by customer name first, then by date
+            $orders = $query->orderBy('customer_name', 'asc')
+                ->orderBy('created_at', 'desc')
+                ->paginate(15);
         } else {
             // For kanban view, we need all data without pagination
             $orders = collect();
