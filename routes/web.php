@@ -13,6 +13,7 @@ use App\Livewire\OrderManagement;
 use App\Livewire\OrderView;
 use App\Livewire\OrderEdit;
 use App\Livewire\CreateOrder;
+use App\Livewire\CustomerView;
 use App\Livewire\Dashboard;
 use App\Livewire\Auth\Login;
 use Illuminate\Support\Facades\Auth;
@@ -59,6 +60,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/customers', CustomerManagement::class)->name('customers.index');
         Route::get('/customers/create', CustomerForm::class)->name('customers.create');
+        Route::get('/customers/{id}', CustomerView::class)->name('customers.view');
         Route::get('/customers/{id}/edit', CustomerForm::class)->name('customers.edit')->middleware('admin');
 
         // Users

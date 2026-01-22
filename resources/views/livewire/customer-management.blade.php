@@ -81,6 +81,10 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ number_format($customer->total_orders) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱{{ number_format($customer->total_spent) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="/customers/{{ $customer->id }}" wire:navigate
+                               class="text-blue-600 hover:text-blue-900 mr-3 font-medium">
+                                View
+                            </a>
                             @if(auth()->user()->role === 'admin')
                                 <a href="/customers/{{ $customer->id }}/edit" wire:navigate
                                    class="text-blue-600 hover:text-blue-900 mr-3 font-medium">
@@ -150,6 +154,10 @@
 
                 @if(auth()->user()->role === 'admin')
                     <div class="flex space-x-3">
+                        <a href="/customers/{{ $customer->id }}" wire:navigate
+                           class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                            View
+                        </a>
                         <a href="/customers/{{ $customer->id }}/edit" wire:navigate
                            class="text-sm text-blue-600 hover:text-blue-800 font-medium">
                             Edit
@@ -161,7 +169,10 @@
                         </button>
                     </div>
                 @else
-                    <span class="text-gray-400 text-sm">View Only</span>
+                    <a href="/customers/{{ $customer->id }}" wire:navigate
+                       class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                        View Profile
+                    </a>
                 @endif
             </div>
         @empty
