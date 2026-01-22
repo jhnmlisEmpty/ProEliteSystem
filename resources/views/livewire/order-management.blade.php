@@ -141,7 +141,7 @@
             <table class="w-full">
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 bg-purple-100">Customer Info</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Customer Info</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Order #</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Branch</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Order Items</th>
@@ -166,7 +166,7 @@
                         <tr class="hover:bg-gray-50 transition">
                             {{-- Customer Info (only on first row) --}}
                             @if($isFirstOrderForCustomer)
-                                <td class="px-6 py-5 bg-gray-50 border-r border-gray-300 align-middle" rowspan="{{ $customerOrderCount }}" style="min-width: 210px;">
+                                <td class="px-6 py-5 border-r border-gray-300 align-middle" rowspan="{{ $customerOrderCount }}" style="min-width: 210px;">
                                     <div>
                                         <div class="font-bold text-gray-900 text-base uppercase mb-2">
                                             {{ $order->customer_name }}
