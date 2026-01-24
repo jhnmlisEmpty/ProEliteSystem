@@ -36,7 +36,7 @@ Route::post('/logout', function () {
 })->name('logout');
 
 // Protected routes
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'denyEmployee'])->group(function () {
     // Orders routes - accessible to order_creator role
     Route::get('/orders', OrderManagement::class)->name('orders.index');
     Route::get('/orders/create', CreateOrder::class)->name('orders.create');
