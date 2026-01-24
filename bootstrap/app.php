@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'ongoing' => \App\Http\Middleware\OngoingDevelopment::class,
             'admin' => \App\Http\Middleware\IsAdmin::class,
+            'denyEmployee' => \App\Http\Middleware\DenyEmployee::class,
             'denyOrderCreator' => \App\Http\Middleware\DenyOrderCreator::class,
         ]);
     })
