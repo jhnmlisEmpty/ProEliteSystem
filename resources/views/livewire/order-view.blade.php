@@ -92,10 +92,10 @@
     </div>
 
     {{-- Remaining Balance & Customer Info Section --}}
-    <div class="bg-white border border-gray-200 mb-6 print-hide">
+    <div class="bg-white border border-gray-200 mb-6">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-0">
             {{-- Remaining Balance & Add Payment --}}
-            <div class="px-6 py-6 border-r border-gray-200 lg:col-span-1">
+            <div class="px-6 py-6 border-r border-gray-200 lg:col-span-1  print-hide">
                 <div class="mb-3">
                     <h2 class="text-xs font-bold text-red-600 uppercase tracking-wider mb-2">Remaining Balance</h2>
                     <div class="text-3xl font-bold text-gray-900">₱{{ number_format($remainingBalance) }}</div>
