@@ -16,7 +16,7 @@ class DenyOrderCreator
         $user = $request->user();
 
         if ($user && $user->isOrderCreator()) {
-            abort(403, 'Only administrators or staff can access this page.');
+            abort(403, 'Only administrators can access this page.');
         }
 
         return $next($request);

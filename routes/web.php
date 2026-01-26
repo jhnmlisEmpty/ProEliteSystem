@@ -37,16 +37,18 @@ Route::post('/logout', function () {
 
 // Protected routes
 Route::middleware(['auth', 'denyEmployee'])->group(function () {
+    Route::get('/', Dashboard::class)->name('dashboard.index');
     // Orders routes - accessible to order_creator role
     Route::get('/orders', OrderManagement::class)->name('orders.index');
     Route::get('/orders/create', CreateOrder::class)->name('orders.create');
     Route::get('/orders/{id}', OrderView::class)->name('orders.view');
     Route::get('/orders/{id}/edit', OrderEdit::class)->name('orders.edit')->middleware('admin');
+    
 
     // All other routes - blocked for order_creator
     Route::middleware('denyOrderCreator')->group(function () {
-        Route::get('/', Dashboard::class)->name('dashboard.index');
-            Route::get('/reports/daily', DailyReport::class)->name('reports.daily');
+        
+        Route::get('/reports/daily', DailyReport::class)->name('reports.daily');
 
         Route::get('/products', ProductManagement::class)->name('products.index');
         Route::get('/products/create', ProductForm::class)->name('products.create')->middleware('admin');
