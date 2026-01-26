@@ -171,15 +171,18 @@
                     @if($products->count() > 0)
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto">
                             @foreach($products as $product)
-                                <button wire:click="addProduct({{ $product->id }})" class="text-left p-4 bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-400 rounded-lg transition">
+                                <button 
+                                    wire:click="addProduct({{ $product->id }})" 
+                                    {{ ($product->stock_qty ?? 0) <= 0 ? 'disabled' : '' }}
+                                    class="text-left p-4 rounded-lg transition {{ ($product->stock_qty ?? 0) <= 0 ? 'bg-red-50 border border-red-300 cursor-not-allowed opacity-60' : 'bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-400 cursor-pointer' }}">
                                     <div class="flex justify-between items-start mb-2">
-                                        <h4 class="font-semibold text-gray-900 flex-1">{{ $product->name }}</h4>
-                                        <span class="text-blue-600 font-bold text-lg">₱{{ number_format($product->sell_price, 0) }}</span>
+                                        <h4 class="font-semibold {{ ($product->stock_qty ?? 0) <= 0 ? 'text-red-900' : 'text-gray-900' }} flex-1">{{ $product->name }}</h4>
+                                        <span class="{{ ($product->stock_qty ?? 0) <= 0 ? 'text-red-600' : 'text-blue-600' }} font-bold text-lg">₱{{ number_format($product->sell_price, 0) }}</span>
                                     </div>
-                                    <p class="text-xs text-gray-600 mb-2">SKU: {{ $product->sku ?? 'N/A' }}</p>
+                                    <p class="text-xs {{ ($product->stock_qty ?? 0) <= 0 ? 'text-red-600' : 'text-gray-600' }} mb-2">SKU: {{ $product->sku ?? 'N/A' }}</p>
                                     <div class="flex justify-between items-center">
-                                        <span class="text-xs {{ ($product->stock_qty ?? 0) <= 5 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }} px-2 py-1 rounded-full font-medium">
-                                            Stock: {{ $product->stock_qty ?? 0 }}
+                                        <span class="text-xs {{ ($product->stock_qty ?? 0) <= 0 ? 'bg-red-200 text-red-800' : (($product->stock_qty ?? 0) <= 5 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800') }} px-2 py-1 rounded-full font-medium">
+                                            Stock: {{ $product->stock_qty ?? 0 }} {{ ($product->stock_qty ?? 0) <= 0 ? '(Out of Stock)' : '' }}
                                         </span>
                                         <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
                                             {{ $product->category ?? 'Material' }}
