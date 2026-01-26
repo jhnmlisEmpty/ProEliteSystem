@@ -219,6 +219,12 @@ class CreateOrder extends Component
             return;
         }
 
+        // Check if product has stock
+        if (($product->stock_qty ?? 0) <= 0) {
+            $this->addError('product', "'{$product->name}' is out of stock and cannot be added.");
+            return;
+        }
+
         $quantity = $this->productQuantities[$productId] ?? 1;
         if ($quantity < 1) {
             $quantity = 1;
@@ -452,6 +458,12 @@ class CreateOrder extends Component
         // Calculate component total
         $componentTotal = $this->vipStepboardAmount + $this->vipEngineBayAmount + $this->vipConsoleBoxAmount;
 
+        // Validate that at least one component is selected
+        if ($componentTotal <= 0) {
+            $this->addError('vipComponents', 'Please add at least one VIP component with amount > 0');
+            return;
+        }
+
         $this->validate([
             'vipStepboardPcs' => 'required|integer|min:0',
             'vipStepboardAmount' => 'required|integer|min:0',
@@ -476,16 +488,16 @@ class CreateOrder extends Component
             'id' => $itemId,
             'type' => 'vip',
             'name' => 'VIP Package',
-            'stepboard_pcs' => $this->vipStepboardPcs,
-            'stepboard_amount' => $this->vipStepboardAmount,
-            'engine_bay_pcs' => $this->vipEngineBayPcs,
-            'engine_bay_amount' => $this->vipEngineBayAmount,
-            'console_box_pcs' => $this->vipConsoleBoxPcs,
-            'console_box_amount' => $this->vipConsoleBoxAmount,
-            'description' => $this->vipDescription,
+            'stepboard_pcs' => (int) $this->vipStepboardPcs,
+            'stepboard_amount' => (int) $this->vipStepboardAmount,
+            'engine_bay_pcs' => (int) $this->vipEngineBayPcs,
+            'engine_bay_amount' => (int) $this->vipEngineBayAmount,
+            'console_box_pcs' => (int) $this->vipConsoleBoxPcs,
+            'console_box_amount' => (int) $this->vipConsoleBoxAmount,
+            'description' => $this->vipDescription ?? '',
             'photo' => $photoPath,
-            'unit_price' => $this->vipTotalAmount,
-            'total_price' => $this->vipTotalAmount,
+            'unit_price' => (int) $this->vipTotalAmount,
+            'total_price' => (int) $this->vipTotalAmount,
             'quantity' => 1,
             'created_at' => now(),
         ];
@@ -889,20 +901,17 @@ class CreateOrder extends Component
                     } elseif ($item['type'] === 'vip') {
                         $itemRevenue = (int) $item['unit_price'];
                         
-                        // Upload photo if provided
-                        $photoPath = null;
-                        if (isset($item['photo']) && $item['photo']) {
-                            $photoPath = $item['photo'];
-                        }
+                        // Photo path is already stored in addVip(), just use it directly
+                        $photoPath = $item['photo'] ?? null;
                         
                         // Create the VIP record
                         $vip = \App\Models\Vip::create([
-                            'stepboard_pcs' => $item['stepboard_pcs'],
-                            'stepboard_amount' => $item['stepboard_amount'],
-                            'engine_bay_pcs' => $item['engine_bay_pcs'],
-                            'engine_bay_amount' => $item['engine_bay_amount'],
-                            'console_box_pcs' => $item['console_box_pcs'],
-                            'console_box_amount' => $item['console_box_amount'],
+                            'stepboard_pcs' => (int) ($item['stepboard_pcs'] ?? 0),
+                            'stepboard_amount' => (int) ($item['stepboard_amount'] ?? 0),
+                            'engine_bay_pcs' => (int) ($item['engine_bay_pcs'] ?? 0),
+                            'engine_bay_amount' => (int) ($item['engine_bay_amount'] ?? 0),
+                            'console_box_pcs' => (int) ($item['console_box_pcs'] ?? 0),
+                            'console_box_amount' => (int) ($item['console_box_amount'] ?? 0),
                             'description' => $item['description'] ?? '',
                             'photo' => $photoPath,
                             'total_amount' => $itemRevenue,
