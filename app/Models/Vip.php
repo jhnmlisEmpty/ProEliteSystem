@@ -12,11 +12,17 @@ class Vip extends Model
 
     protected $fillable = [
         'stepboard_pcs',
+        'stepboard_unit_price',
         'stepboard_amount',
         'engine_bay_pcs',
+        'engine_bay_unit_price',
         'engine_bay_amount',
         'console_box_pcs',
+        'console_box_unit_price',
         'console_box_amount',
+        'thai_ceiling_pcs',
+        'thai_ceiling_unit_price',
+        'thai_ceiling_amount',
         'description',
         'photo',
         'total_amount',
@@ -24,11 +30,17 @@ class Vip extends Model
 
     protected $casts = [
         'stepboard_pcs' => 'integer',
+        'stepboard_unit_price' => 'integer',
         'stepboard_amount' => 'integer',
         'engine_bay_pcs' => 'integer',
+        'engine_bay_unit_price' => 'integer',
         'engine_bay_amount' => 'integer',
         'console_box_pcs' => 'integer',
+        'console_box_unit_price' => 'integer',
         'console_box_amount' => 'integer',
+        'thai_ceiling_pcs' => 'integer',
+        'thai_ceiling_unit_price' => 'integer',
+        'thai_ceiling_amount' => 'integer',
         'total_amount' => 'integer',
     ];
 
@@ -59,10 +71,15 @@ class Vip extends Model
         return number_format($this->console_box_amount, 2);
     }
 
+    public function getFormattedThaiCeilingAmountAttribute(): string
+    {
+        return number_format($this->thai_ceiling_amount, 2);
+    }
+
     // Methods
     public function calculateTotalAmount(): int
     {
-        return $this->stepboard_amount + $this->engine_bay_amount + $this->console_box_amount;
+        return $this->stepboard_amount + $this->engine_bay_amount + $this->console_box_amount + $this->thai_ceiling_amount;
     }
 
     public function updateTotalAmount(): void

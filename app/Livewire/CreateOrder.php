@@ -85,11 +85,17 @@ class CreateOrder extends Component
 
     // VIP form
     public $vipStepboardPcs = 0;
+    public $vipStepboardUnitPrice = 0;
     public $vipStepboardAmount = 0;
     public $vipEngineBayPcs = 0;
+    public $vipEngineBayUnitPrice = 0;
     public $vipEngineBayAmount = 0;
     public $vipConsoleBoxPcs = 0;
+    public $vipConsoleBoxUnitPrice = 0;
     public $vipConsoleBoxAmount = 0;
+    public $vipThaiCeilingPcs = 0;
+    public $vipThaiCeilingUnitPrice = 0;
+    public $vipThaiCeilingAmount = 0;
     public $vipDescription = '';
     public $vipPhoto;
     public $vipTotalAmount = 0;
@@ -474,7 +480,7 @@ class CreateOrder extends Component
     public function addVip(): void
     {
         // Calculate component total
-        $componentTotal = $this->vipStepboardAmount + $this->vipEngineBayAmount + $this->vipConsoleBoxAmount;
+        $componentTotal = $this->vipStepboardAmount + $this->vipEngineBayAmount + $this->vipConsoleBoxAmount + $this->vipThaiCeilingAmount;
 
         // Validate that at least one component is selected
         if ($componentTotal <= 0) {
@@ -484,11 +490,17 @@ class CreateOrder extends Component
 
         $this->validate([
             'vipStepboardPcs' => 'required|integer|min:0',
+            'vipStepboardUnitPrice' => 'required|integer|min:0',
             'vipStepboardAmount' => 'required|integer|min:0',
             'vipEngineBayPcs' => 'required|integer|min:0',
+            'vipEngineBayUnitPrice' => 'required|integer|min:0',
             'vipEngineBayAmount' => 'required|integer|min:0',
             'vipConsoleBoxPcs' => 'required|integer|min:0',
+            'vipConsoleBoxUnitPrice' => 'required|integer|min:0',
             'vipConsoleBoxAmount' => 'required|integer|min:0',
+            'vipThaiCeilingPcs' => 'required|integer|min:0',
+            'vipThaiCeilingUnitPrice' => 'required|integer|min:0',
+            'vipThaiCeilingAmount' => 'required|integer|min:0',
             'vipTotalAmount' => 'required|integer|min:' . $componentTotal,
         ], [
             'vipTotalAmount.min' => 'Total amount cannot be lower than the sum of all components (₱' . $componentTotal . ')',
@@ -507,11 +519,17 @@ class CreateOrder extends Component
             'type' => 'vip',
             'name' => 'VIP Package',
             'stepboard_pcs' => (int) $this->vipStepboardPcs,
+            'stepboard_unit_price' => (int) $this->vipStepboardUnitPrice,
             'stepboard_amount' => (int) $this->vipStepboardAmount,
             'engine_bay_pcs' => (int) $this->vipEngineBayPcs,
+            'engine_bay_unit_price' => (int) $this->vipEngineBayUnitPrice,
             'engine_bay_amount' => (int) $this->vipEngineBayAmount,
             'console_box_pcs' => (int) $this->vipConsoleBoxPcs,
+            'console_box_unit_price' => (int) $this->vipConsoleBoxUnitPrice,
             'console_box_amount' => (int) $this->vipConsoleBoxAmount,
+            'thai_ceiling_pcs' => (int) $this->vipThaiCeilingPcs,
+            'thai_ceiling_unit_price' => (int) $this->vipThaiCeilingUnitPrice,
+            'thai_ceiling_amount' => (int) $this->vipThaiCeilingAmount,
             'description' => $this->vipDescription ?? '',
             'photo' => $photoPath,
             'unit_price' => (int) $this->vipTotalAmount,
@@ -527,11 +545,17 @@ class CreateOrder extends Component
     public function clearVipForm(): void
     {
         $this->vipStepboardPcs = 0;
+        $this->vipStepboardUnitPrice = 0;
         $this->vipStepboardAmount = 0;
         $this->vipEngineBayPcs = 0;
+        $this->vipEngineBayUnitPrice = 0;
         $this->vipEngineBayAmount = 0;
         $this->vipConsoleBoxPcs = 0;
+        $this->vipConsoleBoxUnitPrice = 0;
         $this->vipConsoleBoxAmount = 0;
+        $this->vipThaiCeilingPcs = 0;
+        $this->vipThaiCeilingUnitPrice = 0;
+        $this->vipThaiCeilingAmount = 0;
         $this->vipDescription = '';
         $this->vipPhoto = null;
         $this->vipTotalAmount = 0;
@@ -541,12 +565,17 @@ class CreateOrder extends Component
 
     public function calculateVipComponentTotal(): void
     {
-        $this->vipComponentTotal = $this->vipStepboardAmount + $this->vipEngineBayAmount + $this->vipConsoleBoxAmount;
+        // Calculate sub-amounts automatically
+        $this->vipStepboardAmount = $this->vipStepboardPcs * $this->vipStepboardUnitPrice;
+        $this->vipEngineBayAmount = $this->vipEngineBayPcs * $this->vipEngineBayUnitPrice;
+        $this->vipConsoleBoxAmount = $this->vipConsoleBoxPcs * $this->vipConsoleBoxUnitPrice;
+        $this->vipThaiCeilingAmount = $this->vipThaiCeilingPcs * $this->vipThaiCeilingUnitPrice;
         
-        // Auto-update total amount if it's lower than component total
-        if ($this->vipTotalAmount < $this->vipComponentTotal) {
-            $this->vipTotalAmount = $this->vipComponentTotal;
-        }
+        // Calculate component total
+        $this->vipComponentTotal = $this->vipStepboardAmount + $this->vipEngineBayAmount + $this->vipConsoleBoxAmount + $this->vipThaiCeilingAmount;
+        
+        // Auto-update total amount to match component total
+        $this->vipTotalAmount = $this->vipComponentTotal;
     }
 
     public function addExpense(): void
@@ -931,11 +960,17 @@ class CreateOrder extends Component
                         // Create the VIP record
                         $vip = \App\Models\Vip::create([
                             'stepboard_pcs' => (int) ($item['stepboard_pcs'] ?? 0),
+                            'stepboard_unit_price' => (int) ($item['stepboard_unit_price'] ?? 0),
                             'stepboard_amount' => (int) ($item['stepboard_amount'] ?? 0),
                             'engine_bay_pcs' => (int) ($item['engine_bay_pcs'] ?? 0),
+                            'engine_bay_unit_price' => (int) ($item['engine_bay_unit_price'] ?? 0),
                             'engine_bay_amount' => (int) ($item['engine_bay_amount'] ?? 0),
                             'console_box_pcs' => (int) ($item['console_box_pcs'] ?? 0),
+                            'console_box_unit_price' => (int) ($item['console_box_unit_price'] ?? 0),
                             'console_box_amount' => (int) ($item['console_box_amount'] ?? 0),
+                            'thai_ceiling_pcs' => (int) ($item['thai_ceiling_pcs'] ?? 0),
+                            'thai_ceiling_unit_price' => (int) ($item['thai_ceiling_unit_price'] ?? 0),
+                            'thai_ceiling_amount' => (int) ($item['thai_ceiling_amount'] ?? 0),
                             'description' => $item['description'] ?? '',
                             'photo' => $photoPath,
                             'total_amount' => $itemRevenue,
