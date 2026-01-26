@@ -142,10 +142,133 @@
         @if(!$canSelectBranch)
         <div class="mb-4">
             <h2 class="text-sm font-semibold text-gray-900 mb-2">Daily Sales Summary</h2>
-            <div class="bg-white rounded-lg shadow p-3 border-l-4 border-amber-500">
-                <p class="text-xs text-gray-600 font-medium">Today's Sales</p>
-                <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($todaySales, 0) }}</p>
-                <p class="text-xs text-gray-400 mt-1 italic">Total orders created today in your branch</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="bg-white rounded-lg shadow p-3 border-l-4 border-blue-500">
+                    <p class="text-xs text-gray-600 font-medium">Today's Sales</p>
+                    <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($todaySales, 0) }}</p>
+                    <p class="text-xs text-gray-400 mt-1 italic">Total payments received today</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-3 border-l-4 border-red-500">
+                    <p class="text-xs text-gray-600 font-medium">Today's Expenses</p>
+                    <p class="text-xl font-bold text-red-600 mt-0.5">₱{{ number_format($todayExpenses, 0) }}</p>
+                    <p class="text-xs text-gray-400 mt-1 italic">Business expenses today</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-3 border-l-4 border-green-500">
+                    <p class="text-xs text-gray-600 font-medium">Today's Net Sales</p>
+                    <p class="text-xl font-bold text-green-600 mt-0.5">₱{{ number_format($todayNetSales, 0) }}</p>
+                    <p class="text-xs text-gray-400 mt-1 italic">Sales - Expenses</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TODAY'S ORDERS TABLE -->
+        <div class="mb-4">
+            <h2 class="text-sm font-semibold text-gray-900 mb-2">Today's Orders</h2>
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                @if(count($todaysOrders) > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order #</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($todaysOrders as $order)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900">#{{ $order['id'] }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ $order['customer_name'] }}</td>
+                                        <td class="px-3 py-2 text-xs text-gray-500">
+                                            @foreach($order['items'] as $item)
+                                                <div class="mb-0.5">{{ $item['name'] }} ({{ $item['quantity'] }}x)</div>
+                                            @endforeach
+                                        </td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs font-semibold text-gray-900">₱{{ number_format($order['total_amount'], 0) }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">
+                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                {{ $order['status'] === 'completed' ? 'bg-green-100 text-green-800' : '' }}
+                                                {{ $order['status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                                {{ $order['status'] === 'in_progress' ? 'bg-blue-100 text-blue-800' : '' }}
+                                                {{ $order['status'] === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}">
+                                                {{ ucfirst(str_replace('_', ' ', $order['status'])) }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-2 whitespace-nowrap">
+                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                {{ $order['payment_status'] === 'paid' ? 'bg-green-100 text-green-800' : '' }}
+                                                {{ $order['payment_status'] === 'partial' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                                {{ $order['payment_status'] === 'unpaid' ? 'bg-red-100 text-red-800' : '' }}">
+                                                {{ ucfirst($order['payment_status']) }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ $order['created_at'] }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs">
+                                            <a href="{{ route('orders.view', $order['id']) }}" class="text-blue-600 hover:text-blue-900">View</a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="px-4 py-8 text-center">
+                        <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p class="text-sm text-gray-500">No orders created today</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- TODAY'S EXPENSES TABLE -->
+        <div class="mb-4">
+            <h2 class="text-sm font-semibold text-gray-900 mb-2">Today's Expenses</h2>
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                @if(count($todaysExpenses) > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($todaysExpenses as $expense)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900">#{{ $expense['id'] }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                {{ ucfirst($expense['category']) }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-2 text-xs text-gray-700">{{ $expense['description'] }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs font-semibold text-red-600">₱{{ number_format($expense['amount'], 0) }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ $expense['created_at'] }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="px-4 py-8 text-center">
+                        <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="text-sm text-gray-500">No expenses recorded today</p>
+                    </div>
+                @endif
             </div>
         </div>
         @endif

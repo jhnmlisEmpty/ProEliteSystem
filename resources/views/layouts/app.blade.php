@@ -35,13 +35,11 @@
                 <!-- Desktop Navigation -->
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-2">
-                        @if(Auth::user()?->role !== 'order_creator')
-                            <a href="/" 
-                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('/') ? 'bg-gray-700 text-white' : '' }}">
-                                <x-heroicon-o-home class="w-4 h-4 inline-block mr-1" />
-                                Dashboard
-                            </a>
-                        @endif
+                        <a href="/" 
+                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('/') ? 'bg-gray-700 text-white' : '' }}">
+                            <x-heroicon-o-home class="w-4 h-4 inline-block mr-1" />
+                            Dashboard
+                        </a>
                         
                         <a href="{{ route('orders.index') }}" 
                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('orders*') ? 'bg-gray-700 text-white' : '' }}">

@@ -26,7 +26,9 @@ class Dashboard extends Component
     public $grossSales = 0; // sum of orders.total_gross
     public $netSales = 0;   // sum of orders.net_income
     public $finalNetSales = 0; // netSales - totalBusinessExpenses
-    public $todaySales = 0; // sum of today's orders total_amount
+    public $todaySales = 0; // sum of today's payments
+    public $todayExpenses = 0; // sum of today's business expenses
+    public $todayNetSales = 0; // todaySales - todayExpenses
     public $completedOrdersSales = 0; // sum of completed orders total_amount
     public $completedOrdersCount = 0; // count of completed orders
     public $totalProductSales = 0; // sum of order_items total where product
@@ -34,6 +36,10 @@ class Dashboard extends Component
     public $expenseInternal = 0;   // sum of order_expenses.my_cost
     public $expenseCharged = 0;    // sum of order_expenses.charge_client
     public $totalBusinessExpenses = 0; // sum of standalone Expense table amounts
+
+    // Today's orders for non-admin
+    public $todaysOrders = [];
+    public $todaysExpenses = [];
 
     // Customer metrics
     public $topCustomers = [];
@@ -65,6 +71,12 @@ class Dashboard extends Component
         $this->loadInventoryMetrics();
         $this->loadProductMetrics();
         $this->loadChartData();
+        
+        // Load today's orders for non-admin users
+        if (!$this->canSelectBranch) {
+            $this->loadTodaysOrders();
+            $this->loadTodaysExpenses();
+        }
     }
 
     private function loadOrCreateFilter()
@@ -112,12 +124,28 @@ class Dashboard extends Component
         $this->grossSales = (int) ($ordersRange->sum('total_gross') ?? 0);
         $this->netSales = (int) ($ordersRange->sum('net_income') ?? 0);
 
-        // Today's sales (total order amount)
+        // Today's sales based on payments received today
         $todayStart = Carbon::today()->startOfDay();
         $todayEnd = Carbon::today()->endOfDay();
-        $todayOrders = Order::query()->where('status', 'completed')->whereBetween('created_at', [$todayStart, $todayEnd]);
-        if ($this->branchId) $todayOrders->where('branch_id', $this->branchId);
-        $this->todaySales = (int) ($todayOrders->sum('total_amount') ?? 0);
+        $todayPaymentsQuery = \App\Models\Payment::whereBetween('paid_at', [$todayStart, $todayEnd]);
+        
+        if ($this->branchId) {
+            $todayPaymentsQuery->whereHas('order', function($q) {
+                $q->where('branch_id', $this->branchId);
+            });
+        }
+        
+        $this->todaySales = (int) ($todayPaymentsQuery->sum('amount') ?? 0);
+
+        // Today's business expenses
+        $todayExpensesQuery = Expense::whereBetween('created_at', [$todayStart, $todayEnd]);
+        if ($this->branchId) {
+            $todayExpensesQuery->where('branch_id', $this->branchId);
+        }
+        $this->todayExpenses = (int) ($todayExpensesQuery->sum('amount') ?? 0);
+
+        // Today's net sales
+        $this->todayNetSales = $this->todaySales - $this->todayExpenses;
 
        
 
@@ -348,6 +376,61 @@ class Dashboard extends Component
         }
 
         return $data;
+    }
+
+    private function loadTodaysOrders()
+    {
+        $todayStart = Carbon::today()->startOfDay();
+        $todayEnd = Carbon::today()->endOfDay();
+        
+        $ordersQuery = Order::whereBetween('created_at', [$todayStart, $todayEnd])
+            ->with(['customer', 'orderItems.product', 'orderItems.service'])
+            ->orderBy('created_at', 'desc');
+        
+        if ($this->branchId) {
+            $ordersQuery->where('branch_id', $this->branchId);
+        }
+        
+        $this->todaysOrders = $ordersQuery->get()->map(function($order) {
+            return [
+                'id' => $order->id,
+                'customer_name' => $order->customer_name,
+                'total_amount' => $order->total_amount,
+                'status' => $order->status,
+                'payment_status' => $order->payment_status,
+                'created_at' => $order->created_at->format('h:i A'),
+                'items' => $order->orderItems->map(function($item) {
+                    return [
+                        'name' => $item->product ? $item->product->name : ($item->service ? $item->service->name : 'Unknown'),
+                        'quantity' => $item->quantity,
+                        'total_price' => $item->total_price,
+                    ];
+                })->toArray(),
+            ];
+        })->toArray();
+    }
+
+    private function loadTodaysExpenses()
+    {
+        $todayStart = Carbon::today()->startOfDay();
+        $todayEnd = Carbon::today()->endOfDay();
+        
+        $expensesQuery = Expense::whereBetween('created_at', [$todayStart, $todayEnd])
+            ->orderBy('created_at', 'desc');
+        
+        if ($this->branchId) {
+            $expensesQuery->where('branch_id', $this->branchId);
+        }
+        
+        $this->todaysExpenses = $expensesQuery->get()->map(function($expense) {
+            return [
+                'id' => $expense->id,
+                'category' => $expense->category,
+                'description' => $expense->description,
+                'amount' => $expense->amount,
+                'created_at' => $expense->created_at->format('h:i A'),
+            ];
+        })->toArray();
     }
 
     public function render()
