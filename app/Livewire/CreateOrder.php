@@ -77,6 +77,7 @@ class CreateOrder extends Component
         'sidings' => false,
         'rubber_mattings' => false,
         'front_mattings' => false,
+        'headrest' => false,
     ];
     public $upholsteryDescription = '';
     public $upholsteryPhoto;
@@ -148,6 +149,7 @@ class CreateOrder extends Component
 
         $products = Product::query()
             ->when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
+            ->when($this->branch_id, fn ($q) => $q->where('branch_id', $this->branch_id))
             ->when($this->productSearch, function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', '%' . $this->productSearch . '%')
@@ -216,6 +218,20 @@ class CreateOrder extends Component
         
         if (!$product) {
             $this->addError('product', 'Product not found or access denied.');
+            return;
+        }
+
+        // Check if branch is selected
+        if (!$this->branch_id) {
+            $this->addError('product', 'Please select a branch first before adding products.');
+            return;
+        }
+
+        // Check if product's branch matches the selected branch
+        if ($product->branch_id != $this->branch_id) {
+            $productBranchName = $product->branch?->name ?? 'unknown branch';
+            $selectedBranchName = \App\Models\Branch::find($this->branch_id)?->name ?? 'unknown branch';
+            $this->addError('product', "Cannot add product from '{$productBranchName}' to order in '{$selectedBranchName}'. Products must be from the same branch.");
             return;
         }
 
@@ -408,6 +424,7 @@ class CreateOrder extends Component
             'sidings' => 'Sidings',
             'rubber_mattings' => 'Rubber Mattings',
             'front_mattings' => 'Front Mattings',
+            'headrest' => 'Headrest',
         ];
 
         $selectedServices = [];
@@ -446,6 +463,7 @@ class CreateOrder extends Component
             'sidings' => false,
             'rubber_mattings' => false,
             'front_mattings' => false,
+            'headrest' => false,
         ];
         $this->upholsteryDescription = '';
         $this->upholsteryPhoto = null;
@@ -666,6 +684,12 @@ class CreateOrder extends Component
     public function setTab(string $tab): void
     {
         $this->activeTab = $tab;
+    }
+
+    public function updatedBranchId(): void
+    {
+        // Trigger re-render when branch is selected
+        // This will refresh the products list with the new branch filter
     }
 
     public function createNewCustomer()

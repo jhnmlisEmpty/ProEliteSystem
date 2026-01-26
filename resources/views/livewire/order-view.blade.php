@@ -1,9 +1,26 @@
 <div class="max-w-7xl mx-auto">
+    {{-- Print-Only Invoice Header --}}
+    <div class="print-only mb-4">
+        <div class="flex items-start justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-full border border-gray-400 flex items-center justify-center text-xs font-bold">LOGO</div>
+                <div>
+                    <p class="text-sm font-bold text-gray-900">PRO ELITE CAR UPHOLSTERY</p>
+                    <p class="text-xs text-gray-700">72 QUEEN OF PEACE ROAD, LOURDES SUBDIVISION EXTENSION BAGUIO CITY</p>
+                    <p class="text-xs text-gray-700">CONTACT #: 09266530192</p>
+                </div>
+            </div>
+            <div class="text-xs text-gray-700 text-right">
+                <p>Created {{ $order->created_at->format('M d, Y') }}</p>
+            </div>
+        </div>
+        <div class="mt-3 text-xs font-semibold text-gray-900">Order #: ORD-{{ str_pad($order->id, 3, '0', STR_PAD_LEFT) }}</div>
+    </div>
     {{-- Header --}}
-    <div class="mb-6">
+    <div class="mb-6 print-hide">
         <div class="flex items-center justify-between mb-4">
             <div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 ">
                     <h1 class="text-3xl font-bold text-gray-900">Order #ORD-{{ str_pad($order->id, 3, '0', STR_PAD_LEFT) }}</h1>
                     <select wire:change="changeStatus($event.target.value)" class="px-3 py-1 rounded border border-gray-300 text-xs font-medium uppercase text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                         @foreach($statusOptions as $status)
@@ -16,7 +33,7 @@
                 </div>
                 <p class="text-sm text-gray-600 mt-2">Created {{ $order->created_at->format('M d, Y') }} • <span class="font-semibold text-gray-900">Branch: {{ $order->branch->name ?? 'N/A' }}</span></p>
             </div>
-            <div class="flex gap-3 print-hide">
+            <div class="flex gap-3">
                 @if(auth()->user()->role === 'admin')
                     <a href="{{ route('orders.edit', $order->id) }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium">Edit Order</a>
                 @endif
@@ -61,7 +78,7 @@
     @endif
 
     {{-- Financial Summary Cards --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 print-hide">
         {{-- Total Revenue (Gross) --}}
         <div class="bg-white border border-gray-200 p-4">
             <div class="text-xs font-medium text-gray-500 uppercase mb-1">Total</div>
@@ -71,14 +88,14 @@
 
         @if(auth()->user()->role === 'admin')
         {{-- Total Expenses --}}
-        <div class="bg-white border border-gray-200 p-4 print-hide">
+        <div class="bg-white border border-gray-200 p-4 ">
             <div class="text-xs font-medium text-gray-500 uppercase mb-1">Total Expenses</div>
             <div class="text-2xl font-semibold text-gray-900">₱{{ number_format($order->total_cost) }}</div>
             <div class="text-xs text-gray-400 mt-1">Inventory + Labor</div>
         </div>
 
         {{-- Net Profit --}}
-        <div class="bg-white border border-gray-200 p-4 print-hide">
+        <div class="bg-white border border-gray-200 p-4">
             <div class="flex items-center justify-between mb-1">
                 <div class="text-xs font-medium text-gray-500 uppercase">Net Profit</div>
                 @php
@@ -148,27 +165,32 @@
             {{-- Customer & Vehicle Details --}}
             <div class="px-6 py-6 lg:col-span-2">
                 <h2 class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-4">Customer & Vehicle Details</h2>
-                <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                    <div>
-                        <p class="text-xs font-semibold text-gray-600 uppercase mb-1">Customer Name</p>
-                        <p class="text-sm font-semibold text-gray-900">{{ $order->customer_name }}</p>
+                <div class="space-y-4">
+                    <div class="flex gap-6">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-600 uppercase mb-1">Customer Name</p>
+                            <p class="text-sm font-semibold text-gray-900">{{ $order->customer_name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-gray-600 uppercase mb-1">Phone</p>
+                            <p class="text-sm font-semibold text-gray-900">{{ $order->customer?->phone ?? 'N/A' }}</p>
+                        </div>
+                        @php
+                            $upholsteryItem = $order->orderItems->where('upholstery_id', '!=', null)->first();
+                        @endphp
+                        @if($upholsteryItem?->upholstery?->unit_year_model)
+                            <div>
+                                <p class="text-xs font-semibold text-gray-600 uppercase mb-1">Vehicle Model</p>
+                                <p class="text-sm font-semibold text-gray-900">{{ $upholsteryItem->upholstery->unit_year_model }}</p>
+                            </div>
+                        @endif
                     </div>
-                    <div>
-                        <p class="text-xs font-semibold text-gray-600 uppercase mb-1">Phone</p>
-                        <p class="text-sm font-semibold text-gray-900">{{ $order->customer?->phone ?? 'N/A' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold text-gray-600 uppercase mb-1">Vehicle Type</p>
-                        <p class="text-sm font-semibold text-gray-900">{{ $order->customer?->vehicle_type ?? 'N/A' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold text-gray-600 uppercase mb-1">Location</p>
-                        <p class="text-sm font-semibold text-gray-900">{{ $order->customer?->address ?? 'N/A' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold text-gray-600 uppercase mb-1">Plate Number</p>
-                        <p class="text-sm font-semibold text-gray-900">{{ $order->customer?->plate_number ?? 'N/A' }}</p>
-                    </div>
+                    @if($order->customer?->address)
+                        <div>
+                            <p class="text-xs font-semibold text-gray-600 uppercase mb-1">Address</p>
+                            <p class="text-sm text-gray-900">{{ $order->customer->address }}</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -228,26 +250,53 @@
                     @foreach($order->orderItems->where('upholstery_id', '!=', null) as $item)
                         @php
                             $upholstery = $item->upholstery;
+                            $serviceLabels = [
+                                'seat_cover' => 'Seat Cover',
+                                'ceiling' => 'Ceiling',
+                                'sidings' => 'Sidings',
+                                'rubber_mattings' => 'Rubber Mattings',
+                                'front_mattings' => 'Front Mattings',
+                                'headrest' => 'Headrest',
+                            ];
+                            $selectedServices = [];
+                            if (is_array($upholstery->services)) {
+                                foreach ($upholstery->services as $key => $value) {
+                                    if ($value && isset($serviceLabels[$key])) {
+                                        $selectedServices[] = $serviceLabels[$key];
+                                    }
+                                }
+                            }
                         @endphp
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-gray-900 font-semibold">{{ $order->created_at->format('M d') }}</td>
                             <td class="px-6 py-4 text-gray-700">
-                                <p class="font-medium">Upholstery Services</p>
-                                <p class="text-xs text-gray-500">{{ $upholstery->unit_type ?? 'N/A' }} - {{ $upholstery->unit_year_model }} • Color: {{ $upholstery->unit_color ?? 'N/A' }}</p>
-                                @if($upholstery->description)
-                                    <p class="text-xs text-gray-500">{{ $upholstery->description }}</p>
-                                @endif
+                                <div class="flex items-start gap-4">
+                                    @if($upholstery->photo_path)
+                                        <img src="{{ asset('storage/' . $upholstery->photo_path) }}" alt="Upholstery Photo" class="h-24 w-auto rounded border border-gray-300 shadow-sm">
+                                    @endif
+                                    <div class="space-y-1">
+                                        <p class="font-medium text-red-700">Upholstery Services</p>
+                                        <p class="text-xs text-gray-500">{{ $upholstery->unit_type ?? 'N/A' }} - {{ $upholstery->unit_year_model }}</p>
+                                        @if(count($selectedServices) > 0)
+                                            <p class="text-xs text-gray-600">
+                                                <span class="font-semibold">Services:</span>
+                                                @foreach($selectedServices as $service)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-800 mr-1 mt-1">{{ $service }}</span>
+                                                @endforeach
+                                            </p>
+                                        @endif
+                                        @if($upholstery->description)
+                                            <p class="text-xs text-gray-700">
+                                                <span class="font-semibold">Description:</span>
+                                                {{ $upholstery->description }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-right text-gray-900">₱{{ number_format($item->unit_price) }}</td>
                             <td class="px-6 py-4 text-right text-gray-900">₱{{ number_format($item->total_price) }}</td>
                         </tr>
-                        @if($upholstery->photo_path)
-                            <tr class="bg-gray-50">
-                                <td colspan="4" class="px-6 py-4">
-                                    <img src="{{ asset('storage/' . $upholstery->photo_path) }}" alt="Upholstery Photo" class="h-32 w-auto rounded border border-gray-300 shadow-sm">
-                                </td>
-                            </tr>
-                        @endif
                     @endforeach
 
                     {{-- VIP Packages --}}
@@ -324,7 +373,7 @@
         </div>
 
         {{-- Payment Records (1/3 width) --}}
-        <div class="bg-white border border-gray-200">
+        <div class="bg-white border border-gray-200 print-hide">
             <div class="px-6 py-4 border-b border-gray-200 bg-blue-50">
                 <h2 class="text-sm font-bold text-blue-700 uppercase tracking-wide">Payment Records</h2>
             </div>
@@ -360,6 +409,22 @@
             </div>
         </div>
     </div>
+
+    <div class="print-only grid grid-cols-1 gap-8 mt-12">
+        <div class="grid grid-cols-2 gap-16">
+            <div>
+                <p class="text-xs font-bold text-gray-700 uppercase">Prepared By:</p>
+                <div class="mt-12 border-t border-gray-400"></div>
+                <p class="text-xs text-gray-700 text-center mt-2 uppercase">Authorized Signature</p>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-700 uppercase">Checked By:</p>
+                <div class="mt-12 border-t border-gray-400"></div>
+                <p class="text-xs text-gray-700 text-center mt-2 uppercase">Customer Signature</p>
+            </div>
+        </div>
+    </div>
+
     <style>
         @media print {
             nav,
@@ -388,7 +453,10 @@
             tr {
                 page-break-inside: avoid;
             }
+            .max-w-7xl { max-width: 100% !important; }
         }
+        .print-only { display: none; }
+        @media print { .print-only { display: block !important; } }
     </style>
 </div>
 
