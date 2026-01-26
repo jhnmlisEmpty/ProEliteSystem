@@ -403,14 +403,18 @@
                             {{-- Stepboard Section --}}
                             <div class="bg-white rounded-lg p-3 border border-gray-200">
                                 <h4 class="font-semibold text-gray-800 mb-2">Stepboard</h4>
-                                <div class="grid grid-cols-2 gap-3">
+                                <div class="grid grid-cols-3 gap-3">
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Number of Pcs</label>
-                                        <input type="number" min="0" wire:model.live="vipStepboardPcs" @change="$wire.calculateVipComponentTotal()" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Pcs</label>
+                                        <input type="number" min="0" wire:model.live="vipStepboardPcs" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Amount (₱)</label>
-                                        <input type="number" min="0" wire:model.live="vipStepboardAmount" @change="$wire.calculateVipComponentTotal()" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-semibold text-blue-700">
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price (₱)</label>
+                                        <input type="number" min="0" wire:model.live="vipStepboardUnitPrice" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Sub Amount (₱)</label>
+                                        <input type="number" min="0" wire:model="vipStepboardAmount" readonly placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 font-semibold text-blue-700">
                                     </div>
                                 </div>
                             </div>
@@ -418,14 +422,18 @@
                             {{-- Engine Bay Section --}}
                             <div class="bg-white rounded-lg p-3 border border-gray-200">
                                 <h4 class="font-semibold text-gray-800 mb-2">Engine Bay</h4>
-                                <div class="grid grid-cols-2 gap-3">
+                                <div class="grid grid-cols-3 gap-3">
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Number of Pcs</label>
-                                        <input type="number" min="0" wire:model.live="vipEngineBayPcs" @change="$wire.calculateVipComponentTotal()" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Pcs</label>
+                                        <input type="number" min="0" wire:model.live="vipEngineBayPcs" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Amount (₱)</label>
-                                        <input type="number" min="0" wire:model.live="vipEngineBayAmount" @change="$wire.calculateVipComponentTotal()" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-semibold text-blue-700">
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price (₱)</label>
+                                        <input type="number" min="0" wire:model.live="vipEngineBayUnitPrice" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Sub Amount (₱)</label>
+                                        <input type="number" min="0" wire:model="vipEngineBayAmount" readonly placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 font-semibold text-blue-700">
                                     </div>
                                 </div>
                             </div>
@@ -433,14 +441,37 @@
                             {{-- Console Box Section --}}
                             <div class="bg-white rounded-lg p-3 border border-gray-200">
                                 <h4 class="font-semibold text-gray-800 mb-2">Console Box</h4>
-                                <div class="grid grid-cols-2 gap-3">
+                                <div class="grid grid-cols-3 gap-3">
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Number of Pcs</label>
-                                        <input type="number" min="0" wire:model.live="vipConsoleBoxPcs" @change="$wire.calculateVipComponentTotal()" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Pcs</label>
+                                        <input type="number" min="0" wire:model.live="vipConsoleBoxPcs" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Amount (₱)</label>
-                                        <input type="number" min="0" wire:model.live="vipConsoleBoxAmount" @change="$wire.calculateVipComponentTotal()" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-semibold text-blue-700">
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price (₱)</label>
+                                        <input type="number" min="0" wire:model.live="vipConsoleBoxUnitPrice" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Sub Amount (₱)</label>
+                                        <input type="number" min="0" wire:model="vipConsoleBoxAmount" readonly placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 font-semibold text-blue-700">
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Thai Ceiling Section --}}
+                            <div class="bg-white rounded-lg p-3 border border-gray-200">
+                                <h4 class="font-semibold text-gray-800 mb-2">Thai Ceiling</h4>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Pcs</label>
+                                        <input type="number" min="0" wire:model.live="vipThaiCeilingPcs" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price (₱)</label>
+                                        <input type="number" min="0" wire:model.live="vipThaiCeilingUnitPrice" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Sub Amount (₱)</label>
+                                        <input type="number" min="0" wire:model="vipThaiCeilingAmount" readonly placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 font-semibold text-blue-700">
                                     </div>
                                 </div>
                             </div>
@@ -470,15 +501,13 @@
                             </div>
 
                             {{-- Total Amount --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Total Amount <span class="text-red-500">*</span></label>
+                            <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border-2 border-blue-300">
+                                <label class="block text-sm font-bold text-blue-900 mb-2 uppercase">Total Amount</label>
                                 <div class="relative">
-                                    <span class="absolute left-3 top-2 text-gray-400">₱</span>
-                                    <input type="number" min="{{ $vipComponentTotal }}" wire:model="vipTotalAmount" placeholder="0" class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold text-blue-700">
+                                    <span class="absolute left-3 top-3 text-2xl text-blue-600">₱</span>
+                                    <input type="number" wire:model="vipTotalAmount" readonly placeholder="0" class="w-full pl-10 pr-3 py-3 border-2 border-blue-300 rounded-md text-2xl bg-white font-bold text-blue-700 cursor-not-allowed">
                                 </div>
-                                @if($vipComponentTotal > 0)
-                                    <p class="text-xs text-gray-600 mt-1">Minimum: ₱{{ number_format($vipComponentTotal, 2) }}</p>
-                                @endif
+                                <p class="text-xs text-blue-700 mt-2 font-medium">Auto-calculated from components above</p>
                                 @error('vipTotalAmount') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                             </div>
 
@@ -666,6 +695,9 @@
                                                         @endif
                                                         @if($item['console_box_pcs'] > 0)
                                                             <p>Console Box: {{ $item['console_box_pcs'] }} pcs → ₱{{ number_format($item['console_box_amount'], 0) }}</p>
+                                                        @endif
+                                                        @if(isset($item['thai_ceiling_pcs']) && $item['thai_ceiling_pcs'] > 0)
+                                                            <p>Thai Ceiling: {{ $item['thai_ceiling_pcs'] }} pcs → ₱{{ number_format($item['thai_ceiling_amount'], 0) }}</p>
                                                         @endif
                                                     </div>
                                                     @if($item['description'])

@@ -91,7 +91,7 @@
         <div class="bg-white border border-gray-200 p-4 ">
             <div class="text-xs font-medium text-gray-500 uppercase mb-1">Total Expenses</div>
             <div class="text-2xl font-semibold text-gray-900">₱{{ number_format($order->total_cost) }}</div>
-            <div class="text-xs text-gray-400 mt-1">Inventory + Labor</div>
+            <div class="text-xs text-gray-400 mt-1">Inventory</div>
         </div>
 
         {{-- Net Profit --}}
@@ -309,7 +309,20 @@
                             <td class="px-6 py-4 text-gray-900 font-semibold">{{ $order->created_at->format('M d') }}</td>
                             <td class="px-6 py-4 text-gray-700">
                                 <p class="font-medium">VIP Package</p>
-                                <p class="text-xs text-gray-500">Stepboard: {{ $vip->stepboard_pcs }} pcs • Engine Bay: {{ $vip->engine_bay_pcs }} pcs • Console Box: {{ $vip->console_box_pcs }} pcs</p>
+                                <div class="text-xs text-gray-500 space-y-0.5">
+                                    @if(($vip->stepboard_pcs ?? 0) > 0)
+                                        <p>Stepboard: {{ $vip->stepboard_pcs }} pcs → ₱{{ number_format($vip->stepboard_amount) }}</p>
+                                    @endif
+                                    @if(($vip->engine_bay_pcs ?? 0) > 0)
+                                        <p>Engine Bay: {{ $vip->engine_bay_pcs }} pcs → ₱{{ number_format($vip->engine_bay_amount) }}</p>
+                                    @endif
+                                    @if(($vip->console_box_pcs ?? 0) > 0)
+                                        <p>Console Box: {{ $vip->console_box_pcs }} pcs → ₱{{ number_format($vip->console_box_amount) }}</p>
+                                    @endif
+                                    @if(($vip->thai_ceiling_pcs ?? 0) > 0)
+                                        <p>Thai Ceiling: {{ $vip->thai_ceiling_pcs }} pcs → ₱{{ number_format($vip->thai_ceiling_amount) }}</p>
+                                    @endif
+                                </div>
                                 @if($vip->description)
                                     <p class="text-xs text-gray-500">{{ $vip->description }}</p>
                                 @endif
