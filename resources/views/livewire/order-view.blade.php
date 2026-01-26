@@ -3,7 +3,7 @@
     <div class="print-only mb-4">
         <div class="flex items-start justify-between">
             <div class="flex items-center gap-4">
-                <div class="w-16 h-16 rounded-full border border-gray-400 flex items-center justify-center text-xs font-bold">LOGO</div>
+                <img src="{{ asset('logo.png') }}" alt="Pro Elite Logo" class="w-16 h-16 rounded-full border border-gray-400 object-cover">
                 <div>
                     <p class="text-sm font-bold text-gray-900">PRO ELITE CAR UPHOLSTERY</p>
                     <p class="text-xs text-gray-700">72 QUEEN OF PEACE ROAD, LOURDES SUBDIVISION EXTENSION BAGUIO CITY</p>
