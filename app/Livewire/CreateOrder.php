@@ -12,6 +12,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Service;
 use App\Models\ServiceAssignment;
+use App\Models\UpholsteryAssignment;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Illuminate\Support\Facades\Hash;
@@ -82,6 +83,7 @@ class CreateOrder extends Component
     public $upholsteryDescription = '';
     public $upholsteryPhoto;
     public $upholsteryTotalAmount = 0;
+    public $upholstryCrew = [];
 
     // VIP form
     public $vipStepboardPcs = 0;
@@ -372,6 +374,27 @@ class CreateOrder extends Component
         }
     }
 
+    public function toggleUpholstryCrew(int $userId): void
+    {
+        $found = false;
+        $this->upholstryCrew = array_filter($this->upholstryCrew, function ($member) use ($userId, &$found) {
+            if (is_array($member) && ($member['id'] ?? null) === $userId) {
+                $found = true;
+                return false;
+            }
+            return true;
+        });
+
+        if (!$found) {
+            $employee = Employee::with('user')->find($userId);
+            if ($employee && $employee->user) {
+                $this->upholstryCrew[] = ['id' => $employee->id, 'name' => $employee->user->name];
+            }
+        }
+
+        $this->upholstryCrew = array_values($this->upholstryCrew);
+    }
+
     /**
      * EVENT LISTENER: Adds an expense from ExpenseForm child
      */
@@ -452,6 +475,7 @@ class CreateOrder extends Component
             'unit_price' => $this->upholsteryTotalAmount,
             'total_price' => $this->upholsteryTotalAmount,
             'quantity' => 1,
+            'crew_members' => $this->upholstryCrew,
             'created_at' => now(),
         ];
 
@@ -474,6 +498,7 @@ class CreateOrder extends Component
         $this->upholsteryDescription = '';
         $this->upholsteryPhoto = null;
         $this->upholsteryTotalAmount = 0;
+        $this->upholstryCrew = [];
         $this->resetErrorBag();
     }
 
@@ -948,6 +973,17 @@ class CreateOrder extends Component
                             'unit_price' => $itemRevenue,
                             'total_price' => $itemRevenue,
                         ]);
+
+                        // Save crew assignments for upholstery
+                        if (!empty($item['crew_members'])) {
+                            foreach ($item['crew_members'] as $crewMember) {
+                                UpholsteryAssignment::create([
+                                    'order_id' => $order->id,
+                                    'upholstery_id' => $upholstery->id,
+                                    'employee_id' => $crewMember['id'] ?? $crewMember,
+                                ]);
+                            }
+                        }
 
                         $totalGross += $itemRevenue;
                         // Upholstery has no direct cost in this model

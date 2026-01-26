@@ -90,6 +90,10 @@
                                    class="text-green-600 hover:text-green-900 mr-3 font-medium">
                                     Services
                                 </a>
+                                <a href="/employees/{{ $user->id }}/upholstery" wire:navigate
+                                   class="text-purple-600 hover:text-purple-900 mr-3 font-medium">
+                                    Upholstery
+                                </a>
                             @endif
                             <a href="/users/{{ $user->id }}/edit" wire:navigate
                                class="text-blue-600 hover:text-blue-900 mr-3 font-medium">

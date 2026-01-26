@@ -251,6 +251,7 @@
                     @foreach($order->orderItems->where('upholstery_id', '!=', null) as $item)
                         @php
                             $upholstery = $item->upholstery;
+                            $crewMembers = $order->upholsteryAssignments->where('upholstery_id', $upholstery->id);
                             $serviceLabels = [
                                 'seat_cover' => 'Seat Cover',
                                 'ceiling' => 'Ceiling',
@@ -283,6 +284,14 @@
                                                 <span class="font-semibold">Services:</span>
                                                 @foreach($selectedServices as $service)
                                                     <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-800 mr-1 mt-1">{{ $service }}</span>
+                                                @endforeach
+                                            </p>
+                                        @endif
+                                        @if($crewMembers->count() > 0)
+                                            <p class="text-xs text-gray-600">
+                                                <span class="font-semibold">Assigned Crew:</span>
+                                                @foreach($crewMembers as $crew)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-purple-100 text-purple-800 mr-1 mt-1">{{ $crew->employee->name }}</span>
                                                 @endforeach
                                             </p>
                                         @endif

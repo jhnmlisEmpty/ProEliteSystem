@@ -71,7 +71,11 @@ Route::middleware(['auth', 'denyEmployee'])->group(function () {
         Route::get('/users/{id}/edit', UserForm::class)->name('users.edit')->middleware('admin');
         
         // Employee Services
+
+        // Employee Services
         Route::get('/employees/{id}/services', EmployeeServices::class)->name('employees.services')->middleware('admin');
+        // Employee Upholstery
+        Route::get('/employees/{id}/upholstery', \App\Livewire\EmployeeUpholstery::class)->name('employees.upholstery')->middleware('admin');
 
         // Branches
         Route::get('/branches', BranchManagement::class)->name('branches.index')->middleware('admin');

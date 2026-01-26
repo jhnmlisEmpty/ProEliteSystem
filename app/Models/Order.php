@@ -71,6 +71,11 @@ class Order extends Model
         return $this->hasMany(ServiceAssignment::class);
     }
 
+    public function upholsteryAssignments(): HasMany
+    {
+        return $this->hasMany(UpholsteryAssignment::class);
+    }
+
     // Query Scopes
     public function scopePending($query)
     {
