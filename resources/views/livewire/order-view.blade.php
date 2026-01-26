@@ -181,7 +181,7 @@
                         @if($upholsteryItem?->upholstery?->unit_year_model)
                             <div>
                                 <p class="text-xs font-semibold text-gray-600 uppercase mb-1">Vehicle Model</p>
-                                <p class="text-sm font-semibold text-gray-900">{{ $upholsteryItem->upholstery->unit_year_model }}</p>
+                                <p class="text-sm font-semibold text-gray-900">{{ $upholstery->unit_type ?? 'N/A' }} - {{ $upholstery->unit_year_model }}</p>
                             </div>
                         @endif
                     </div>
