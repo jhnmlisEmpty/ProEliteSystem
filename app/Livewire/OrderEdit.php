@@ -12,6 +12,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Service;
 use App\Models\ServiceAssignment;
+use App\Models\UpholsteryAssignment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
@@ -84,6 +85,7 @@ class OrderEdit extends Component
     public $upholsteryDescription = '';
     public $upholsteryPhoto;
     public $upholsteryTotalAmount = 0;
+    public $upholstryCrew = [];
 
     // VIP form
     public $vipStepboardPcs = 0;
@@ -136,7 +138,7 @@ class OrderEdit extends Component
     public function mount($id)
     {
         $this->orderId = $id;
-        $order = Order::with(['orderItems.product', 'orderItems.service', 'orderItems.upholstery', 'orderItems.vip', 'customer', 'expenses', 'payments'])->findOrFail($id);
+        $order = Order::with(['orderItems.product', 'orderItems.service', 'orderItems.upholstery', 'orderItems.vip', 'customer', 'expenses', 'payments', 'upholsteryAssignments.employee'])->findOrFail($id);
 
         // Load customer data
         $this->customer_id = $order->customer_id;
@@ -237,6 +239,15 @@ class OrderEdit extends Component
                         }
                     }
 
+                    // Load crew assignments
+                    $assignments = $order->upholsteryAssignments
+                        ->where('upholstery_id', $upholstery->id)
+                        ->map(fn($assignment) => [
+                            'id' => $assignment->employee_id,
+                            'name' => $assignment->employee->name ?? 'Unknown',
+                        ])
+                        ->toArray();
+
                     $this->cartItems[$itemId] = [
                         'id' => $itemId,
                         'type' => 'upholstery',
@@ -250,6 +261,7 @@ class OrderEdit extends Component
                         'unit_price' => $item->unit_price,
                         'total_price' => $item->total_price,
                         'quantity' => 1,
+                        'crew_members' => $assignments,
                         'order_item_id' => $item->id,
                         'created_at' => $item->created_at,
                     ];
@@ -537,6 +549,27 @@ class OrderEdit extends Component
         }
     }
 
+    public function toggleUpholstryCrew(int $userId): void
+    {
+        $found = false;
+        $this->upholstryCrew = array_filter($this->upholstryCrew, function ($member) use ($userId, &$found) {
+            if (is_array($member) && ($member['id'] ?? null) === $userId) {
+                $found = true;
+                return false;
+            }
+            return true;
+        });
+
+        if (!$found) {
+            $employee = Employee::find($userId);
+            if ($employee) {
+                $this->upholstryCrew[] = ['id' => $employee->id, 'name' => $employee->name];
+            }
+        }
+
+        $this->upholstryCrew = array_values($this->upholstryCrew);
+    }
+
     /**
      * EVENT LISTENER: Adds an expense from ExpenseForm child
      */
@@ -640,6 +673,7 @@ class OrderEdit extends Component
             'unit_price' => $this->upholsteryTotalAmount,
             'total_price' => $this->upholsteryTotalAmount,
             'quantity' => 1,
+            'crew_members' => $this->upholstryCrew,
             'created_at' => now(),
         ];
 
@@ -662,6 +696,7 @@ class OrderEdit extends Component
         $this->upholsteryDescription = '';
         $this->upholsteryPhoto = null;
         $this->upholsteryTotalAmount = 0;
+        $this->upholstryCrew = [];
         $this->resetErrorBag();
     }
 
@@ -995,7 +1030,8 @@ class OrderEdit extends Component
                         ServiceAssignment::where('order_id', $order->id)->where('service_id', $item->service_id)->delete();
                     }
                     if ($item->upholstery_id) {
-                        // Delete the upholstery record when order item is deleted
+                        // Delete the upholstery assignments and record when order item is deleted
+                        UpholsteryAssignment::where('upholstery_id', $item->upholstery_id)->delete();
                         UpholsteryOrder::where('id', $item->upholstery_id)->delete();
                     }
                     if ($item->vip_id) {
@@ -1135,6 +1171,17 @@ class OrderEdit extends Component
                             'unit_price' => $itemRevenue,
                             'total_price' => $itemRevenue,
                         ]);
+
+                        // Save crew assignments for upholstery
+                        if (!empty($item['crew_members'])) {
+                            foreach ($item['crew_members'] as $crewMember) {
+                                UpholsteryAssignment::create([
+                                    'order_id' => $order->id,
+                                    'upholstery_id' => $upholstery->id,
+                                    'employee_id' => is_array($crewMember) ? ($crewMember['id'] ?? $crewMember) : $crewMember,
+                                ]);
+                            }
+                        }
 
                         $totalGross += $itemRevenue;
                     } elseif ($item['type'] === 'vip') {

@@ -272,6 +272,19 @@
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V7a2 2 0 012-2h6a2 2 0 012 2v2M7 11a2 2 0 11-4 0 2 2 0 014 0zm14 0a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                             Upholstery Service
                         </h3>
+                        @if(!empty($upholstryCrew))
+                            <p class="text-xs text-gray-600 mb-3">
+                                <span class="font-medium">Assigned:</span> 
+                                @foreach($upholstryCrew as $crewId)
+                                    @php
+                                        $employee = $employees->firstWhere('id', $crewId);
+                                    @endphp
+                                    @if($employee)
+                                        <span class="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs mr-1">{{ $employee->name }}</span>
+                                    @endif
+                                @endforeach
+                            </p>
+                        @endif
 
                         <div class="space-y-4">
                             {{-- Year Model --}}
@@ -337,6 +350,34 @@
                                 </div>
 
                                
+                            </div>
+
+                            {{-- Crew Assignment --}}
+                            <div class="bg-white rounded-lg p-3 border border-gray-200">
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Assign Crew (Optional)</label>
+                                <div class="flex flex-wrap gap-2">
+                                    @php
+                                        // Show all employees if admin, else filter by branch
+                                        if (auth()->user()->isAdmin()) {
+                                            $employees = \App\Models\Employee::whereHas('user', function($q) { $q->where('role', 'employee'); })
+                                                ->with('user')->get();
+                                        } else {
+                                            $employees = \App\Models\Employee::where('branch_id', auth()->user()->branch_id)
+                                                ->whereHas('user', function($q) { $q->where('role', 'employee'); })
+                                                ->with('user')->get();
+                                        }
+                                    @endphp
+                                    @foreach($employees as $employee)
+                                        @php
+                                            $isAssigned = collect($upholstryCrew)->contains('id', $employee->id);
+                                        @endphp
+                                        <button type="button"
+                                            wire:click="toggleUpholstryCrew({{ $employee->id }})"
+                                            class="px-2 py-1 rounded text-xs font-medium transition {{ $isAssigned ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                            {{ $employee->user->name ?? 'Unknown' }}
+                                        </button>
+                                    @endforeach
+                                </div>
                             </div>
 
                             {{-- Total Amount --}}
@@ -601,6 +642,17 @@
                                         <div class="flex-1">
                                             <p class="font-medium text-gray-900">{{ $item['name'] }}</p>
                                             <p class="text-xs text-gray-600">Installation: {{ date('M d, Y', strtotime($item['installation_date'])) }}</p>
+                                            @if(!empty($item['crew_members']))
+                                                <p class="text-xs text-gray-600 mb-1">
+                                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                                    @php
+                                                        $crewNames = collect($item['crew_members'])
+                                                            ->map(fn($member) => is_array($member) ? $member['name'] : $member->name)
+                                                            ->implode(', ');
+                                                    @endphp
+                                                    {{ $crewNames }}
+                                                </p>
+                                            @endif
                                             @if($item['description'])
                                                 <p class="text-xs text-gray-500 italic mt-1">{{ Str::limit($item['description'], 50) }}</p>
                                             @endif

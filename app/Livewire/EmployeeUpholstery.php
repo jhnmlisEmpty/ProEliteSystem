@@ -4,12 +4,12 @@ namespace App\Livewire;
 
 use App\Models\User;
 use App\Models\Employee;
-use App\Models\ServiceAssignment;
-use App\Models\OrderItem;
+use App\Models\UpholsteryAssignment;
+use App\Models\UpholsteryOrder;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 
-class EmployeeServices extends Component
+class EmployeeUpholstery extends Component
 {
     public ?User $user = null;
     public ?Employee $employee = null;
@@ -47,31 +47,28 @@ class EmployeeServices extends Component
     public function render()
     {
         if (!$this->employee || !$this->user) {
-            return view('livewire.employee-services')->layout('layouts.app');
+            return view('livewire.employee-upholstery')->layout('layouts.app');
         }
 
-        // Get all service assignments for this employee
-        $serviceAssignments = ServiceAssignment::where('employee_id', $this->employee->id)
+        // Get all upholstery assignments for this employee
+        $upholsteryAssignments = UpholsteryAssignment::where('employee_id', $this->employee->id)
             ->when($this->startDate, fn ($q) => $q->whereDate('created_at', '>=', $this->startDate))
             ->when($this->endDate, fn ($q) => $q->whereDate('created_at', '<=', $this->endDate))
-            ->with(['service', 'order', 'order.customer'])
+            ->with(['upholstery.order.customer'])
             ->get()
-            ->groupBy('service_id');
+            ->groupBy('upholstery_id');
 
-        // Build services summary with earnings and co-workers
-        $servicesSummary = collect();
+        // Build upholstery summary with earnings and co-workers
+        $upholsterySummary = collect();
         
-        foreach ($serviceAssignments as $serviceId => $assignments) {
-            $service = $assignments->first()->service;
+        foreach ($upholsteryAssignments as $upholsteryId => $assignments) {
+            $upholsteryOrder = $assignments->first()->upholstery;
             
-            // Calculate service value from order_items (total_price per service)
-            $orderIds = $assignments->pluck('order_id');
-            $serviceValue = OrderItem::whereIn('order_id', $orderIds)
-                ->where('service_id', $serviceId)
-                ->sum('total_price');
+            // Calculate order value (use balance + downpayment as total, or add a total_price accessor if needed)
+            $orderValue = $upholsteryOrder ? (($upholsteryOrder->balance ?? 0) + ($upholsteryOrder->downpayment ?? 0)) : 0;
 
-            // Get other employees assigned to this service
-            $otherEmployees = ServiceAssignment::where('service_id', $serviceId)
+            // Get other employees assigned to this upholstery order
+            $otherEmployees = UpholsteryAssignment::where('upholstery_id', $upholsteryId)
                 ->where('employee_id', '!=', $this->employee->id)
                 ->with('employee')
                 ->get()
@@ -84,19 +81,19 @@ class EmployeeServices extends Component
                 })
                 ->values();
 
-            $servicesSummary->push([
-                'service' => $service,
+            $upholsterySummary->push([
+                'upholsteryOrder' => $upholsteryOrder,
                 'assignmentCount' => $assignments->count(),
-                'serviceValue' => $serviceValue,
+                'orderValue' => $orderValue,
                 'otherEmployeesCount' => $otherEmployees->count(),
                 'otherEmployees' => $otherEmployees,
                 'assignments' => $assignments,
             ]);
         }
 
-        return view('livewire.employee-services', [
+        return view('livewire.employee-upholstery', [
             'user' => $this->user,
-            'servicesSummary' => $servicesSummary,
+            'upholsterySummary' => $upholsterySummary,
         ])->layout('layouts.app');
     }
 }
