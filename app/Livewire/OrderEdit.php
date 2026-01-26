@@ -79,6 +79,7 @@ class OrderEdit extends Component
         'sidings' => false,
         'rubber_mattings' => false,
         'front_mattings' => false,
+        'headrest' => false,
     ];
     public $upholsteryDescription = '';
     public $upholsteryPhoto;
@@ -605,6 +606,7 @@ class OrderEdit extends Component
             'sidings' => 'Sidings',
             'rubber_mattings' => 'Rubber Mattings',
             'front_mattings' => 'Front Mattings',
+            'headrest' => 'Headrest',
         ];
 
         $selectedServices = [];
@@ -643,6 +645,7 @@ class OrderEdit extends Component
             'sidings' => false,
             'rubber_mattings' => false,
             'front_mattings' => false,
+            'headrest' => false,
         ];
         $this->upholsteryDescription = '';
         $this->upholsteryPhoto = null;

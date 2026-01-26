@@ -33,6 +33,8 @@ class Dashboard extends Component
     public $completedOrdersCount = 0; // count of completed orders
     public $totalProductSales = 0; // sum of order_items total where product
     public $totalServiceSales = 0; // sum of order_items total where service
+    public $totalVipSales = 0; // sum of order_items total where vip package
+    public $totalUpholsterySales = 0; // sum of order_items total where upholstery
     public $expenseInternal = 0;   // sum of order_expenses.my_cost
     public $expenseCharged = 0;    // sum of order_expenses.charge_client
     public $totalBusinessExpenses = 0; // sum of standalone Expense table amounts
@@ -155,6 +157,8 @@ class Dashboard extends Component
         });
         $this->totalProductSales = (int) ($orderItemsRange->clone()->whereNotNull('product_id')->sum('total_price') ?? 0);
         $this->totalServiceSales = (int) ($orderItemsRange->clone()->whereNotNull('service_id')->sum('total_price') ?? 0);
+        $this->totalVipSales = (int) ($orderItemsRange->clone()->whereNotNull('vip_id')->sum('total_price') ?? 0);
+        $this->totalUpholsterySales = (int) ($orderItemsRange->clone()->whereNotNull('upholstery_id')->sum('total_price') ?? 0);
 
         $expensesRange = OrderExpense::whereHas('order', function($q) use ($start, $end){
             $q->whereBetween('created_at', [$start, $end]);

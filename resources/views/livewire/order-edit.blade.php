@@ -70,10 +70,6 @@
                 <input type="text" wire:model="newCustomerPhone" placeholder="Phone Number *" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                 <textarea wire:model="newCustomerAddress" placeholder="Address" rows="1" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"></textarea>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                <input type="text" wire:model="newCustomerVehicleType" placeholder="Vehicle Type (e.g., Sedan, SUV)" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                <input type="text" wire:model="newCustomerPlateNumber" placeholder="Plate Number" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-            </div>
             <div class="flex gap-2 text-red-600 text-xs mb-2">
                 @error('newCustomerName') <span>Name required</span> @enderror
                 @error('newCustomerPhone') <span>Phone required</span> @enderror
@@ -315,6 +311,10 @@
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" wire:model="upholsteryServices.front_mattings" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
                                         <span class="text-sm text-gray-700">Front Mattings</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" wire:model="upholsteryServices.headrest" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                        <span class="text-sm text-gray-700">Headrest</span>
                                     </label>
                                 </div>
                                 @error('upholsteryServices') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror

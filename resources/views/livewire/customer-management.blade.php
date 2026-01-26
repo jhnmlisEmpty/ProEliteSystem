@@ -47,7 +47,6 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Orders</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent</th>
@@ -61,20 +60,6 @@
                             <div class="text-sm font-medium text-gray-900">{{ $customer->name }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->phone }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-900">
-                            @if($customer->vehicle_type || $customer->plate_number)
-                                <div class="text-sm">
-                                    @if($customer->vehicle_type)
-                                        <p class="font-medium">{{ $customer->vehicle_type }}</p>
-                                    @endif
-                                    @if($customer->plate_number)
-                                        <p class="text-gray-600">{{ $customer->plate_number }}</p>
-                                    @endif
-                                </div>
-                            @else
-                                <span class="text-gray-400">-</span>
-                            @endif
-                        </td>
                         <td class="px-6 py-4 text-sm text-gray-900 max-w-md">
                             <p class="truncate" title="{{ $customer->address }}">{{ $customer->address ?: '-' }}</p>
                         </td>
@@ -124,16 +109,6 @@
                     <div>
                         <h3 class="text-sm font-medium text-gray-900">{{ $customer->name }}</h3>
                         <p class="text-xs text-gray-500 mt-1">{{ $customer->phone }}</p>
-                        @if($customer->vehicle_type || $customer->plate_number)
-                            <div class="text-xs text-gray-600 mt-1">
-                                @if($customer->vehicle_type)
-                                    <span class="font-medium">{{ $customer->vehicle_type }}</span>
-                                @endif
-                                @if($customer->plate_number)
-                                    <span>- {{ $customer->plate_number }}</span>
-                                @endif
-                            </div>
-                        @endif
                     </div>
                 </div>
 

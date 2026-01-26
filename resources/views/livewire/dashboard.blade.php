@@ -73,9 +73,9 @@
                     <p class="text-xs text-gray-400 mt-1 italic">Orders created today</p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-blue-500">
-                    <p class="text-xs text-gray-600 font-medium">Gross Sales</p>
-                    <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($grossSales, 0) }}</p>
-                    <p class="text-xs text-gray-400 mt-1 italic">Sum of order gross totals</p>
+                    <p class="text-xs text-gray-600 font-medium">Expenses</p>
+                    <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($totalBusinessExpenses, 0) }}</p>
+                    <p class="text-xs text-gray-400 mt-1 italic">Total business expenses</p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-green-500">
                     <p class="text-xs text-gray-600 font-medium">Net Sales (After Expenses)</p>
@@ -92,7 +92,7 @@
 
         <!-- SALES BREAKDOWN & EXPENSES -->
         <div class="mb-4">
-            <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div class="bg-white rounded-lg shadow p-3">
                     <p class="text-xs text-gray-600 font-medium">Total Product Sale</p>
                     <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($totalProductSales, 0) }}</p>
@@ -101,17 +101,13 @@
                     <p class="text-xs text-gray-600 font-medium">Total Service Sale</p>
                     <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($totalServiceSales, 0) }}</p>
                 </div>
-                <!-- <div class="bg-white rounded-lg shadow p-3">
-                    <p class="text-xs text-gray-600 font-medium">Total Expense (Internal)</p>
-                    <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($expenseInternal, 0) }}</p>
+                <div class="bg-white rounded-lg shadow p-3">
+                    <p class="text-xs text-gray-600 font-medium">Total VIP Packages Sale</p>
+                    <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($totalVipSales, 0) }}</p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-3">
-                    <p class="text-xs text-gray-600 font-medium">Total Expense (Charged)</p>
-                    <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($expenseCharged, 0) }}</p>
-                </div> -->
-                <div class="bg-white rounded-lg shadow p-3">
-                    <p class="text-xs text-gray-600 font-medium">Total Business Expenses</p>
-                    <p class="text-xl font-bold text-red-600 mt-0.5">₱{{ number_format($totalBusinessExpenses, 0) }}</p>
+                    <p class="text-xs text-gray-600 font-medium">Total Upholstery Sale</p>
+                    <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($totalUpholsterySales, 0) }}</p>
                 </div>
             </div>
         </div>

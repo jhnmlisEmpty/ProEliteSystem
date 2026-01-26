@@ -45,7 +45,7 @@
 
         {{-- Search existing customers to prefill form --}}
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <div class="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                 {{-- Search Input --}}
                 <div class="md:col-span-1">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
@@ -85,18 +85,6 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
                     <textarea wire:model="newCustomerAddress" placeholder="Address" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"></textarea>
                 </div>
-
-                {{-- Vehicle Type --}}
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
-                    <input type="text" wire:model="newCustomerVehicleType" placeholder="Sedan, SUV..." class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                </div>
-
-                {{-- Plate Number --}}
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Plate Number</label>
-                    <input type="text" wire:model="newCustomerPlateNumber" placeholder="Plate #" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                </div>
             </div>
 
             <div class="mt-3">
@@ -119,14 +107,18 @@
 
             {{-- Branch Selection --}}
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                <label class="block text-xs font-medium text-gray-700 mb-1">Branch <span class="text-red-500">*</span></label>
-                <select wire:model="branch_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm {{ !$canSelectBranch ? 'bg-gray-100 cursor-not-allowed' : '' }}" {{ !$canSelectBranch ? 'disabled' : '' }}>
-                    <option value="">Select Branch</option>
+                <label class="block text-xs font-medium text-gray-700 mb-2">Branch <span class="text-red-500">*</span></label>
+                <div class="flex gap-2 flex-wrap">
                     @foreach($branches as $branch)
-                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                        <button 
+                            wire:click="$set('branch_id', {{ $branch->id }})"
+                            {{ !$canSelectBranch ? 'disabled' : '' }}
+                            class="px-4 py-2 rounded-md font-medium transition text-sm {{ $branch_id == $branch->id ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-400 hover:bg-blue-50' }} {{ !$canSelectBranch ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer' }}">
+                            {{ $branch->name }}
+                        </button>
                     @endforeach
-                </select>
-                <p class="text-xs text-gray-500 mt-1">{{ $canSelectBranch ? 'Select the branch for this order' : 'Your branch is automatically assigned' }}</p>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">{{ $canSelectBranch ? 'Select the branch for this order' : 'Your branch is automatically assigned' }}</p>
                 @error('branch_id') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
         @endif
@@ -168,26 +160,42 @@
 
                 {{-- PRODUCTS TAB --}}
                 @if($activeTab === 'products')
-                    @if($products->count() > 0)
+                    @if(!$branch_id)
+                        <div class="text-center py-12 text-gray-500">
+                            <svg class="w-12 h-12 mx-auto mb-2 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                            <p class="font-medium">Please select a branch first</p>
+                            <p class="text-sm">Scroll up and choose a branch to view available products</p>
+                        </div>
+                    @elseif($products->count() > 0)
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto">
                             @foreach($products as $product)
+                                @php
+                                    $isDifferentBranch = $branch_id && $product->branch_id != $branch_id;
+                                    $isDisabled = ($product->stock_qty ?? 0) <= 0 || $isDifferentBranch;
+                                @endphp
                                 <button 
                                     wire:click="addProduct({{ $product->id }})" 
-                                    {{ ($product->stock_qty ?? 0) <= 0 ? 'disabled' : '' }}
-                                    class="text-left p-4 rounded-lg transition {{ ($product->stock_qty ?? 0) <= 0 ? 'bg-red-50 border border-red-300 cursor-not-allowed opacity-60' : 'bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-400 cursor-pointer' }}">
+                                    {{ $isDisabled ? 'disabled' : '' }}
+                                    class="text-left p-4 rounded-lg transition {{ $isDisabled ? 'bg-red-50 border border-red-300 cursor-not-allowed opacity-60' : 'bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-400 cursor-pointer' }}">
                                     <div class="flex justify-between items-start mb-2">
-                                        <h4 class="font-semibold {{ ($product->stock_qty ?? 0) <= 0 ? 'text-red-900' : 'text-gray-900' }} flex-1">{{ $product->name }}</h4>
-                                        <span class="{{ ($product->stock_qty ?? 0) <= 0 ? 'text-red-600' : 'text-blue-600' }} font-bold text-lg">₱{{ number_format($product->sell_price, 0) }}</span>
+                                        <h4 class="font-semibold {{ $isDisabled ? 'text-red-900' : 'text-gray-900' }} flex-1">{{ $product->name }}</h4>
+                                        <span class="{{ $isDisabled ? 'text-red-600' : 'text-blue-600' }} font-bold text-lg">₱{{ number_format($product->sell_price, 0) }}</span>
                                     </div>
-                                    <p class="text-xs {{ ($product->stock_qty ?? 0) <= 0 ? 'text-red-600' : 'text-gray-600' }} mb-2">SKU: {{ $product->sku ?? 'N/A' }}</p>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-xs {{ ($product->stock_qty ?? 0) <= 0 ? 'bg-red-200 text-red-800' : (($product->stock_qty ?? 0) <= 5 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800') }} px-2 py-1 rounded-full font-medium">
+                                    <p class="text-xs {{ $isDisabled ? 'text-red-600' : 'text-gray-600' }} mb-2">SKU: {{ $product->sku ?? 'N/A' }}</p>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-xs {{ $isDisabled ? 'bg-red-200 text-red-800' : (($product->stock_qty ?? 0) <= 5 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800') }} px-2 py-1 rounded-full font-medium">
                                             Stock: {{ $product->stock_qty ?? 0 }} {{ ($product->stock_qty ?? 0) <= 0 ? '(Out of Stock)' : '' }}
                                         </span>
                                         <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
                                             {{ $product->category ?? 'Material' }}
                                         </span>
                                     </div>
+                                    <p class="text-xs {{ $isDifferentBranch ? 'text-red-600 font-semibold' : 'text-gray-500' }} pt-2 border-t border-gray-200">
+                                        <span class="font-semibold">Branch:</span> {{ $product->branch?->name ?? 'N/A' }}
+                                        @if($isDifferentBranch)
+                                            <span class="block text-red-600 text-xs mt-1">⚠ Cannot add - different branch</span>
+                                        @endif
+                                    </p>
                                 </button>
                             @endforeach
                         </div>
@@ -298,7 +306,7 @@
                         <div class="space-y-4">
                             {{-- Year Model --}}
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Year Model <span class="text-red-500">*</span></label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Vehicle/Unit Type/Year Model <span class="text-red-500">*</span></label>
                                 <input type="text" wire:model="upholsteryYearModel" placeholder="e.g., 2020 Toyota Vios" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 @error('upholsteryYearModel') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                             </div>
@@ -333,6 +341,10 @@
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" wire:model="upholsteryServices.front_mattings" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
                                         <span class="text-sm text-gray-700">Front Mattings</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" wire:model="upholsteryServices.headrest" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                        <span class="text-sm text-gray-700">Headrest</span>
                                     </label>
                                 </div>
                                 @error('upholsteryServices') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
