@@ -44,6 +44,8 @@ Route::middleware(['auth', 'denyEmployee'])->group(function () {
     Route::get('/orders/{id}', OrderView::class)->name('orders.view');
     Route::get('/orders/{id}/edit', OrderEdit::class)->name('orders.edit');
     
+    Route::get('/expenses', ExpenseManagement::class)->name('expenses.index');
+    Route::get('/expenses/create', ExpenseForm::class)->name('expenses.create');
 
     // All other routes - blocked for order_creator
     Route::middleware('denyOrderCreator')->group(function () {
@@ -83,8 +85,7 @@ Route::middleware(['auth', 'denyEmployee'])->group(function () {
         Route::get('/branches/{id}/edit', BranchForm::class)->name('branches.edit')->middleware('admin');
 
         // Expenses
-        Route::get('/expenses', ExpenseManagement::class)->name('expenses.index');
-        Route::get('/expenses/create', ExpenseForm::class)->name('expenses.create');
+        
         Route::get('/expenses/{id}/edit', ExpenseForm::class)->name('expenses.edit')->middleware('admin');
     });
 });

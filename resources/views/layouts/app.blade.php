@@ -46,6 +46,12 @@
                             <x-heroicon-o-shopping-cart class="w-4 h-4 inline-block mr-1" />
                             Orders
                         </a>
+
+                        <a href="{{ route('expenses.index') }}" 
+                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('expenses*') ? 'bg-gray-700 text-white' : '' }}">
+                            <x-heroicon-o-banknotes class="w-4 h-4 inline-block mr-1" />
+                            Expenses
+                        </a>
                        
                         @if(Auth::user()?->role !== 'order_creator')
                             <a href="{{ route('products.index') }}" 
@@ -63,11 +69,7 @@
                                 <x-heroicon-o-users class="w-4 h-4 inline-block mr-1" />
                                 Customers
                             </a>
-                            <a href="{{ route('expenses.index') }}" 
-                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('expenses*') ? 'bg-gray-700 text-white' : '' }}">
-                                <x-heroicon-o-banknotes class="w-4 h-4 inline-block mr-1" />
-                                Expenses
-                            </a>
+                          
                             @if(Auth::user()?->role === 'admin')
                                 <a href="{{ route('users.index') }}" 
                                 class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('users*') ? 'bg-gray-700 text-white' : '' }}">
