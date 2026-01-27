@@ -42,7 +42,7 @@ Route::middleware(['auth', 'denyEmployee'])->group(function () {
     Route::get('/orders', OrderManagement::class)->name('orders.index');
     Route::get('/orders/create', CreateOrder::class)->name('orders.create');
     Route::get('/orders/{id}', OrderView::class)->name('orders.view');
-    Route::get('/orders/{id}/edit', OrderEdit::class)->name('orders.edit')->middleware('admin');
+    Route::get('/orders/{id}/edit', OrderEdit::class)->name('orders.edit');
     
 
     // All other routes - blocked for order_creator

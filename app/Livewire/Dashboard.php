@@ -29,6 +29,7 @@ class Dashboard extends Component
     public $todaySales = 0; // sum of today's payments
     public $todayExpenses = 0; // sum of today's business expenses
     public $todayNetSales = 0; // todaySales - todayExpenses
+    public $todayPaymentBreakdown = [];
     public $completedOrdersSales = 0; // sum of completed orders total_amount
     public $completedOrdersCount = 0; // count of completed orders
     public $totalProductSales = 0; // sum of order_items total where product
@@ -130,14 +131,17 @@ class Dashboard extends Component
         $todayStart = Carbon::today()->startOfDay();
         $todayEnd = Carbon::today()->endOfDay();
         $todayPaymentsQuery = \App\Models\Payment::whereBetween('paid_at', [$todayStart, $todayEnd]);
-        
         if ($this->branchId) {
             $todayPaymentsQuery->whereHas('order', function($q) {
                 $q->where('branch_id', $this->branchId);
             });
         }
-        
         $this->todaySales = (int) ($todayPaymentsQuery->sum('amount') ?? 0);
+        // Payment method breakdown
+        $this->todayPaymentBreakdown = $todayPaymentsQuery->selectRaw('method, SUM(amount) as total')
+            ->groupBy('method')
+            ->pluck('total', 'method')
+            ->toArray();
 
         // Today's business expenses
         $todayExpensesQuery = Expense::whereBetween('created_at', [$todayStart, $todayEnd]);
@@ -439,6 +443,8 @@ class Dashboard extends Component
 
     public function render()
     {
-        return view('livewire.dashboard')->layout('layouts.app');
+        return view('livewire.dashboard', [
+            'todayPaymentBreakdown' => $this->todayPaymentBreakdown,
+        ])->layout('layouts.app');
     }
 }
