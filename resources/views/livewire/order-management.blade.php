@@ -252,9 +252,9 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex gap-3">
+                                    <a href="{{ route('orders.edit', $order->id) }}" class="text-gray-700 hover:text-gray-900 font-medium text-sm">Edit</a>
                                     <a href="{{ route('orders.view', $order->id) }}" class="text-blue-600 hover:text-blue-700 font-medium text-sm">View</a>
                                     @if(auth()->user()->role === 'admin')
-                                        <a href="{{ route('orders.edit', $order->id) }}" class="text-gray-700 hover:text-gray-900 font-medium text-sm">Edit</a>
                                         @if($order->status === 'pending')
                                             <button wire:click="delete({{ $order->id }})" wire:confirm="Are you sure you want to delete this order?" class="text-red-600 hover:text-red-700 font-medium text-sm">Delete</button>
                                         @endif

@@ -68,9 +68,23 @@
             <h2 class="text-sm font-semibold text-gray-900 mb-2">Sales Summary (Filtered Range)</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-amber-500">
-                    <p class="text-xs text-gray-600 font-medium">Today's Sales</p>
-                    <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($todaySales, 0) }}</p>
-                    <p class="text-xs text-gray-400 mt-1 italic">Orders created today</p>
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs text-gray-600 font-medium">Today's Sales</p>
+                            <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($todaySales, 0) }}</p>
+                            <p class="text-xs text-gray-400 mt-1 italic">Orders created today</p>
+                        </div>
+                        @if(isset($todayPaymentBreakdown) && is_array($todayPaymentBreakdown) && count($todayPaymentBreakdown) > 0)
+                            <div class="ml-4 flex flex-col items-end min-w-[120px]">
+                                @foreach($todayPaymentBreakdown as $method => $amount)
+                                    <div class="text-xs text-gray-700 whitespace-nowrap">
+                                        <span class="font-semibold capitalize">{{ $method }}:</span>
+                                        <span>{{ $amount > 0 ? number_format($amount, 2) : '' }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
                 </div>
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-blue-500">
                     <p class="text-xs text-gray-600 font-medium">Expenses</p>
@@ -140,9 +154,23 @@
             <h2 class="text-sm font-semibold text-gray-900 mb-2">Daily Sales Summary</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-blue-500">
-                    <p class="text-xs text-gray-600 font-medium">Today's Sales</p>
-                    <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($todaySales, 0) }}</p>
-                    <p class="text-xs text-gray-400 mt-1 italic">Total payments received today</p>
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs text-gray-600 font-medium">Today's Sales</p>
+                            <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($todaySales, 0) }}</p>
+                            <p class="text-xs text-gray-400 mt-1 italic">Orders created today</p>
+                        </div>
+                        @if(isset($todayPaymentBreakdown) && is_array($todayPaymentBreakdown) && count($todayPaymentBreakdown) > 0)
+                            <div class="ml-4 flex flex-col items-end min-w-[120px]">
+                                @foreach($todayPaymentBreakdown as $method => $amount)
+                                    <div class="text-xs text-gray-700 whitespace-nowrap">
+                                        <span class="font-semibold capitalize">{{ $method }}:</span>
+                                        <span>{{ $amount > 0 ? number_format($amount, 2) : '' }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
                 </div>
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-red-500">
                     <p class="text-xs text-gray-600 font-medium">Today's Expenses</p>
@@ -172,7 +200,6 @@
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
@@ -204,8 +231,8 @@
                                                 {{ ucfirst($order['payment_status']) }}
                                             </span>
                                         </td>
-                                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">{{ $order['created_at'] }}</td>
                                         <td class="px-3 py-2 whitespace-nowrap text-xs">
+                                            <a href="{{ route('orders.edit', $order['id']) }}" class="text-gray-700 hover:text-gray-900 ">Edit</a>
                                             <a href="{{ route('orders.view', $order['id']) }}" class="text-blue-600 hover:text-blue-900">View</a>
                                         </td>
                                     </tr>
