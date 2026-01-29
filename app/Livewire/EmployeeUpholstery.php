@@ -16,6 +16,27 @@ class EmployeeUpholstery extends Component
     public ?string $startDate = null;
     public ?string $endDate = null;
 
+    public function togglePaidStatus($upholsteryId)
+    {
+        if (!$this->employee) return;
+
+        // Get all assignments for this employee and upholstery
+        $assignments = UpholsteryAssignment::where('employee_id', $this->employee->id)
+            ->where('upholstery_id', $upholsteryId)
+            ->get();
+
+        if ($assignments->isEmpty()) return;
+
+        // Determine new status (toggle based on first assignment)
+        $current = $assignments->first()->payment_status ?? 'unpaid';
+        $newStatus = $current === 'paid' ? 'unpaid' : 'paid';
+
+        // Update all assignments for this employee/upholstery
+        UpholsteryAssignment::where('employee_id', $this->employee->id)
+            ->where('upholstery_id', $upholsteryId)
+            ->update(['payment_status' => $newStatus]);
+    }
+
     public function mount(?int $id = null): void
     {
         if (!$id) {
@@ -81,6 +102,9 @@ class EmployeeUpholstery extends Component
                 })
                 ->values();
 
+            // Get payment status from the first assignment (assuming all have the same status)
+            $payment_status = $assignments->first()->payment_status ?? 'unpaid';
+
             $upholsterySummary->push([
                 'upholsteryOrder' => $upholsteryOrder,
                 'assignmentCount' => $assignments->count(),
@@ -88,6 +112,7 @@ class EmployeeUpholstery extends Component
                 'otherEmployeesCount' => $otherEmployees->count(),
                 'otherEmployees' => $otherEmployees,
                 'assignments' => $assignments,
+                'payment_status' => $payment_status,
             ]);
         }
 
