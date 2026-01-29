@@ -39,6 +39,10 @@ class ExpenseForm extends Component
         'salaries' => 'Salaries & Wages',
         'equipment' => 'Equipment & Tools',
         'subscriptions' => 'Software & Subscriptions',
+        'accessories' => 'Accessories',
+        'upholstery' => 'Upholstery',
+        'vip' => 'VIP',
+        'services' => 'Services',
         'other' => 'Other Expenses',
     ];
 

@@ -16,6 +16,27 @@ class EmployeeServices extends Component
     public ?string $startDate = null;
     public ?string $endDate = null;
 
+    public function togglePaidStatus($serviceId)
+    {
+        if (!$this->employee) return;
+
+        // Get all assignments for this employee and service
+        $assignments = ServiceAssignment::where('employee_id', $this->employee->id)
+            ->where('service_id', $serviceId)
+            ->get();
+
+        if ($assignments->isEmpty()) return;
+
+        // Determine new status (toggle based on first assignment)
+        $current = $assignments->first()->payment_status ?? 'unpaid';
+        $newStatus = $current === 'paid' ? 'unpaid' : 'paid';
+
+        // Update all assignments for this employee/service
+        ServiceAssignment::where('employee_id', $this->employee->id)
+            ->where('service_id', $serviceId)
+            ->update(['payment_status' => $newStatus]);
+    }
+
     public function mount(?int $id = null): void
     {
         if (!$id) {
@@ -84,6 +105,9 @@ class EmployeeServices extends Component
                 })
                 ->values();
 
+            // Get payment status from the first assignment (all should be the same for this employee/service)
+            $paymentStatus = $assignments->first()->payment_status ?? 'unpaid';
+
             $servicesSummary->push([
                 'service' => $service,
                 'assignmentCount' => $assignments->count(),
@@ -91,6 +115,7 @@ class EmployeeServices extends Component
                 'otherEmployeesCount' => $otherEmployees->count(),
                 'otherEmployees' => $otherEmployees,
                 'assignments' => $assignments,
+                'payment_status' => $paymentStatus,
             ]);
         }
 
