@@ -20,16 +20,13 @@
                 </div>
                 <p class="text-xs text-gray-500">Includes all accessible branches{{ $isAdmin ? ' (admin: all branches)' : '' }}</p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                <div class="bg-gradient-to-br from-amber-50 to-white border border-amber-100 rounded-lg p-3">
-                    <p class="text-xs text-amber-700 font-semibold">Total Sales</p>
-                    <p class="text-2xl font-bold text-amber-900">₱{{ number_format($overallSummary['totalSales'] ?? 0, 0) }}</p>
-                    <p class="text-[11px] text-amber-600">{{ $overallSummary['orderCount'] ?? 0 }} orders</p>
-                </div>
-                <div class="bg-gradient-to-br from-slate-50 to-white border border-slate-100 rounded-lg p-3">
-                    <p class="text-xs text-slate-700 font-semibold">Order Items</p>
-                    <p class="text-2xl font-bold text-slate-900">{{ ($overallSummary['orderItems'] ?? collect())->count() }}</p>
-                    <p class="text-[11px] text-slate-600">Products, services, upholstery, VIP</p>
+            <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-3">
+                <div class="bg-gradient-to-br from-green-50 to-white border border-green-100 rounded-lg p-3">
+                    <p class="text-xs text-green-700 font-semibold">Today's Sales</p>
+                    <p class="text-2xl font-bold text-green-900">
+                        ₱{{ number_format(collect($overallPayments ?? [])->sum('paid_amount'), 0) }}
+                    </p>
+                    <p class="text-[11px] text-green-600">Total payments for orders paid on this date</p>
                 </div>
                 <div class="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-lg p-3">
                     <p class="text-xs text-emerald-700 font-semibold">Supply Movement</p>
@@ -44,49 +41,61 @@
             </div>
         </section>
 
-        <!-- Orders & items -->
+        <!-- Payments Table -->
         <section class="bg-white shadow rounded-lg p-4">
             <div class="flex items-center justify-between mb-3">
-                <h3 class="text-sm font-semibold text-gray-900">Orders and Items</h3>
-                <span class="text-xs text-gray-500">All orders created on this day</span>
+                <h3 class="text-sm font-semibold text-gray-900">Today's Sales</h3>
+                <span class="text-xs text-gray-500">These are the orders that were placed payments on the set day</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-xs">
                     <thead class="bg-gray-50 text-gray-600 uppercase tracking-wide">
                         <tr>
-                            <th class="px-3 py-2 text-left">Order</th>
+                            <th class="px-3 py-2 text-left">Order #</th>
                             <th class="px-3 py-2 text-left">Branch</th>
                             <th class="px-3 py-2 text-left">Customer</th>
-                            <th class="px-3 py-2 text-left">Status</th>
-                            <th class="px-3 py-2 text-right">Total</th>
-                            <th class="px-3 py-2 text-left">Items</th>
+                            <th class="px-3 py-2 text-left">Order Status</th>
+                            <th class="px-3 py-2 text-left">Order Items</th>
+                            <th class="px-3 py-2 text-right">Order Amount</th>
+                            <th class="px-3 py-2 text-left">Payment Status</th>
+                            <th class="px-3 py-2 text-right">Balance</th>
+                            <th class="px-3 py-2 text-right">Paid Amount</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        @forelse($overallSummary['orders'] ?? [] as $order)
+                        @forelse($overallPayments ?? [] as $payment)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-3 py-2 font-semibold text-gray-900">ORD-{{ $order->id }}</td>
-                                <td class="px-3 py-2 text-gray-700">{{ $order->branch->name ?? 'N/A' }}</td>
-                                <td class="px-3 py-2 text-gray-700">{{ $order->customer_name ?? ($order->customer->name ?? 'Walk-in') }}</td>
-                                <td class="px-3 py-2">
-                                    <span class="inline-flex items-center px-2 py-1 rounded text-[11px] font-semibold bg-gray-100 text-gray-700">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</span>
+                                <td class="px-3 py-2 font-semibold text-gray-900">ORD-{{ $payment['order_id'] }}</td>
+                                <td class="px-3 py-2 text-gray-700">
+                                    {{ $payment['order_branch'] ?? ($payment['order']?->branch->name ?? 'N/A') }}
                                 </td>
-                                <td class="px-3 py-2 text-right font-bold text-gray-900">₱{{ number_format($order->total_amount, 0) }}</td>
+                                <td class="px-3 py-2 text-gray-700">{{ $payment['customer_name'] }}</td>
+                                <td class="px-3 py-2">
+                                    <span class="inline-flex items-center px-2 py-1 rounded text-[11px] font-semibold bg-gray-100 text-gray-700">
+                                        {{ ucfirst(str_replace('_', ' ', $payment['order_status'] ?? ($payment['order']?->status ?? 'N/A'))) }}
+                                    </span>
+                                </td>
                                 <td class="px-3 py-2">
                                     <div class="space-y-1">
-                                        @foreach($order->orderItems as $item)
+                                        @foreach(($payment['order_items'] ?? []) as $item)
                                             <div class="flex items-center gap-2 text-[11px]">
-                                                <span class="text-gray-700 flex-1 truncate">{{ $item->item_name }}</span>
-                                                <span class="text-gray-500 text-center w-12 shrink-0">x{{ $item->quantity }}</span>
-                                                <span class="text-gray-900 font-semibold text-right w-24 shrink-0">₱{{ number_format($item->total_price, 0) }}</span>
+                                                <span class="text-gray-700 flex-1 truncate">{{ $item['item_name'] }}</span>
+                                                <span class="text-gray-500 text-center w-12 shrink-0">x{{ $item['quantity'] }}</span>
+                                                <span class="text-gray-900 font-semibold text-right w-16 shrink-0">₱{{ number_format($item['total_price'], 0) }}</span>
                                             </div>
                                         @endforeach
                                     </div>
                                 </td>
+                                <td class="px-3 py-2 text-right font-bold text-gray-900">₱{{ number_format($payment['amount'], 0) }}</td>
+                                <td class="px-3 py-2">
+                                    <span class="inline-flex items-center px-2 py-1 rounded text-[11px] font-semibold bg-gray-100 text-gray-700">{{ ucfirst($payment['payment_status']) }}</span>
+                                </td>
+                                <td class="px-3 py-2 text-right font-semibold text-gray-900">₱{{ number_format($payment['balance'], 0) }}</td>
+                                <td class="px-3 py-2 text-right font-semibold text-green-700">₱{{ number_format($payment['paid_amount'], 0) }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-3 py-4 text-center text-gray-500">No orders found for this date.</td>
+                                <td colspan="9" class="px-3 py-4 text-center text-gray-500">No payments recorded for this date.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -192,6 +201,16 @@
                             <div class="flex items-center justify-between">
                                 <span class="text-gray-600">Supply</span>
                                 <span class="font-semibold text-gray-900">In {{ number_format($summary['supplyIn'], 0) }} / Out {{ number_format($summary['supplyOut'], 0) }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600">Expenses</span>
+                                <span class="font-semibold text-rose-700">₱{{ number_format($summary['expenseTotal'], 0) }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600">Payments</span>
+                                <span class="font-semibold text-green-700">
+                                    ₱{{ number_format(collect($branchPayments[$summary['branch']->id] ?? [])->sum('paid_amount'), 0) }}
+                                </span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-gray-600">Expenses</span>

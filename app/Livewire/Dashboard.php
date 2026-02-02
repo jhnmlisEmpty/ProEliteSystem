@@ -18,36 +18,33 @@ class Dashboard extends Component
     // Filters
     public $start_date;
     public $end_date;
-    public $branchId = null; // null = all branches
+    public $branchId = null;
     public $branches = [];
     public $canSelectBranch = false;
 
-    // Sales (range)
-    public $grossSales = 0; // sum of orders.total_gross
-    public $netSales = 0;   // sum of orders.net_income
-    public $finalNetSales = 0; // netSales - totalBusinessExpenses
-    public $todaySales = 0; // sum of today's payments
-    public $todayExpenses = 0; // sum of today's business expenses
-    public $todayNetSales = 0; // todaySales - todayExpenses
+    // Metrics
+    public $grossSales = 0;
+    public $netSales = 0;
+    public $finalNetSales = 0;
+    public $todaySales = 0;
+    public $todayExpenses = 0;
+    public $todayNetSales = 0;
     public $todayPaymentBreakdown = [];
-    public $completedOrdersSales = 0; // sum of completed orders total_amount
-    public $completedOrdersCount = 0; // count of completed orders
-    public $totalProductSales = 0; // sum of order_items total where product
-    public $totalServiceSales = 0; // sum of order_items total where service
-    public $totalVipSales = 0; // sum of order_items total where vip package
-    public $totalUpholsterySales = 0; // sum of order_items total where upholstery
-    public $expenseInternal = 0;   // sum of order_expenses.my_cost
-    public $expenseCharged = 0;    // sum of order_expenses.charge_client
-    public $totalBusinessExpenses = 0; // sum of standalone Expense table amounts
+    public $totalProductSales = 0;
+    public $totalServiceSales = 0;
+    public $totalVipSales = 0;
+    public $totalUpholsterySales = 0;
+    public $expenseInternal = 0;
+    public $expenseCharged = 0;
+    public $totalBusinessExpenses = 0;
 
-    // Today's orders for non-admin
+    // Today's data for non-admin
     public $todaysOrders = [];
     public $todaysExpenses = [];
+    public $todaysPayments = [];
 
-    // Customer metrics
+    // Customer & inventory
     public $topCustomers = [];
-
-    // Inventory metrics
     public $lowStockProducts = [];
     public $inventoryValue = 0;
     public $topProducts = [];
@@ -58,37 +55,38 @@ class Dashboard extends Component
 
     public function mount()
     {
-        $user = auth()->user();
-        // Only admins can view cross-branch data; others are locked to their branch
-        $this->canSelectBranch = $user && $user->role === 'admin';
-
+        $this->initBranchAccess();
         $this->branches = Branch::active()->orderBy('name')->get();
         $this->loadOrCreateFilter();
         $this->loadDashboardData();
     }
 
-    public function loadDashboardData()
+    private function initBranchAccess(): void
+    {
+        $user = auth()->user();
+        $this->canSelectBranch = $user && $user->role === 'admin';
+    }
+
+    public function loadDashboardData(): void
     {
         $this->loadRevenueMetrics();
         $this->loadCustomerMetrics();
         $this->loadInventoryMetrics();
         $this->loadProductMetrics();
         $this->loadChartData();
-        
-        // Load today's orders for non-admin users
         if (!$this->canSelectBranch) {
             $this->loadTodaysOrders();
             $this->loadTodaysExpenses();
+            $this->loadTodaysPayments();
         }
     }
 
-    private function loadOrCreateFilter()
+    private function loadOrCreateFilter(): void
     {
         $user = auth()->user();
         $filter = Filter::where('filter_type', 'dashboard')
             ->where('user_id', auth()->id())
             ->first();
-        
         if ($filter) {
             $this->start_date = $filter->start_date->format('Y-m-d');
             $this->end_date = $filter->end_date->format('Y-m-d');
@@ -97,19 +95,18 @@ class Dashboard extends Component
             $this->setDefaultDates();
             $this->storeFilter();
         }
-
         if (! $this->canSelectBranch) {
             $this->branchId = $user?->branch_id;
         }
     }
 
-    private function setDefaultDates()
+    private function setDefaultDates(): void
     {
         $this->start_date = Carbon::today()->subDays(29)->format('Y-m-d');
         $this->end_date = Carbon::today()->format('Y-m-d');
     }
 
-    private function getDateRange()
+    private function getDateRange(): array
     {
         return [
             Carbon::parse($this->start_date)->startOfDay(),
@@ -117,17 +114,14 @@ class Dashboard extends Component
         ];
     }
 
-    private function loadRevenueMetrics()
+    private function loadRevenueMetrics(): void
     {
-        // Range-based sales/expense metrics
         [$start, $end] = $this->getDateRange();
-
-        $ordersRange = Order::query()->whereBetween('created_at', [$start, $end]);
-        if ($this->branchId) $ordersRange->where('branch_id', $this->branchId);
+        $ordersRange = $this->ordersRangeQuery($start, $end);
         $this->grossSales = (int) ($ordersRange->sum('total_gross') ?? 0);
         $this->netSales = (int) ($ordersRange->sum('net_income') ?? 0);
 
-        // Today's sales based on payments received today
+        // Today's sales
         $todayStart = Carbon::today()->startOfDay();
         $todayEnd = Carbon::today()->endOfDay();
         $todayPaymentsQuery = \App\Models\Payment::whereBetween('paid_at', [$todayStart, $todayEnd]);
@@ -137,7 +131,6 @@ class Dashboard extends Component
             });
         }
         $this->todaySales = (int) ($todayPaymentsQuery->sum('amount') ?? 0);
-        // Payment method breakdown
         $this->todayPaymentBreakdown = $todayPaymentsQuery->selectRaw('method, SUM(amount) as total')
             ->groupBy('method')
             ->pluck('total', 'method')
@@ -149,11 +142,7 @@ class Dashboard extends Component
             $todayExpensesQuery->where('branch_id', $this->branchId);
         }
         $this->todayExpenses = (int) ($todayExpensesQuery->sum('amount') ?? 0);
-
-        // Today's net sales
         $this->todayNetSales = $this->todaySales - $this->todayExpenses;
-
-       
 
         $orderItemsRange = OrderItem::whereHas('order', function($q) use ($start, $end){
             $q->whereBetween('created_at', [$start, $end]);
@@ -171,16 +160,20 @@ class Dashboard extends Component
         $this->expenseInternal = (int) ($expensesRange->sum('my_cost') ?? 0);
         $this->expenseCharged = (int) ($expensesRange->sum('charge_client') ?? 0);
 
-        // Load standalone business expenses
         $standaloneExpensesRange = Expense::whereBetween('created_at', [$start, $end]);
         if ($this->branchId) $standaloneExpensesRange->where('branch_id', $this->branchId);
         $this->totalBusinessExpenses = (int) ($standaloneExpensesRange->sum('amount') ?? 0);
-
-        // Calculate final net sales = net income - business expenses
         $this->finalNetSales = $this->netSales - $this->totalBusinessExpenses;
     }
 
-    private function loadCustomerMetrics()
+    private function ordersRangeQuery($start, $end)
+    {
+        $query = Order::query()->whereBetween('created_at', [$start, $end]);
+        if ($this->branchId) $query->where('branch_id', $this->branchId);
+        return $query;
+    }
+
+    private function loadCustomerMetrics(): void
     {
         [$start, $end] = $this->getDateRange();
         $ordersTop = Order::selectRaw('customer_id, SUM(total_amount) as total_spent')
@@ -199,22 +192,20 @@ class Dashboard extends Component
             ->toArray();
     }
 
-    private function loadInventoryMetrics()
+    private function loadInventoryMetrics(): void
     {
         $lowStockQ = Product::query()->lowStock()->orderBy('stock_qty', 'asc');
         if ($this->branchId) $lowStockQ->where('branch_id', $this->branchId);
-        $this->lowStockProducts = $lowStockQ->get()
-            ->toArray();
-        
+        $this->lowStockProducts = $lowStockQ->get()->toArray();
+
         $inventoryQ = Product::selectRaw('SUM(stock_qty * buy_price) as total_value');
         if ($this->branchId) $inventoryQ->where('branch_id', $this->branchId);
         $this->inventoryValue = $inventoryQ->value('total_value') ?? 0;
     }
 
-    private function loadProductMetrics()
+    private function loadProductMetrics(): void
     {
         [$start, $end] = $this->getDateRange();
-
         $this->topProducts = OrderItem::selectRaw('product_id, SUM(quantity) as total_quantity, SUM(total_price) as total_sales')
             ->whereNotNull('product_id')
             ->whereHas('order', function($q) use ($start, $end){
@@ -234,10 +225,9 @@ class Dashboard extends Component
             ->toArray();
     }
 
-    private function loadChartData()
+    private function loadChartData(): void
     {
         $this->revenueChartData = $this->getRevenueChartData();
-        // Order status distribution within range + branch
         [$start, $end] = $this->getDateRange();
         $base = Order::query()->whereBetween('created_at', [$start, $end]);
         if ($this->branchId) $base->where('branch_id', $this->branchId);
@@ -249,43 +239,31 @@ class Dashboard extends Component
         ];
     }
 
-    public function switchBranch($branchId)
+    public function switchBranch($branchId): void
     {
-        if (! $this->canSelectBranch) {
-            return;
-        }
-
+        if (! $this->canSelectBranch) return;
         $this->branchId = $branchId === 'all' ? null : $branchId;
         $this->applyFilters();
     }
 
-    public function applyFilters()
+    public function applyFilters(): void
     {
         if (! $this->canSelectBranch) {
             $this->branchId = auth()->user()?->branch_id;
         }
-
         $this->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
-        
-        // Store the filter dates in database
         $this->storeFilter();
-        
-        // Force full page reload
         $this->redirect(route('dashboard.index'), navigate: false);
     }
 
-    /**
-     * Store or update the filter dates in the database
-     */
-    private function storeFilter()
+    private function storeFilter(): void
     {
         $branchId = $this->canSelectBranch
             ? ($this->branchId ?: null)
             : auth()->user()?->branch_id;
-
         Filter::updateOrCreate(
             [
                 'filter_type' => 'dashboard',
@@ -299,22 +277,16 @@ class Dashboard extends Component
         );
     }
 
-    private function getRevenueChartData()
+    private function getRevenueChartData(): array
     {
         [$start, $end] = $this->getDateRange();
         $diffInDays = $start->diffInDays($end);
-
         $base = Order::query()->whereBetween('created_at', [$start, $end]);
-        if ($this->branchId) {
-            $base->where('branch_id', $this->branchId);
-        }
-
+        if ($this->branchId) $base->where('branch_id', $this->branchId);
         if ($diffInDays <= 1) {
-            // Hourly grouping for 1 day or less
             $data = [];
             $current = $start->copy()->startOfHour();
             $lastHour = $end->copy()->endOfHour();
-
             while ($current->lte($lastHour)) {
                 $hourEnd = $current->copy()->endOfHour();
                 $data[] = [
@@ -323,13 +295,10 @@ class Dashboard extends Component
                 ];
                 $current->addHour();
             }
-
             return $data;
         } elseif ($diffInDays <= 31) {
-            // Daily grouping - only show dates in range
             $data = [];
             $current = $start->copy();
-            
             while ($current->lte($end)) {
                 $data[] = [
                     'date' => $current->format('M d'),
@@ -337,19 +306,13 @@ class Dashboard extends Component
                 ];
                 $current->addDay();
             }
-
             return $data;
         } elseif ($diffInDays <= 365) {
-            // Weekly grouping - only show weeks within range
             $data = [];
             $current = $start->copy();
-            
             while ($current->lte($end)) {
                 $weekEnd = $current->copy()->addDays(6);
-                if ($weekEnd->gt($end)) {
-                    $weekEnd = $end->copy();
-                }
-                
+                if ($weekEnd->gt($end)) $weekEnd = $end->copy();
                 $data[] = [
                     'date' => $current->format('M d') . ' - ' . $weekEnd->format('M d'),
                     'amount' => (clone $base)->whereBetween('created_at', [
@@ -359,20 +322,13 @@ class Dashboard extends Component
                 ];
                 $current->addWeek();
             }
-
             return $data;
         }
-
-        // Monthly grouping - only show months within range
         $data = [];
         $current = $start->copy();
-        
         while ($current->lte($end)) {
             $monthEnd = $current->copy()->endOfMonth();
-            if ($monthEnd->gt($end)) {
-                $monthEnd = $end->copy();
-            }
-            
+            if ($monthEnd->gt($end)) $monthEnd = $end->copy();
             $data[] = [
                 'date' => $current->format('M Y'),
                 'amount' => (clone $base)->whereBetween('created_at', [
@@ -382,69 +338,89 @@ class Dashboard extends Component
             ];
             $current->addMonth()->startOfMonth();
         }
-
         return $data;
     }
 
-    private function loadTodaysOrders()
+    private function loadTodaysPayments(): void
     {
+        // This method always loads payments for "today" only, not affected by dashboard date filters.
         $todayStart = Carbon::today()->startOfDay();
         $todayEnd = Carbon::today()->endOfDay();
-        
-        $ordersQuery = Order::whereBetween('created_at', [$todayStart, $todayEnd])
-            ->with(['customer', 'orderItems.product', 'orderItems.service'])
-            ->orderBy('created_at', 'desc');
-        
+        $paymentsQuery = \App\Models\Payment::whereBetween('paid_at', [$todayStart, $todayEnd])
+            ->with(['order.customer', 'order.branch', 'order.orderItems']);
         if ($this->branchId) {
-            $ordersQuery->where('branch_id', $this->branchId);
+            $paymentsQuery->whereHas('order', function($q) {
+                $q->where('branch_id', $this->branchId);
+            });
         }
-        
-        $this->todaysOrders = $ordersQuery->get()->map(function($order) {
+        $this->todaysPayments = $paymentsQuery->get()->map(function($payment) {
+            $order = $payment->order;
             return [
-                'id' => $order->id,
-                'customer_name' => $order->customer_name,
-                'total_amount' => $order->total_amount,
-                'status' => $order->status,
-                'payment_status' => $order->payment_status,
-                'created_at' => $order->created_at->format('h:i A'),
-                'items' => $order->orderItems->map(function($item) {
+                'order_id' => $order?->id,
+                'customer_name' => $order?->customer_name ?? $order?->customer?->name ?? 'N/A',
+                'amount' => $order?->total_amount ?? 0,
+                'payment_status' => $order?->payment_status ?? 'N/A',
+                'balance' => ($order?->total_amount ?? 0) - ($order?->payments()->sum('amount') ?? 0),
+                'paid_amount' => $payment->amount,
+                'order_status' => $order?->status ?? 'N/A',
+                'order_branch' => $order?->branch?->name ?? 'N/A',
+                'order_items' => $order?->orderItems?->map(function($item) {
                     return [
-                        'name' => $item->product ? $item->product->name : ($item->service ? $item->service->name : 'Unknown'),
+                        'item_name' => $item->item_name,
                         'quantity' => $item->quantity,
                         'total_price' => $item->total_price,
                     ];
-                })->toArray(),
+                })->toArray() ?? [],
+                'paid_at' => $payment->paid_at ? $payment->paid_at->format('Y-m-d H:i') : '',
+                'order' => $order,
             ];
         })->toArray();
     }
 
-    private function loadTodaysExpenses()
+    private function loadTodaysOrders(): void
     {
         $todayStart = Carbon::today()->startOfDay();
         $todayEnd = Carbon::today()->endOfDay();
-        
+        $ordersQuery = Order::whereBetween('created_at', [$todayStart, $todayEnd])
+            ->with(['customer', 'orderItems.product', 'orderItems.service'])
+            ->orderBy('created_at', 'desc');
+        if ($this->branchId) $ordersQuery->where('branch_id', $this->branchId);
+        $this->todaysOrders = $ordersQuery->get()->map(fn($order) => [
+            'id' => $order->id,
+            'customer_name' => $order->customer_name,
+            'total_amount' => $order->total_amount,
+            'status' => $order->status,
+            'payment_status' => $order->payment_status,
+            'created_at' => $order->created_at->format('h:i A'),
+            'items' => $order->orderItems->map(fn($item) => [
+                'name' => $item->product ? $item->product->name : ($item->service ? $item->service->name : 'Unknown'),
+                'quantity' => $item->quantity,
+                'total_price' => $item->total_price,
+            ])->toArray(),
+        ])->toArray();
+    }
+
+    private function loadTodaysExpenses(): void
+    {
+        $todayStart = Carbon::today()->startOfDay();
+        $todayEnd = Carbon::today()->endOfDay();
         $expensesQuery = Expense::whereBetween('created_at', [$todayStart, $todayEnd])
             ->orderBy('created_at', 'desc');
-        
-        if ($this->branchId) {
-            $expensesQuery->where('branch_id', $this->branchId);
-        }
-        
-        $this->todaysExpenses = $expensesQuery->get()->map(function($expense) {
-            return [
-                'id' => $expense->id,
-                'category' => $expense->category,
-                'description' => $expense->description,
-                'amount' => $expense->amount,
-                'created_at' => $expense->created_at->format('h:i A'),
-            ];
-        })->toArray();
+        if ($this->branchId) $expensesQuery->where('branch_id', $this->branchId);
+        $this->todaysExpenses = $expensesQuery->get()->map(fn($expense) => [
+            'id' => $expense->id,
+            'category' => $expense->category,
+            'description' => $expense->description,
+            'amount' => $expense->amount,
+            'created_at' => $expense->created_at->format('h:i A'),
+        ])->toArray();
     }
 
     public function render()
     {
         return view('livewire.dashboard', [
             'todayPaymentBreakdown' => $this->todayPaymentBreakdown,
+            'todaysPayments' => $this->todaysPayments,
         ])->layout('layouts.app');
     }
 }

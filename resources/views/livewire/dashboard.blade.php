@@ -72,7 +72,7 @@
                         <div>
                             <p class="text-xs text-gray-600 font-medium">Today's Sales</p>
                             <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($todaySales, 0) }}</p>
-                            <p class="text-xs text-gray-400 mt-1 italic">Orders created today</p>
+                            <p class="text-xs text-gray-400 mt-1 italic">Based on Downpayment/Full Payment</p>
                         </div>
                         @if(isset($todayPaymentBreakdown) && is_array($todayPaymentBreakdown) && count($todayPaymentBreakdown) > 0)
                             <div class="ml-4 flex flex-col items-end min-w-[120px]">
@@ -158,7 +158,7 @@
                         <div>
                             <p class="text-xs text-gray-600 font-medium">Today's Sales</p>
                             <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($todaySales, 0) }}</p>
-                            <p class="text-xs text-gray-400 mt-1 italic">Orders created today</p>
+                            <p class="text-xs text-gray-400 mt-1 italic">Based on Downpayment/Full Payment</p>
                         </div>
                         @if(isset($todayPaymentBreakdown) && is_array($todayPaymentBreakdown) && count($todayPaymentBreakdown) > 0)
                             <div class="ml-4 flex flex-col items-end min-w-[120px]">
@@ -185,56 +185,60 @@
             </div>
         </div>
 
-        <!-- TODAY'S ORDERS TABLE -->
+
+        <!-- TODAY'S PAYMENTS TABLE -->
         <div class="mb-4">
-            <h2 class="text-sm font-semibold text-gray-900 mb-2">Today's Orders</h2>
+            <h2 class="text-sm font-semibold text-gray-900 mb-2">Today's Payments</h2>
             <div class="bg-white rounded-lg shadow overflow-hidden">
-                @if(count($todaysOrders) > 0)
+                @if(count($todaysPayments) > 0)
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order #</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch</th>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Status</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Items</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Amount</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Status</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid Amount</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach($todaysOrders as $order)
+                                @foreach($todaysPayments as $payment)
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900">#{{ $order['id'] }}</td>
-                                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ $order['customer_name'] }}</td>
-                                        <td class="px-3 py-2 text-xs text-gray-500">
-                                            @foreach($order['items'] as $item)
-                                                <div class="mb-0.5">{{ $item['name'] }} ({{ $item['quantity'] }}x)</div>
-                                            @endforeach
-                                        </td>
-                                        <td class="px-3 py-2 whitespace-nowrap text-xs font-semibold text-gray-900">₱{{ number_format($order['total_amount'], 0) }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900">#{{ $payment['order_id'] }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ $payment['order_branch'] ?? ($payment['order']?->branch->name ?? 'N/A') }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ $payment['customer_name'] }}</td>
                                         <td class="px-3 py-2 whitespace-nowrap">
-                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {{ $order['status'] === 'completed' ? 'bg-green-100 text-green-800' : '' }}
-                                                {{ $order['status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                                {{ $order['status'] === 'in_progress' ? 'bg-blue-100 text-blue-800' : '' }}
-                                                {{ $order['status'] === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}">
-                                                {{ ucfirst(str_replace('_', ' ', $order['status'])) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-3 py-2 whitespace-nowrap">
-                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {{ $order['payment_status'] === 'paid' ? 'bg-green-100 text-green-800' : '' }}
-                                                {{ $order['payment_status'] === 'partial' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                                {{ $order['payment_status'] === 'unpaid' ? 'bg-red-100 text-red-800' : '' }}">
-                                                {{ ucfirst($order['payment_status']) }}
+                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                {{ ucfirst(str_replace('_', ' ', $payment['order_status'] ?? ($payment['order']?->status ?? 'N/A'))) }}
                                             </span>
                                         </td>
                                         <td class="px-3 py-2 whitespace-nowrap text-xs">
-                                            <a href="{{ route('orders.edit', $order['id']) }}" class="text-gray-700 hover:text-gray-900 ">Edit</a>
-                                            <a href="{{ route('orders.view', $order['id']) }}" class="text-blue-600 hover:text-blue-900">View</a>
+                                            <div class="space-y-1">
+                                                @foreach(($payment['order_items'] ?? []) as $item)
+                                                    <div class="flex items-center gap-2 text-[11px]">
+                                                        <span class="text-gray-700 flex-1 truncate">{{ $item['item_name'] }}</span>
+                                                        <span class="text-gray-500 text-center w-12 shrink-0">x{{ $item['quantity'] }}</span>
+                                                        <span class="text-gray-900 font-semibold text-right w-16 shrink-0">₱{{ number_format($item['total_price'], 0) }}</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
                                         </td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs font-semibold text-gray-900">₱{{ number_format($payment['amount'], 0) }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">
+                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                {{ $payment['payment_status'] === 'paid' ? 'bg-green-100 text-green-800' : '' }}
+                                                {{ $payment['payment_status'] === 'partial' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                                {{ $payment['payment_status'] === 'unpaid' ? 'bg-red-100 text-red-800' : '' }}">
+                                                {{ ucfirst($payment['payment_status']) }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs font-semibold text-gray-900">₱{{ number_format($payment['balance'], 0) }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs font-semibold text-green-700">₱{{ number_format($payment['paid_amount'], 0) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -243,13 +247,13 @@
                 @else
                     <div class="px-4 py-8 text-center">
                         <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <p class="text-sm text-gray-500">No orders created today</p>
+                        <p class="text-sm text-gray-500">No payments recorded today</p>
                     </div>
                 @endif
             </div>
-        </div>
+        </div
 
         <!-- TODAY'S EXPENSES TABLE -->
         <div class="mb-4">
