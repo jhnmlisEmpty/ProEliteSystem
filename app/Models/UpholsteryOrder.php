@@ -22,6 +22,18 @@ class UpholsteryOrder extends Model
         'installation_date',
         'downpayment',
         'balance',
+        'seat_cover_amount',
+        'seat_cover_description',
+        'ceiling_amount',
+        'ceiling_description',
+        'sidings_amount',
+        'sidings_description',
+        'rubber_mattings_amount',
+        'rubber_mattings_description',
+        'front_mattings_amount',
+        'front_mattings_description',
+        'headrest_amount',
+        'headrest_description',
     ];
 
     protected $casts = [
