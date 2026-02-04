@@ -156,12 +156,10 @@
                 <tbody class="divide-y divide-gray-200">
                     @php
                         $lastCustomer = null;
-                        $customerOrders = $orders->groupBy('customer_name');
                     @endphp
                     @forelse($orders as $order)
                         @php
                             $isFirstOrderForCustomer = $lastCustomer !== $order->customer_name;
-                            $customerOrderCount = $isFirstOrderForCustomer ? $customerOrders[$order->customer_name]->count() : 0;
                             $lastCustomer = $order->customer_name;
                         @endphp
                         <tr class="hover:bg-gray-50 transition">
@@ -170,8 +168,8 @@
                                 {{ $order->created_at->format('M d, Y') }}
                             </td>
                             {{-- Customer Info (only on first row) --}}
-                            @if($isFirstOrderForCustomer)
-                                <td class="px-6 py-5 border-r border-gray-300 align-middle" rowspan="{{ $customerOrderCount }}" style="min-width: 210px;">
+                            <td class="px-6 py-5 border-r border-gray-300" style="min-width: 210px;">
+                                @if($isFirstOrderForCustomer)
                                     <div>
                                         <div class="font-bold text-gray-900 text-base uppercase mb-2">
                                             {{ $order->customer_name }}
@@ -187,8 +185,8 @@
                                             </div>
                                         @endif
                                     </div>
-                                </td>
-                            @endif
+                                @endif
+                            </td>
                             
                             {{-- Order Details --}}
                             <td class="px-6 py-4">
