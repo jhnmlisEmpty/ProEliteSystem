@@ -318,34 +318,93 @@
                                 @error('upholsteryInstallationDate') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                             </div>
 
-                            {{-- Services Checkboxes --}}
+                            {{-- Services Checkboxes with Amounts & Descriptions --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Services <span class="text-red-500">*</span></label>
-                                <div class="space-y-2">
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" wire:model="upholsteryServices.seat_cover" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
-                                        <span class="text-sm text-gray-700">Seat Cover</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" wire:model="upholsteryServices.ceiling" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
-                                        <span class="text-sm text-gray-700">Ceiling</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" wire:model="upholsteryServices.sidings" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
-                                        <span class="text-sm text-gray-700">Sidings</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" wire:model="upholsteryServices.rubber_mattings" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
-                                        <span class="text-sm text-gray-700">Rubber Mattings</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" wire:model="upholsteryServices.front_mattings" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
-                                        <span class="text-sm text-gray-700">Front Mattings</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" wire:model="upholsteryServices.headrest" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
-                                        <span class="text-sm text-gray-700">Headrest</span>
-                                    </label>
+                                <div class="space-y-3">
+                                    {{-- Seat Cover --}}
+                                    <div class="border border-gray-200 rounded-lg">
+                                        <label class="flex items-center gap-2 cursor-pointer p-3 hover:bg-gray-50">
+                                            <input type="checkbox" wire:model.live="upholsteryServices.seat_cover" wire:click="$toggle('showSeatCoverFields')" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                            <span class="text-sm font-medium text-gray-700 flex-1">Seat Cover</span>
+                                        </label>
+                                        @if($showSeatCoverFields)
+                                            <div class="px-3 pb-3 space-y-2 bg-gray-50">
+                                                <input type="number" min="0" wire:model.live="upholsterySeatCoverAmount" placeholder="Amount" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                                <textarea wire:model="upholsterySeatCoverDescription" rows="2" placeholder="Details about this service..." class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    {{-- Ceiling --}}
+                                    <div class="border border-gray-200 rounded-lg">
+                                        <label class="flex items-center gap-2 cursor-pointer p-3 hover:bg-gray-50">
+                                            <input type="checkbox" wire:model.live="upholsteryServices.ceiling" wire:click="$toggle('showCeilingFields')" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                            <span class="text-sm font-medium text-gray-700 flex-1">Ceiling</span>
+                                        </label>
+                                        @if($showCeilingFields)
+                                            <div class="px-3 pb-3 space-y-2 bg-gray-50">
+                                                <input type="number" min="0" wire:model.live="upholsteryCeilingAmount" placeholder="Amount" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                                <textarea wire:model="upholsteryCeilingDescription" rows="2" placeholder="Details about this service..." class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    {{-- Sidings --}}
+                                    <div class="border border-gray-200 rounded-lg">
+                                        <label class="flex items-center gap-2 cursor-pointer p-3 hover:bg-gray-50">
+                                            <input type="checkbox" wire:model.live="upholsteryServices.sidings" wire:click="$toggle('showSidingsFields')" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                            <span class="text-sm font-medium text-gray-700 flex-1">Sidings</span>
+                                        </label>
+                                        @if($showSidingsFields)
+                                            <div class="px-3 pb-3 space-y-2 bg-gray-50">
+                                                <input type="number" min="0" wire:model.live="upholstrySidingsAmount" placeholder="Amount" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                                <textarea wire:model="upholstrySidingsDescription" rows="2" placeholder="Details about this service..." class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    {{-- Rubber Mattings --}}
+                                    <div class="border border-gray-200 rounded-lg">
+                                        <label class="flex items-center gap-2 cursor-pointer p-3 hover:bg-gray-50">
+                                            <input type="checkbox" wire:model.live="upholsteryServices.rubber_mattings" wire:click="$toggle('showRubberMattingsFields')" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                            <span class="text-sm font-medium text-gray-700 flex-1">Rubber Mattings</span>
+                                        </label>
+                                        @if($showRubberMattingsFields)
+                                            <div class="px-3 pb-3 space-y-2 bg-gray-50">
+                                                <input type="number" min="0" wire:model.live="upholsteryRubberMattingsAmount" placeholder="Amount" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                                <textarea wire:model="upholsteryRubberMattingsDescription" rows="2" placeholder="Details about this service..." class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    {{-- Front Mattings --}}
+                                    <div class="border border-gray-200 rounded-lg">
+                                        <label class="flex items-center gap-2 cursor-pointer p-3 hover:bg-gray-50">
+                                            <input type="checkbox" wire:model.live="upholsteryServices.front_mattings" wire:click="$toggle('showFrontMattingsFields')" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                            <span class="text-sm font-medium text-gray-700 flex-1">Front Mattings</span>
+                                        </label>
+                                        @if($showFrontMattingsFields)
+                                            <div class="px-3 pb-3 space-y-2 bg-gray-50">
+                                                <input type="number" min="0" wire:model.live="upholsteryFrontMattingsAmount" placeholder="Amount" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                                <textarea wire:model="upholsteryFrontMattingsDescription" rows="2" placeholder="Details about this service..." class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    {{-- Headrest --}}
+                                    <div class="border border-gray-200 rounded-lg">
+                                        <label class="flex items-center gap-2 cursor-pointer p-3 hover:bg-gray-50">
+                                            <input type="checkbox" wire:model.live="upholsteryServices.headrest" wire:click="$toggle('showHeadrestFields')" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                            <span class="text-sm font-medium text-gray-700 flex-1">Headrest</span>
+                                        </label>
+                                        @if($showHeadrestFields)
+                                            <div class="px-3 pb-3 space-y-2 bg-gray-50">
+                                                <input type="number" min="0" wire:model.live="upholsteryHeadrestAmount" placeholder="Amount" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                                <textarea wire:model="upholsteryHeadrestDescription" rows="2" placeholder="Details about this service..." class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                                 @error('upholsteryServices') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                             </div>
@@ -430,87 +489,104 @@
 
                         <div class="space-y-4">
                             {{-- Stepboard Section --}}
-                            <div class="bg-white rounded-lg p-3 border border-gray-200">
-                                <h4 class="font-semibold text-gray-800 mb-2">Stepboard</h4>
-                                <div class="grid grid-cols-3 gap-3">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Pcs</label>
-                                        <input type="number" min="0" wire:model.live="vipStepboardPcs" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <div class="border border-gray-200 rounded-lg">
+                                <label class="flex items-center gap-2 cursor-pointer p-3 hover:bg-gray-50">
+                                    <input type="checkbox" wire:click="$toggle('showStepboardFields')" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                    <span class="text-sm font-semibold text-gray-800 flex-1">Stepboard</span>
+                                </label>
+                                @if($showStepboardFields)
+                                    <div class="px-3 pb-3 bg-gray-50 grid grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Pcs</label>
+                                            <input type="number" min="0" wire:model.live="vipStepboardPcs" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
+                                            <input type="number" min="0" wire:model.live="vipStepboardUnitPrice" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Sub Amount</label>
+                                            <input type="number" wire:model="vipStepboardAmount" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white font-semibold text-blue-700">
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
-                                        <input type="number" min="0" wire:model.live="vipStepboardUnitPrice" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Sub Amount</label>
-                                        <input type="number" wire:model="vipStepboardAmount" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 font-semibold text-blue-700">
-                                    </div>
-                                </div>
+                                @endif
                             </div>
 
                             {{-- Engine Bay Section --}}
-                            <div class="bg-white rounded-lg p-3 border border-gray-200">
-                                <h4 class="font-semibold text-gray-800 mb-2">Engine Bay</h4>
-                                <div class="grid grid-cols-3 gap-3">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Pcs</label>
-                                        <input type="number" min="0" wire:model.live="vipEngineBayPcs" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <div class="border border-gray-200 rounded-lg">
+                                <label class="flex items-center gap-2 cursor-pointer p-3 hover:bg-gray-50">
+                                    <input type="checkbox" wire:click="$toggle('showEngineBayFields')" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                    <span class="text-sm font-semibold text-gray-800 flex-1">Engine Bay</span>
+                                </label>
+                                @if($showEngineBayFields)
+                                    <div class="px-3 pb-3 bg-gray-50 grid grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Pcs</label>
+                                            <input type="number" min="0" wire:model.live="vipEngineBayPcs" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
+                                            <input type="number" min="0" wire:model.live="vipEngineBayUnitPrice" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Sub Amount</label>
+                                            <input type="number" wire:model="vipEngineBayAmount" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white font-semibold text-blue-700">
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
-                                        <input type="number" min="0" wire:model.live="vipEngineBayUnitPrice" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Sub Amount</label>
-                                        <input type="number" wire:model="vipEngineBayAmount" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 font-semibold text-blue-700">
-                                    </div>
-                                </div>
+                                @endif
                             </div>
 
                             {{-- Console Box Section --}}
-                            <div class="bg-white rounded-lg p-3 border border-gray-200">
-                                <h4 class="font-semibold text-gray-800 mb-2">Console Box</h4>
-                                <div class="grid grid-cols-3 gap-3">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Pcs</label>
-                                        <input type="number" min="0" wire:model.live="vipConsoleBoxPcs" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <div class="border border-gray-200 rounded-lg">
+                                <label class="flex items-center gap-2 cursor-pointer p-3 hover:bg-gray-50">
+                                    <input type="checkbox" wire:click="$toggle('showConsoleBoxFields')" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                    <span class="text-sm font-semibold text-gray-800 flex-1">Console Box</span>
+                                </label>
+                                @if($showConsoleBoxFields)
+                                    <div class="px-3 pb-3 bg-gray-50 grid grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Pcs</label>
+                                            <input type="number" min="0" wire:model.live="vipConsoleBoxPcs" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
+                                            <input type="number" min="0" wire:model.live="vipConsoleBoxUnitPrice" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Sub Amount</label>
+                                            <input type="number" wire:model="vipConsoleBoxAmount" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white font-semibold text-blue-700">
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
-                                        <input type="number" min="0" wire:model.live="vipConsoleBoxUnitPrice" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Sub Amount</label>
-                                        <input type="number" wire:model="vipConsoleBoxAmount" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 font-semibold text-blue-700">
-                                    </div>
-                                </div>
+                                @endif
                             </div>
 
                             {{-- Thai Ceiling Section --}}
-                            <div class="bg-white rounded-lg p-3 border border-gray-200">
-                                <h4 class="font-semibold text-gray-800 mb-2">Thai Ceiling</h4>
-                                <div class="grid grid-cols-3 gap-3">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Pcs</label>
-                                        <input type="number" min="0" wire:model.live="vipThaiCeilingPcs" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <div class="border border-gray-200 rounded-lg">
+                                <label class="flex items-center gap-2 cursor-pointer p-3 hover:bg-gray-50">
+                                    <input type="checkbox" wire:click="$toggle('showThaiCeilingFields')" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                                    <span class="text-sm font-semibold text-gray-800 flex-1">Thai Ceiling</span>
+                                </label>
+                                @if($showThaiCeilingFields)
+                                    <div class="px-3 pb-3 bg-gray-50 grid grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Pcs</label>
+                                            <input type="number" min="0" wire:model.live="vipThaiCeilingPcs" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
+                                            <input type="number" min="0" wire:model.live="vipThaiCeilingUnitPrice" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
+                                            <input type="number" min="0" wire:model.live="vipThaiCeilingUnitPrice" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Sub Amount</label>
+                                            <input type="number" wire:model="vipThaiCeilingAmount" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white font-semibold text-blue-700">
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price</label>
-                                        <input type="number" min="0" wire:model.live="vipThaiCeilingUnitPrice" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Sub Amount</label>
-                                        <input type="number" wire:model="vipThaiCeilingAmount" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 font-semibold text-blue-700">
-                                    </div>
-                                </div>
+                                @endif
                             </div>
-
-                            {{-- Component Total Display --}}
-                            @if($vipComponentTotal > 0)
-                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                    <p class="text-sm font-semibold text-gray-700">Components Total: <span class="text-blue-600">₱{{ number_format($vipComponentTotal, 2) }}</span></p>
-                                </div>
-                            @endif
 
                             {{-- Description --}}
                             <div>
@@ -657,10 +733,73 @@
                                 @foreach($summaryUpholstery as $key => $item)
                                     <div class="flex justify-between items-start pb-2 border-b border-gray-100">
                                         <div class="flex-1">
-                                            <p class="font-medium text-gray-900">{{ $item['name'] }}</p>
+                                            <p class="font-medium text-gray-900">{{ $item['year_model'] }}</p>
                                             <p class="text-xs text-gray-600">Installation: {{ date('M d, Y', strtotime($item['installation_date'])) }}</p>
+                                            
+                                            {{-- Service Breakdown --}}
+                                            <div class="text-xs text-gray-600 mt-1 space-y-1">
+                                                @php
+                                                    $serviceLabels = [
+                                                        'seat_cover' => 'Seat Cover',
+                                                        'ceiling' => 'Ceiling',
+                                                        'sidings' => 'Sidings',
+                                                        'rubber_mattings' => 'Rubber Mattings',
+                                                        'front_mattings' => 'Front Mattings',
+                                                        'headrest' => 'Headrest',
+                                                    ];
+                                                @endphp
+                                                @if(isset($item['seat_cover_amount']) && $item['seat_cover_amount'] > 0)
+                                                    <div>
+                                                        <p class="flex justify-between"><span>Seat Cover: ₱{{ number_format($item['seat_cover_amount'], 0) }}</span></p>
+                                                        @if(!empty($item['seat_cover_description']))
+                                                            <p class="text-gray-500 italic ml-2">{{ Str::limit($item['seat_cover_description'], 40) }}</p>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                                @if(isset($item['ceiling_amount']) && $item['ceiling_amount'] > 0)
+                                                    <div>
+                                                        <p class="flex justify-between"><span>Ceiling: ₱{{ number_format($item['ceiling_amount'], 0) }}</span></p>
+                                                        @if(!empty($item['ceiling_description']))
+                                                            <p class="text-gray-500 italic ml-2">{{ Str::limit($item['ceiling_description'], 40) }}</p>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                                @if(isset($item['sidings_amount']) && $item['sidings_amount'] > 0)
+                                                    <div>
+                                                        <p class="flex justify-between"><span>Sidings: ₱{{ number_format($item['sidings_amount'], 0) }}</span></p>
+                                                        @if(!empty($item['sidings_description']))
+                                                            <p class="text-gray-500 italic ml-2">{{ Str::limit($item['sidings_description'], 40) }}</p>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                                @if(isset($item['rubber_mattings_amount']) && $item['rubber_mattings_amount'] > 0)
+                                                    <div>
+                                                        <p class="flex justify-between"><span>Rubber Mattings: ₱{{ number_format($item['rubber_mattings_amount'], 0) }}</span></p>
+                                                        @if(!empty($item['rubber_mattings_description']))
+                                                            <p class="text-gray-500 italic ml-2">{{ Str::limit($item['rubber_mattings_description'], 40) }}</p>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                                @if(isset($item['front_mattings_amount']) && $item['front_mattings_amount'] > 0)
+                                                    <div>
+                                                        <p class="flex justify-between"><span>Front Mattings: ₱{{ number_format($item['front_mattings_amount'], 0) }}</span></p>
+                                                        @if(!empty($item['front_mattings_description']))
+                                                            <p class="text-gray-500 italic ml-2">{{ Str::limit($item['front_mattings_description'], 40) }}</p>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                                @if(isset($item['headrest_amount']) && $item['headrest_amount'] > 0)
+                                                    <div>
+                                                        <p class="flex justify-between"><span>Headrest: ₱{{ number_format($item['headrest_amount'], 0) }}</span></p>
+                                                        @if(!empty($item['headrest_description']))
+                                                            <p class="text-gray-500 italic ml-2">{{ Str::limit($item['headrest_description'], 40) }}</p>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            </div>
+
                                             @if(!empty($item['crew_members']))
-                                                <p class="text-xs text-gray-600 mb-1">
+                                                <p class="text-xs text-gray-600 mb-1 mt-1">
                                                     <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                                     @php
                                                         $crewNames = collect($item['crew_members'])

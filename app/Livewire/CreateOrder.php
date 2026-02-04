@@ -85,6 +85,28 @@ class CreateOrder extends Component
     public $upholsteryTotalAmount = 0;
     public $upholstryCrew = [];
 
+    // Upholstery service amounts and descriptions
+    public $upholsterySeatCoverAmount = 0;
+    public $upholsterySeatCoverDescription = '';
+    public $upholsteryCeilingAmount = 0;
+    public $upholsteryCeilingDescription = '';
+    public $upholstrySidingsAmount = 0;
+    public $upholstrySidingsDescription = '';
+    public $upholsteryRubberMattingsAmount = 0;
+    public $upholsteryRubberMattingsDescription = '';
+    public $upholsteryFrontMattingsAmount = 0;
+    public $upholsteryFrontMattingsDescription = '';
+    public $upholsteryHeadrestAmount = 0;
+    public $upholsteryHeadrestDescription = '';
+
+    // Upholstery service field visibility
+    public $showSeatCoverFields = false;
+    public $showCeilingFields = false;
+    public $showSidingsFields = false;
+    public $showRubberMattingsFields = false;
+    public $showFrontMattingsFields = false;
+    public $showHeadrestFields = false;
+
     // VIP form
     public $vipStepboardPcs = 0;
     public $vipStepboardUnitPrice = 0;
@@ -102,6 +124,12 @@ class CreateOrder extends Component
     public $vipPhoto;
     public $vipTotalAmount = 0;
     public $vipComponentTotal = 0;
+
+    // VIP package field visibility
+    public $showStepboardFields = false;
+    public $showEngineBayFields = false;
+    public $showConsoleBoxFields = false;
+    public $showThaiCeilingFields = false;
 
     // Quick Payment
     public $showPaymentForm = false;
@@ -294,13 +322,6 @@ class CreateOrder extends Component
         }
     }
 
-    public function adjustProductQty(int $productId, int $delta): void
-    {
-        $current = $this->productQuantities[$productId] ?? 1;
-        $new = max(1, $current + $delta);
-        $this->productQuantities[$productId] = $new;
-    }
-
     /**
      * EVENT LISTENER: Adds a service from ServiceForm child
      */
@@ -419,6 +440,12 @@ class CreateOrder extends Component
 
     public function addUpholstery(): void
     {
+        // Calculate total from individual service amounts - cast to int to handle form string inputs
+        $serviceTotal = (int)$this->upholsterySeatCoverAmount + (int)$this->upholsteryCeilingAmount + (int)$this->upholstrySidingsAmount + 
+                       (int)$this->upholsteryRubberMattingsAmount + (int)$this->upholsteryFrontMattingsAmount + (int)$this->upholsteryHeadrestAmount;
+
+        $this->upholsteryTotalAmount = $serviceTotal;
+
         $this->validate([
             'upholsteryYearModel' => 'required|string',
             'upholsteryInstallationDate' => 'required|date',
@@ -472,6 +499,18 @@ class CreateOrder extends Component
             'services' => $this->upholsteryServices,
             'description' => $this->upholsteryDescription,
             'photo' => $this->upholsteryPhoto,
+            'seat_cover_amount' => $this->upholsteryServices['seat_cover'] ? (int)$this->upholsterySeatCoverAmount : 0,
+            'seat_cover_description' => $this->upholsteryServices['seat_cover'] ? $this->upholsterySeatCoverDescription : '',
+            'ceiling_amount' => $this->upholsteryServices['ceiling'] ? (int)$this->upholsteryCeilingAmount : 0,
+            'ceiling_description' => $this->upholsteryServices['ceiling'] ? $this->upholsteryCeilingDescription : '',
+            'sidings_amount' => $this->upholsteryServices['sidings'] ? (int)$this->upholstrySidingsAmount : 0,
+            'sidings_description' => $this->upholsteryServices['sidings'] ? $this->upholstrySidingsDescription : '',
+            'rubber_mattings_amount' => $this->upholsteryServices['rubber_mattings'] ? (int)$this->upholsteryRubberMattingsAmount : 0,
+            'rubber_mattings_description' => $this->upholsteryServices['rubber_mattings'] ? $this->upholsteryRubberMattingsDescription : '',
+            'front_mattings_amount' => $this->upholsteryServices['front_mattings'] ? (int)$this->upholsteryFrontMattingsAmount : 0,
+            'front_mattings_description' => $this->upholsteryServices['front_mattings'] ? $this->upholsteryFrontMattingsDescription : '',
+            'headrest_amount' => $this->upholsteryServices['headrest'] ? (int)$this->upholsteryHeadrestAmount : 0,
+            'headrest_description' => $this->upholsteryServices['headrest'] ? $this->upholsteryHeadrestDescription : '',
             'unit_price' => $this->upholsteryTotalAmount,
             'total_price' => $this->upholsteryTotalAmount,
             'quantity' => 1,
@@ -499,12 +538,30 @@ class CreateOrder extends Component
         $this->upholsteryPhoto = null;
         $this->upholsteryTotalAmount = 0;
         $this->upholstryCrew = [];
+        $this->upholsterySeatCoverAmount = 0;
+        $this->upholsterySeatCoverDescription = '';
+        $this->upholsteryCeilingAmount = 0;
+        $this->upholsteryCeilingDescription = '';
+        $this->upholstrySidingsAmount = 0;
+        $this->upholstrySidingsDescription = '';
+        $this->upholsteryRubberMattingsAmount = 0;
+        $this->upholsteryRubberMattingsDescription = '';
+        $this->upholsteryFrontMattingsAmount = 0;
+        $this->upholsteryFrontMattingsDescription = '';
+        $this->upholsteryHeadrestAmount = 0;
+        $this->upholsteryHeadrestDescription = '';
+        $this->showSeatCoverFields = false;
+        $this->showCeilingFields = false;
+        $this->showSidingsFields = false;
+        $this->showRubberMattingsFields = false;
+        $this->showFrontMattingsFields = false;
+        $this->showHeadrestFields = false;
         $this->resetErrorBag();
     }
 
     public function addVip(): void
     {
-        // Calculate component total
+        // Calculate component total from sub-amounts
         $componentTotal = $this->vipStepboardAmount + $this->vipEngineBayAmount + $this->vipConsoleBoxAmount + $this->vipThaiCeilingAmount;
 
         // Validate that at least one component is selected
@@ -516,16 +573,12 @@ class CreateOrder extends Component
         $this->validate([
             'vipStepboardPcs' => 'required|integer|min:0',
             'vipStepboardUnitPrice' => 'required|integer|min:0',
-            'vipStepboardAmount' => 'required|integer|min:0',
             'vipEngineBayPcs' => 'required|integer|min:0',
             'vipEngineBayUnitPrice' => 'required|integer|min:0',
-            'vipEngineBayAmount' => 'required|integer|min:0',
             'vipConsoleBoxPcs' => 'required|integer|min:0',
             'vipConsoleBoxUnitPrice' => 'required|integer|min:0',
-            'vipConsoleBoxAmount' => 'required|integer|min:0',
             'vipThaiCeilingPcs' => 'required|integer|min:0',
             'vipThaiCeilingUnitPrice' => 'required|integer|min:0',
-            'vipThaiCeilingAmount' => 'required|integer|min:0',
             'vipTotalAmount' => 'required|integer|min:' . $componentTotal,
         ], [
             'vipTotalAmount.min' => 'Total amount cannot be lower than the sum of all components (₱' . $componentTotal . ')',
@@ -585,22 +638,33 @@ class CreateOrder extends Component
         $this->vipPhoto = null;
         $this->vipTotalAmount = 0;
         $this->vipComponentTotal = 0;
+        $this->showStepboardFields = false;
+        $this->showEngineBayFields = false;
+        $this->showConsoleBoxFields = false;
+        $this->showThaiCeilingFields = false;
         $this->resetErrorBag();
     }
 
     public function calculateVipComponentTotal(): void
     {
-        // Calculate sub-amounts automatically
-        $this->vipStepboardAmount = $this->vipStepboardPcs * $this->vipStepboardUnitPrice;
-        $this->vipEngineBayAmount = $this->vipEngineBayPcs * $this->vipEngineBayUnitPrice;
-        $this->vipConsoleBoxAmount = $this->vipConsoleBoxPcs * $this->vipConsoleBoxUnitPrice;
-        $this->vipThaiCeilingAmount = $this->vipThaiCeilingPcs * $this->vipThaiCeilingUnitPrice;
+        // Calculate sub-amounts for each component - cast to int to handle form string inputs
+        $this->vipStepboardAmount = (int)$this->vipStepboardPcs * (int)$this->vipStepboardUnitPrice;
+        $this->vipEngineBayAmount = (int)$this->vipEngineBayPcs * (int)$this->vipEngineBayUnitPrice;
+        $this->vipConsoleBoxAmount = (int)$this->vipConsoleBoxPcs * (int)$this->vipConsoleBoxUnitPrice;
+        $this->vipThaiCeilingAmount = (int)$this->vipThaiCeilingPcs * (int)$this->vipThaiCeilingUnitPrice;
         
-        // Calculate component total
+        // Calculate total component total
         $this->vipComponentTotal = $this->vipStepboardAmount + $this->vipEngineBayAmount + $this->vipConsoleBoxAmount + $this->vipThaiCeilingAmount;
         
         // Auto-update total amount to match component total
         $this->vipTotalAmount = $this->vipComponentTotal;
+    }
+
+    public function calculateUpholsteryTotal(): void
+    {
+        // Calculate total from individual service amounts - cast to int to handle form string inputs
+        $this->upholsteryTotalAmount = (int)$this->upholsterySeatCoverAmount + (int)$this->upholsteryCeilingAmount + (int)$this->upholstrySidingsAmount + 
+                                      (int)$this->upholsteryRubberMattingsAmount + (int)$this->upholsteryFrontMattingsAmount + (int)$this->upholsteryHeadrestAmount;
     }
 
     public function addExpense(): void
@@ -732,7 +796,7 @@ class CreateOrder extends Component
     public function closeCustomerForm()
     {
         $this->showCustomerForm = false;
-        $this->resetProperties(['newCustomerName', 'newCustomerPhone', 'newCustomerAddress']);
+        $this->reset(['newCustomerName', 'newCustomerPhone', 'newCustomerAddress']);
     }
 
     public function setTab(string $tab): void
@@ -742,8 +806,78 @@ class CreateOrder extends Component
 
     public function updatedBranchId(): void
     {
-        // Trigger re-render when branch is selected
-        // This will refresh the products list with the new branch filter
+        // Reset product quantity inputs when branch changes
+        $this->productQuantities = [];
+    }
+
+    public function updatedUpholsterySeatCoverAmount(): void
+    {
+        $this->calculateUpholsteryTotal();
+    }
+
+    public function updatedUpholsteryCeilingAmount(): void
+    {
+        $this->calculateUpholsteryTotal();
+    }
+
+    public function updatedUpholstrySidingsAmount(): void
+    {
+        $this->calculateUpholsteryTotal();
+    }
+
+    public function updatedUpholsteryRubberMattingsAmount(): void
+    {
+        $this->calculateUpholsteryTotal();
+    }
+
+    public function updatedUpholsteryFrontMattingsAmount(): void
+    {
+        $this->calculateUpholsteryTotal();
+    }
+
+    public function updatedUpholsteryHeadrestAmount(): void
+    {
+        $this->calculateUpholsteryTotal();
+    }
+
+    public function updatedVipStepboardPcs(): void
+    {
+        $this->calculateVipComponentTotal();
+    }
+
+    public function updatedVipStepboardUnitPrice(): void
+    {
+        $this->calculateVipComponentTotal();
+    }
+
+    public function updatedVipEngineBayPcs(): void
+    {
+        $this->calculateVipComponentTotal();
+    }
+
+    public function updatedVipEngineBayUnitPrice(): void
+    {
+        $this->calculateVipComponentTotal();
+    }
+
+    public function updatedVipConsoleBoxPcs(): void
+    {
+        $this->calculateVipComponentTotal();
+    }
+
+    public function updatedVipConsoleBoxUnitPrice(): void
+    {
+        $this->calculateVipComponentTotal();
+    }
+
+    public function updatedVipThaiCeilingPcs(): void
+    {
+        $this->calculateVipComponentTotal();
+    }
+
+    public function updatedVipThaiCeilingUnitPrice(): void
+    {
+        $this->calculateVipComponentTotal();
     }
 
     public function createNewCustomer()
@@ -959,6 +1093,18 @@ class CreateOrder extends Component
                             'description' => $item['description'] ?? '',
                             'photo_path' => $photoPath,
                             'installation_date' => $item['installation_date'],
+                            'seat_cover_amount' => $item['seat_cover_amount'] ?? 0,
+                            'seat_cover_description' => $item['seat_cover_description'] ?? '',
+                            'ceiling_amount' => $item['ceiling_amount'] ?? 0,
+                            'ceiling_description' => $item['ceiling_description'] ?? '',
+                            'sidings_amount' => $item['sidings_amount'] ?? 0,
+                            'sidings_description' => $item['sidings_description'] ?? '',
+                            'rubber_mattings_amount' => $item['rubber_mattings_amount'] ?? 0,
+                            'rubber_mattings_description' => $item['rubber_mattings_description'] ?? '',
+                            'front_mattings_amount' => $item['front_mattings_amount'] ?? 0,
+                            'front_mattings_description' => $item['front_mattings_description'] ?? '',
+                            'headrest_amount' => $item['headrest_amount'] ?? 0,
+                            'headrest_description' => $item['headrest_description'] ?? '',
                             'downpayment' => 0,  // Will be updated after payments
                             'balance' => $itemRevenue,  // Will be updated after discount and payments
                         ]);

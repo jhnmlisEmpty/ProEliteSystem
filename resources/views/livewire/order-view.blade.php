@@ -279,16 +279,62 @@
                                     <div class="space-y-1">
                                         <p class="font-medium text-red-700">Upholstery Services</p>
                                         <p class="text-xs text-gray-500">{{ $upholstery->unit_type ?? 'N/A' }} - {{ $upholstery->unit_year_model }}</p>
-                                        @if(count($selectedServices) > 0)
-                                            <p class="text-xs text-gray-600">
-                                                <span class="font-semibold">Services:</span>
-                                                @foreach($selectedServices as $service)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-800 mr-1 mt-1">{{ $service }}</span>
-                                                @endforeach
-                                            </p>
-                                        @endif
+                                        <p class="text-xs text-gray-500">Installation: {{ date('M d, Y', strtotime($upholstery->installation_date)) }}</p>
+                                        
+                                        {{-- Service Breakdown with Amounts & Descriptions --}}
+                                        <div class="text-xs text-gray-600 mt-2 space-y-1">
+                                            @if(($upholstery->seat_cover_amount ?? 0) > 0)
+                                                <div>
+                                                    <p class="flex justify-between"><span class="font-semibold">Seat Cover:</span> <span class="text-gray-900">₱{{ number_format($upholstery->seat_cover_amount) }}</span></p>
+                                                    @if(!empty($upholstery->seat_cover_description))
+                                                        <p class="text-gray-500 italic ml-2">{{ $upholstery->seat_cover_description }}</p>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                            @if(($upholstery->ceiling_amount ?? 0) > 0)
+                                                <div>
+                                                    <p class="flex justify-between"><span class="font-semibold">Ceiling:</span> <span class="text-gray-900">₱{{ number_format($upholstery->ceiling_amount) }}</span></p>
+                                                    @if(!empty($upholstery->ceiling_description))
+                                                        <p class="text-gray-500 italic ml-2">{{ $upholstery->ceiling_description }}</p>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                            @if(($upholstery->sidings_amount ?? 0) > 0)
+                                                <div>
+                                                    <p class="flex justify-between"><span class="font-semibold">Sidings:</span> <span class="text-gray-900">₱{{ number_format($upholstery->sidings_amount) }}</span></p>
+                                                    @if(!empty($upholstery->sidings_description))
+                                                        <p class="text-gray-500 italic ml-2">{{ $upholstery->sidings_description }}</p>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                            @if(($upholstery->rubber_mattings_amount ?? 0) > 0)
+                                                <div>
+                                                    <p class="flex justify-between"><span class="font-semibold">Rubber Mattings:</span> <span class="text-gray-900">₱{{ number_format($upholstery->rubber_mattings_amount) }}</span></p>
+                                                    @if(!empty($upholstery->rubber_mattings_description))
+                                                        <p class="text-gray-500 italic ml-2">{{ $upholstery->rubber_mattings_description }}</p>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                            @if(($upholstery->front_mattings_amount ?? 0) > 0)
+                                                <div>
+                                                    <p class="flex justify-between"><span class="font-semibold">Front Mattings:</span> <span class="text-gray-900">₱{{ number_format($upholstery->front_mattings_amount) }}</span></p>
+                                                    @if(!empty($upholstery->front_mattings_description))
+                                                        <p class="text-gray-500 italic ml-2">{{ $upholstery->front_mattings_description }}</p>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                            @if(($upholstery->headrest_amount ?? 0) > 0)
+                                                <div>
+                                                    <p class="flex justify-between"><span class="font-semibold">Headrest:</span> <span class="text-gray-900">₱{{ number_format($upholstery->headrest_amount) }}</span></p>
+                                                    @if(!empty($upholstery->headrest_description))
+                                                        <p class="text-gray-500 italic ml-2">{{ $upholstery->headrest_description }}</p>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+                                        
                                         @if($crewMembers->count() > 0)
-                                            <p class="text-xs text-gray-600">
+                                            <p class="text-xs text-gray-600 mt-2">
                                                 <span class="font-semibold">Assigned Crew:</span>
                                                 @foreach($crewMembers as $crew)
                                                     <span class="inline-flex items-center px-2 py-0.5 rounded bg-purple-100 text-purple-800 mr-1 mt-1">{{ $crew->employee->name }}</span>
@@ -296,7 +342,7 @@
                                             </p>
                                         @endif
                                         @if($upholstery->description)
-                                            <p class="text-xs text-gray-700">
+                                            <p class="text-xs text-gray-700 mt-2">
                                                 <span class="font-semibold">Description:</span>
                                                 {{ $upholstery->description }}
                                             </p>
