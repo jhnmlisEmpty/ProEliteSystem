@@ -16,25 +16,25 @@ class EmployeeUpholstery extends Component
     public ?string $startDate = null;
     public ?string $endDate = null;
 
-    public function togglePaidStatus($upholsteryId)
+    public function togglePaidStatus($assignmentId)
     {
         if (!$this->employee) return;
 
-        // Get all assignments for this employee and upholstery
-        $assignments = UpholsteryAssignment::where('employee_id', $this->employee->id)
-            ->where('upholstery_id', $upholsteryId)
-            ->get();
+        // Get the specific assignment
+        $assignment = UpholsteryAssignment::where('id', $assignmentId)
+            ->where('employee_id', $this->employee->id)
+            ->first();
 
-        if ($assignments->isEmpty()) return;
+        if (!$assignment) return;
 
-        // Determine new status (toggle based on first assignment)
-        $current = $assignments->first()->payment_status ?? 'unpaid';
-        $newStatus = $current === 'paid' ? 'unpaid' : 'paid';
-
-        // Update all assignments for this employee/upholstery
-        UpholsteryAssignment::where('employee_id', $this->employee->id)
-            ->where('upholstery_id', $upholsteryId)
-            ->update(['payment_status' => $newStatus]);
+        // Toggle the payment status for this individual assignment
+        $currentStatus = $assignment->payment_status ?? 'unpaid';
+        $newStatus = $currentStatus === 'paid' ? 'unpaid' : 'paid';
+        
+        $assignment->update(['payment_status' => $newStatus]);
+        
+        // Refresh the component to reflect the change
+        $this->dispatch('assignmentUpdated');
     }
 
     public function mount(?int $id = null): void
@@ -75,50 +75,17 @@ class EmployeeUpholstery extends Component
         $upholsteryAssignments = UpholsteryAssignment::where('employee_id', $this->employee->id)
             ->when($this->startDate, fn ($q) => $q->whereDate('created_at', '>=', $this->startDate))
             ->when($this->endDate, fn ($q) => $q->whereDate('created_at', '<=', $this->endDate))
-            ->with(['upholstery.order.customer'])
+            ->with(['upholstery', 'upholstery.order', 'upholstery.order.customer'])
+            ->orderBy('created_at', 'desc')
             ->get()
-            ->groupBy('upholstery_id');
+            ->groupBy(fn ($assignment) => $assignment->created_at->format('Y-m-d'));
 
-        // Build upholstery summary with earnings and co-workers
-        $upholsterySummary = collect();
-        
-        foreach ($upholsteryAssignments as $upholsteryId => $assignments) {
-            $upholsteryOrder = $assignments->first()->upholstery;
-            
-            // Calculate order value (use balance + downpayment as total, or add a total_price accessor if needed)
-            $orderValue = $upholsteryOrder ? (($upholsteryOrder->balance ?? 0) + ($upholsteryOrder->downpayment ?? 0)) : 0;
-
-            // Get other employees assigned to this upholstery order
-            $otherEmployees = UpholsteryAssignment::where('upholstery_id', $upholsteryId)
-                ->where('employee_id', '!=', $this->employee->id)
-                ->with('employee')
-                ->get()
-                ->groupBy('employee_id')
-                ->map(function ($group) {
-                    return [
-                        'name' => $group->first()->employee->name,
-                        'count' => $group->count()
-                    ];
-                })
-                ->values();
-
-            // Get payment status from the first assignment (assuming all have the same status)
-            $payment_status = $assignments->first()->payment_status ?? 'unpaid';
-
-            $upholsterySummary->push([
-                'upholsteryOrder' => $upholsteryOrder,
-                'assignmentCount' => $assignments->count(),
-                'orderValue' => $orderValue,
-                'otherEmployeesCount' => $otherEmployees->count(),
-                'otherEmployees' => $otherEmployees,
-                'assignments' => $assignments,
-                'payment_status' => $payment_status,
-            ]);
-        }
+        // Sort dates descending (newest first)
+        $assignmentsByDate = $upholsteryAssignments->sortKeysDesc();
 
         return view('livewire.employee-upholstery', [
             'user' => $this->user,
-            'upholsterySummary' => $upholsterySummary,
+            'assignmentsByDate' => $assignmentsByDate,
         ])->layout('layouts.app');
     }
 }

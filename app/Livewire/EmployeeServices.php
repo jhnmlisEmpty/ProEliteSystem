@@ -16,25 +16,25 @@ class EmployeeServices extends Component
     public ?string $startDate = null;
     public ?string $endDate = null;
 
-    public function togglePaidStatus($serviceId)
+    public function togglePaidStatus($assignmentId)
     {
         if (!$this->employee) return;
 
-        // Get all assignments for this employee and service
-        $assignments = ServiceAssignment::where('employee_id', $this->employee->id)
-            ->where('service_id', $serviceId)
-            ->get();
+        // Get the specific assignment
+        $assignment = ServiceAssignment::where('id', $assignmentId)
+            ->where('employee_id', $this->employee->id)
+            ->first();
 
-        if ($assignments->isEmpty()) return;
+        if (!$assignment) return;
 
-        // Determine new status (toggle based on first assignment)
-        $current = $assignments->first()->payment_status ?? 'unpaid';
-        $newStatus = $current === 'paid' ? 'unpaid' : 'paid';
-
-        // Update all assignments for this employee/service
-        ServiceAssignment::where('employee_id', $this->employee->id)
-            ->where('service_id', $serviceId)
-            ->update(['payment_status' => $newStatus]);
+        // Toggle the payment status for this individual assignment
+        $currentStatus = $assignment->payment_status ?? 'unpaid';
+        $newStatus = $currentStatus === 'paid' ? 'unpaid' : 'paid';
+        
+        $assignment->update(['payment_status' => $newStatus]);
+        
+        // Refresh the component to reflect the change
+        $this->dispatch('assignmentUpdated');
     }
 
     public function mount(?int $id = null): void
@@ -76,52 +76,16 @@ class EmployeeServices extends Component
             ->when($this->startDate, fn ($q) => $q->whereDate('created_at', '>=', $this->startDate))
             ->when($this->endDate, fn ($q) => $q->whereDate('created_at', '<=', $this->endDate))
             ->with(['service', 'order', 'order.customer'])
+            ->orderBy('created_at', 'desc')
             ->get()
-            ->groupBy('service_id');
+            ->groupBy(fn ($assignment) => $assignment->created_at->format('Y-m-d'));
 
-        // Build services summary with earnings and co-workers
-        $servicesSummary = collect();
-        
-        foreach ($serviceAssignments as $serviceId => $assignments) {
-            $service = $assignments->first()->service;
-            
-            // Calculate service value from order_items (total_price per service)
-            $orderIds = $assignments->pluck('order_id');
-            $serviceValue = OrderItem::whereIn('order_id', $orderIds)
-                ->where('service_id', $serviceId)
-                ->sum('total_price');
-
-            // Get other employees assigned to this service
-            $otherEmployees = ServiceAssignment::where('service_id', $serviceId)
-                ->where('employee_id', '!=', $this->employee->id)
-                ->with('employee')
-                ->get()
-                ->groupBy('employee_id')
-                ->map(function ($group) {
-                    return [
-                        'name' => $group->first()->employee->name,
-                        'count' => $group->count()
-                    ];
-                })
-                ->values();
-
-            // Get payment status from the first assignment (all should be the same for this employee/service)
-            $paymentStatus = $assignments->first()->payment_status ?? 'unpaid';
-
-            $servicesSummary->push([
-                'service' => $service,
-                'assignmentCount' => $assignments->count(),
-                'serviceValue' => $serviceValue,
-                'otherEmployeesCount' => $otherEmployees->count(),
-                'otherEmployees' => $otherEmployees,
-                'assignments' => $assignments,
-                'payment_status' => $paymentStatus,
-            ]);
-        }
+        // Sort dates descending (newest first)
+        $assignmentsByDate = $serviceAssignments->sortKeysDesc();
 
         return view('livewire.employee-services', [
             'user' => $this->user,
-            'servicesSummary' => $servicesSummary,
+            'assignmentsByDate' => $assignmentsByDate,
         ])->layout('layouts.app');
     }
 }

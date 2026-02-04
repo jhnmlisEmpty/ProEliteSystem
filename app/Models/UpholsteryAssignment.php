@@ -16,6 +16,7 @@ class UpholsteryAssignment extends Model
         'order_id',
         'upholstery_id',
         'employee_id',
+        'payment_status',
     ];
 
     /**
