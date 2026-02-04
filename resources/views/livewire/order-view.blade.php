@@ -306,6 +306,16 @@
                                                 <p class="italic"><strong>Headrest Description:</strong> {{ $upholstery->headrest_description }}</p>
                                             @endif
                                         </div>
+                                        <div class="text-xs">
+                                            <span class="font-semibold">Services:</span>
+                                            @if(count($selectedServices) > 0)
+                                                @foreach($selectedServices as $service)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-800 mr-1 mt-1">{{ $service }}</span>
+                                                @endforeach
+                                            @else
+                                                <span class="text-gray-500">N/A</span>
+                                            @endif
+                                        </div>
                                         @if($crewMembers->count() > 0)
                                             <p class="text-xs text-gray-600 mt-2">
                                                 <span class="font-semibold">Assigned Crew:</span>
