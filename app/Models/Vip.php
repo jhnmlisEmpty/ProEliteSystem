@@ -25,6 +25,7 @@ class Vip extends Model
         'thai_ceiling_amount',
         'description',
         'photo',
+        'photos',
         'total_amount',
     ];
 
@@ -42,6 +43,7 @@ class Vip extends Model
         'thai_ceiling_unit_price' => 'integer',
         'thai_ceiling_amount' => 'integer',
         'total_amount' => 'integer',
+        'photos' => 'json',
     ];
 
     // Relationships

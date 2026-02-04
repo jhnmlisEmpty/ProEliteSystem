@@ -19,6 +19,7 @@ class UpholsteryOrder extends Model
         'services',
         'description',
         'photo_path',
+        'photos',
         'installation_date',
         'downpayment',
         'balance',
@@ -38,6 +39,7 @@ class UpholsteryOrder extends Model
 
     protected $casts = [
         'services' => 'json',
+        'photos' => 'json',
         'installation_date' => 'date',
         'downpayment' => 'integer',
         'balance' => 'integer',

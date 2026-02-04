@@ -81,7 +81,7 @@ class CreateOrder extends Component
         'headrest' => false,
     ];
     public $upholsteryDescription = '';
-    public $upholsteryPhoto;
+    public $upholsteryPhotos = [];
     public $upholsteryTotalAmount = 0;
     public $upholstryCrew = [];
 
@@ -121,7 +121,7 @@ class CreateOrder extends Component
     public $vipThaiCeilingUnitPrice = 0;
     public $vipThaiCeilingAmount = 0;
     public $vipDescription = '';
-    public $vipPhoto;
+    public $vipPhotos = [];
     public $vipTotalAmount = 0;
     public $vipComponentTotal = 0;
 
@@ -498,7 +498,7 @@ class CreateOrder extends Component
             'installation_date' => $this->upholsteryInstallationDate,
             'services' => $this->upholsteryServices,
             'description' => $this->upholsteryDescription,
-            'photo' => $this->upholsteryPhoto,
+            'photos' => $this->upholsteryPhotos,
             'seat_cover_amount' => $this->upholsteryServices['seat_cover'] ? (int)$this->upholsterySeatCoverAmount : 0,
             'seat_cover_description' => $this->upholsteryServices['seat_cover'] ? $this->upholsterySeatCoverDescription : '',
             'ceiling_amount' => $this->upholsteryServices['ceiling'] ? (int)$this->upholsteryCeilingAmount : 0,
@@ -535,7 +535,7 @@ class CreateOrder extends Component
             'headrest' => false,
         ];
         $this->upholsteryDescription = '';
-        $this->upholsteryPhoto = null;
+        $this->upholsteryPhotos = [];
         $this->upholsteryTotalAmount = 0;
         $this->upholstryCrew = [];
         $this->upholsterySeatCoverAmount = 0;
@@ -586,12 +586,6 @@ class CreateOrder extends Component
 
         $itemId = 'vip_' . time();
 
-        // Upload photo if provided
-        $photoPath = null;
-        if ($this->vipPhoto) {
-            $photoPath = $this->vipPhoto->store('vip-photos', 'public');
-        }
-
         $this->cartItems[$itemId] = [
             'id' => $itemId,
             'type' => 'vip',
@@ -609,7 +603,7 @@ class CreateOrder extends Component
             'thai_ceiling_unit_price' => (int) $this->vipThaiCeilingUnitPrice,
             'thai_ceiling_amount' => (int) $this->vipThaiCeilingAmount,
             'description' => $this->vipDescription ?? '',
-            'photo' => $photoPath,
+            'photos' => $this->vipPhotos,
             'unit_price' => (int) $this->vipTotalAmount,
             'total_price' => (int) $this->vipTotalAmount,
             'quantity' => 1,
@@ -635,7 +629,7 @@ class CreateOrder extends Component
         $this->vipThaiCeilingUnitPrice = 0;
         $this->vipThaiCeilingAmount = 0;
         $this->vipDescription = '';
-        $this->vipPhoto = null;
+        $this->vipPhotos = [];
         $this->vipTotalAmount = 0;
         $this->vipComponentTotal = 0;
         $this->showStepboardFields = false;
@@ -1077,10 +1071,12 @@ class CreateOrder extends Component
                     } elseif ($item['type'] === 'upholstery') {
                         $itemRevenue = (int) $item['unit_price'];
                         
-                        // Upload photo if provided
-                        $photoPath = null;
-                        if (isset($item['photo']) && $item['photo']) {
-                            $photoPath = $item['photo']->store('upholstery-photos', 'public');
+                        // Store multiple photos as JSON array
+                        $photoPaths = [];
+                        if (!empty($item['photos'])) {
+                            foreach ($item['photos'] as $photo) {
+                                $photoPaths[] = $photo->store('upholstery-photos', 'public');
+                            }
                         }
                         
                         // Create the UpholsteryOrder record
@@ -1091,7 +1087,8 @@ class CreateOrder extends Component
                             'unit_color' => '',  // Can be added later if needed
                             'services' => $item['services'],
                             'description' => $item['description'] ?? '',
-                            'photo_path' => $photoPath,
+                            'photo_path' => null, // Legacy single photo - deprecated
+                            'photos' => !empty($photoPaths) ? $photoPaths : null,
                             'installation_date' => $item['installation_date'],
                             'seat_cover_amount' => $item['seat_cover_amount'] ?? 0,
                             'seat_cover_description' => $item['seat_cover_description'] ?? '',
@@ -1136,8 +1133,13 @@ class CreateOrder extends Component
                     } elseif ($item['type'] === 'vip') {
                         $itemRevenue = (int) $item['unit_price'];
                         
-                        // Photo path is already stored in addVip(), just use it directly
-                        $photoPath = $item['photo'] ?? null;
+                        // Store multiple photos as JSON array
+                        $photoPaths = [];
+                        if (!empty($item['photos'])) {
+                            foreach ($item['photos'] as $photo) {
+                                $photoPaths[] = $photo->store('vip-photos', 'public');
+                            }
+                        }
                         
                         // Create the VIP record
                         $vip = \App\Models\Vip::create([
@@ -1154,7 +1156,8 @@ class CreateOrder extends Component
                             'thai_ceiling_unit_price' => (int) ($item['thai_ceiling_unit_price'] ?? 0),
                             'thai_ceiling_amount' => (int) ($item['thai_ceiling_amount'] ?? 0),
                             'description' => $item['description'] ?? '',
-                            'photo' => $photoPath,
+                            'photo' => null, // Legacy single photo - deprecated
+                            'photos' => !empty($photoPaths) ? $photoPaths : null,
                             'total_amount' => $itemRevenue,
                         ]);
                         

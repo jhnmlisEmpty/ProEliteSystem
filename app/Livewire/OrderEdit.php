@@ -83,7 +83,7 @@ class OrderEdit extends Component
         'headrest' => false,
     ];
     public $upholsteryDescription = '';
-    public $upholsteryPhoto;
+    public $upholsteryPhotos = [];
     public $upholsteryTotalAmount = 0;
     public $upholstryCrew = [];
 
@@ -123,7 +123,7 @@ class OrderEdit extends Component
     public $vipThaiCeilingUnitPrice = 0;
     public $vipThaiCeilingAmount = 0;
     public $vipDescription = '';
-    public $vipPhoto;
+    public $vipPhotos = [];
     public $vipTotalAmount = 0;
     public $vipComponentTotal = 0;
 
@@ -286,6 +286,7 @@ class OrderEdit extends Component
                         'services' => $upholstery->services,
                         'description' => $upholstery->description,
                         'photo_path' => $upholstery->photo_path,
+                        'photos' => $upholstery->photos ?? [],
                         'seat_cover_amount' => $upholstery->seat_cover_amount ?? 0,
                         'seat_cover_description' => $upholstery->seat_cover_description ?? '',
                         'ceiling_amount' => $upholstery->ceiling_amount ?? 0,
@@ -329,6 +330,7 @@ class OrderEdit extends Component
                         'thai_ceiling_amount' => $vip->thai_ceiling_amount ?? 0,
                         'description' => $vip->description,
                         'photo' => $vip->photo,
+                        'photos' => $vip->photos ?? [],
                         'unit_price' => $item->unit_price,
                         'total_price' => $item->total_price,
                         'quantity' => 1,
@@ -709,7 +711,7 @@ class OrderEdit extends Component
             'installation_date' => $this->upholsteryInstallationDate,
             'services' => $this->upholsteryServices,
             'description' => $this->upholsteryDescription,
-            'photo' => $this->upholsteryPhoto,
+            'photos' => $this->upholsteryPhotos,
             'seat_cover_amount' => $this->upholsteryServices['seat_cover'] ? (int)$this->upholsterySeatCoverAmount : 0,
             'seat_cover_description' => $this->upholsteryServices['seat_cover'] ? $this->upholsterySeatCoverDescription : '',
             'ceiling_amount' => $this->upholsteryServices['ceiling'] ? (int)$this->upholsteryCeilingAmount : 0,
@@ -746,7 +748,7 @@ class OrderEdit extends Component
             'headrest' => false,
         ];
         $this->upholsteryDescription = '';
-        $this->upholsteryPhoto = null;
+        $this->upholsteryPhotos = [];
         $this->upholsteryTotalAmount = 0;
         $this->upholstryCrew = [];
         $this->upholsterySeatCoverAmount = 0;
@@ -801,12 +803,6 @@ class OrderEdit extends Component
 
         $itemId = 'vip_' . time();
 
-        // Upload photo if provided
-        $photoPath = null;
-        if ($this->vipPhoto) {
-            $photoPath = $this->vipPhoto->store('vip-photos', 'public');
-        }
-
         $this->cartItems[$itemId] = [
             'id' => $itemId,
             'type' => 'vip',
@@ -824,7 +820,7 @@ class OrderEdit extends Component
             'thai_ceiling_unit_price' => (int) $this->vipThaiCeilingUnitPrice,
             'thai_ceiling_amount' => (int) $this->vipThaiCeilingAmount,
             'description' => $this->vipDescription ?? '',
-            'photo' => $photoPath,
+            'photos' => $this->vipPhotos,
             'unit_price' => (int) $this->vipTotalAmount,
             'total_price' => (int) $this->vipTotalAmount,
             'quantity' => 1,
@@ -850,7 +846,7 @@ class OrderEdit extends Component
         $this->vipThaiCeilingUnitPrice = 0;
         $this->vipThaiCeilingAmount = 0;
         $this->vipDescription = '';
-        $this->vipPhoto = null;
+        $this->vipPhotos = [];
         $this->vipTotalAmount = 0;
         $this->vipComponentTotal = 0;
         $this->resetErrorBag();
@@ -858,11 +854,11 @@ class OrderEdit extends Component
 
     public function calculateVipComponentTotal(): void
     {
-        // Calculate sub-amounts automatically
-        $this->vipStepboardAmount = $this->vipStepboardPcs * $this->vipStepboardUnitPrice;
-        $this->vipEngineBayAmount = $this->vipEngineBayPcs * $this->vipEngineBayUnitPrice;
-        $this->vipConsoleBoxAmount = $this->vipConsoleBoxPcs * $this->vipConsoleBoxUnitPrice;
-        $this->vipThaiCeilingAmount = $this->vipThaiCeilingPcs * $this->vipThaiCeilingUnitPrice;
+        // Calculate sub-amounts automatically (cast to int to handle form string inputs)
+        $this->vipStepboardAmount = (int)$this->vipStepboardPcs * (int)$this->vipStepboardUnitPrice;
+        $this->vipEngineBayAmount = (int)$this->vipEngineBayPcs * (int)$this->vipEngineBayUnitPrice;
+        $this->vipConsoleBoxAmount = (int)$this->vipConsoleBoxPcs * (int)$this->vipConsoleBoxUnitPrice;
+        $this->vipThaiCeilingAmount = (int)$this->vipThaiCeilingPcs * (int)$this->vipThaiCeilingUnitPrice;
         
         // Calculate component total
         $this->vipComponentTotal = $this->vipStepboardAmount + $this->vipEngineBayAmount + $this->vipConsoleBoxAmount + $this->vipThaiCeilingAmount;
@@ -991,9 +987,9 @@ class OrderEdit extends Component
 
         // Calculate Discount
         if ($this->discount_type === 'percentage') {
-            $this->discounted_amount = round($this->subtotal * ($this->discount_value / 100));
+            $this->discounted_amount = round($this->subtotal * ((int)$this->discount_value / 100));
         } else {
-            $this->discounted_amount = $this->discount_value;
+            $this->discounted_amount = (int)$this->discount_value;
         }
 
         // Calculate Total Due
@@ -1288,10 +1284,19 @@ class OrderEdit extends Component
                     } elseif ($item['type'] === 'upholstery') {
                         $itemRevenue = (int) $item['unit_price'];
                         
-                        // Upload photo if provided (new photo)
-                        $photoPath = $item['photo_path'] ?? null; // Preserve existing photo path
-                        if (isset($item['photo']) && $item['photo']) {
-                            $photoPath = $item['photo']->store('upholstery-photos', 'public');
+                        // Upload photos if provided
+                        $photoPaths = [];
+                        if (!empty($item['photos'])) {
+                            foreach ($item['photos'] as $photo) {
+                                if ($photo) {
+                                    // Check if $photo is a file object or already a stored path
+                                    if (is_string($photo)) {
+                                        $photoPaths[] = $photo;
+                                    } else {
+                                        $photoPaths[] = $photo->store('upholstery-photos', 'public');
+                                    }
+                                }
+                            }
                         }
                         
                         // Create the UpholsteryOrder record
@@ -1302,7 +1307,7 @@ class OrderEdit extends Component
                             'unit_color' => '',
                             'services' => $item['services'],
                             'description' => $item['description'] ?? '',
-                            'photo_path' => $photoPath,
+                            'photos' => $photoPaths,
                             'installation_date' => $item['installation_date'],
                             'downpayment' => 0,
                             'balance' => $itemRevenue,
@@ -1346,8 +1351,20 @@ class OrderEdit extends Component
                     } elseif ($item['type'] === 'vip') {
                         $itemRevenue = (int) $item['unit_price'];
                         
-                        // Photo path is already stored in addVip(), just use it directly
-                        $photoPath = $item['photo'] ?? null;
+                        // Upload photos if provided
+                        $photoPaths = [];
+                        if (!empty($item['photos'])) {
+                            foreach ($item['photos'] as $photo) {
+                                if ($photo) {
+                                    // Check if $photo is a file object or already a stored path
+                                    if (is_string($photo)) {
+                                        $photoPaths[] = $photo;
+                                    } else {
+                                        $photoPaths[] = $photo->store('vip-photos', 'public');
+                                    }
+                                }
+                            }
+                        }
                         
                         // Create the VIP record
                         $vip = \App\Models\Vip::create([
@@ -1364,7 +1381,7 @@ class OrderEdit extends Component
                             'thai_ceiling_unit_price' => (int) ($item['thai_ceiling_unit_price'] ?? 0),
                             'thai_ceiling_amount' => (int) ($item['thai_ceiling_amount'] ?? 0),
                             'description' => $item['description'] ?? '',
-                            'photo' => $photoPath,
+                            'photos' => $photoPaths,
                             'total_amount' => $itemRevenue,
                         ]);
                         

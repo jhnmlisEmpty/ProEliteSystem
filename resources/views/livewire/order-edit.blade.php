@@ -417,15 +417,19 @@
 
                             {{-- Photo Upload --}}
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Photo (Optional)</label>
-                                <input type="file" wire:model="upholsteryPhoto" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                                @error('upholsteryPhoto') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Photos (Multiple) - Optional</label>
+                                <input type="file" wire:model="upholsteryPhotos" accept="image/*" multiple class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                @error('upholsteryPhotos') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                                 
-                                <div wire:loading wire:target="upholsteryPhoto" class="mt-2 text-sm text-gray-600">
-                                    Uploading photo...
+                                <div wire:loading wire:target="upholsteryPhotos" class="mt-2 text-sm text-gray-600">
+                                    Uploading photos...
                                 </div>
 
-                               
+                                @if(!empty($upholsteryPhotos))
+                                    <div class="mt-2 text-xs text-gray-600">
+                                        {{ count($upholsteryPhotos) }} photo(s) selected
+                                    </div>
+                                @endif
                             </div>
 
                             {{-- Crew Assignment --}}
@@ -596,13 +600,19 @@
 
                             {{-- Photo Upload --}}
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Photo (Optional)</label>
-                                <input type="file" wire:model="vipPhoto" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                                @error('vipPhoto') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Photos (Multiple) - Optional</label>
+                                <input type="file" wire:model="vipPhotos" accept="image/*" multiple class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                @error('vipPhotos') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                                 
-                                <div wire:loading wire:target="vipPhoto" class="mt-2 text-sm text-gray-600">
-                                    Uploading photo...
+                                <div wire:loading wire:target="vipPhotos" class="mt-2 text-sm text-gray-600">
+                                    Uploading photos...
                                 </div>
+
+                                @if(!empty($vipPhotos))
+                                    <div class="mt-2 text-xs text-gray-600">
+                                        {{ count($vipPhotos) }} photo(s) selected
+                                    </div>
+                                @endif
                             </div>
 
                             {{-- Total Amount --}}
