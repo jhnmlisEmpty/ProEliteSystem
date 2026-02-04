@@ -144,7 +144,7 @@
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Date</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Customer Info</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Order #</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Branch</th>
+                        <!-- <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Branch</th> -->
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Order Items</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Total</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Balance</th>
@@ -156,10 +156,12 @@
                 <tbody class="divide-y divide-gray-200">
                     @php
                         $lastCustomer = null;
+                        $customerOrders = $orders->groupBy('customer_name');
                     @endphp
                     @forelse($orders as $order)
                         @php
                             $isFirstOrderForCustomer = $lastCustomer !== $order->customer_name;
+                            $customerOrderCount = $isFirstOrderForCustomer ? $customerOrders[$order->customer_name]->count() : 0;
                             $lastCustomer = $order->customer_name;
                         @endphp
                         <tr class="hover:bg-gray-50 transition">
@@ -168,8 +170,8 @@
                                 {{ $order->created_at->format('M d, Y') }}
                             </td>
                             {{-- Customer Info (only on first row) --}}
-                            <td class="px-6 py-5 border-r border-gray-300" style="min-width: 210px;">
-                                @if($isFirstOrderForCustomer)
+                            @if($isFirstOrderForCustomer)
+                                <td class="px-6 py-5 border-r border-gray-300 align-middle text-center" rowspan="{{ $customerOrderCount }}" style="min-width: 210px; vertical-align: middle;">
                                     <div>
                                         <div class="font-bold text-gray-900 text-base uppercase mb-2">
                                             {{ $order->customer_name }}
@@ -185,18 +187,18 @@
                                             </div>
                                         @endif
                                     </div>
-                                @endif
-                            </td>
+                                </td>
+                            @endif
                             
                             {{-- Order Details --}}
                             <td class="px-6 py-4">
                                 <span class="font-semibold text-gray-900">#{{ $order->id }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <!-- <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">
                                     {{ $order->branch?->name ?? 'N/A' }}
                                 </span>
-                            </td>
+                            </td> -->
                             <td class="px-6 py-4">
                                 <div class="flex flex-wrap gap-1">
                                     @php
