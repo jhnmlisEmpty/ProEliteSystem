@@ -141,9 +141,9 @@ class OrderManagement extends Component
                 $query->where('status', $this->tableTab);
             }
             
-            // Always order by customer name first, then by date
-            $orders = $query->orderBy('customer_name', 'asc')
-                ->orderBy('created_at', 'desc')
+            // Order by date first (latest first), then by customer name
+            $orders = $query->orderBy('created_at', 'desc')
+                ->orderBy('customer_name', 'asc')
                 ->paginate(15);
         } else {
             // For kanban view, we need all data without pagination

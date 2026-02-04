@@ -141,6 +141,7 @@
             <table class="w-full">
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Date</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Customer Info</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Order #</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Branch</th>
@@ -164,6 +165,10 @@
                             $lastCustomer = $order->customer_name;
                         @endphp
                         <tr class="hover:bg-gray-50 transition">
+                            {{-- Date --}}
+                            <td class="px-6 py-4 text-sm text-gray-600 font-medium whitespace-nowrap">
+                                {{ $order->created_at->format('M d, Y') }}
+                            </td>
                             {{-- Customer Info (only on first row) --}}
                             @if($isFirstOrderForCustomer)
                                 <td class="px-6 py-5 border-r border-gray-300 align-middle" rowspan="{{ $customerOrderCount }}" style="min-width: 210px;">
@@ -264,7 +269,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-12 text-center">
+                            <td colspan="10" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
