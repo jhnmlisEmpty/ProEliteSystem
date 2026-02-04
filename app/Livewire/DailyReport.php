@@ -51,6 +51,9 @@ class DailyReport extends Component
 
         $this->branchPayments = $this->getBranchPayments($branchCollection, $date);
         $this->branchSummaries = $this->getBranchSummaries($branchCollection, $date);
+        
+        // Add sold items by type to overall summary
+        $this->overallSummary['soldItemsByType'] = $this->getSoldItemsByType($date);
     }
 
     private function getBranchCollection()
@@ -181,6 +184,41 @@ class DailyReport extends Component
             $query->where('branch_id', $branchId);
         }
         return $query->orderBy('expense_date', 'desc')->get();
+    }
+
+    private function getSoldItemsByType(string $date, ?int $branchId = null): array
+    {
+        $orders = $this->getOrders($date, $branchId);
+        $orderItems = $orders->flatMap->orderItems->values();
+
+        $retailItems = $orderItems
+            ->filter(fn($item) => $item->product && $item->product->type === 'retail')
+            ->groupBy('item_name')
+            ->map(fn($items) => [
+                'item_name' => $items->first()->item_name,
+                'product_id' => $items->first()->product_id,
+                'quantity' => (int) $items->sum('quantity'),
+                'total_price' => (int) $items->sum('total_price'),
+                'unit_price' => (int) ($items->first()->unit_price ?? 0),
+            ])
+            ->values();
+
+        $materialItems = $orderItems
+            ->filter(fn($item) => $item->product && $item->product->type === 'material')
+            ->groupBy('item_name')
+            ->map(fn($items) => [
+                'item_name' => $items->first()->item_name,
+                'product_id' => $items->first()->product_id,
+                'quantity' => (int) $items->sum('quantity'),
+                'total_price' => (int) $items->sum('total_price'),
+                'unit_price' => (int) ($items->first()->unit_price ?? 0),
+            ])
+            ->values();
+
+        return [
+            'retail' => $retailItems->toArray(),
+            'material' => $materialItems->toArray(),
+        ];
     }
 
     public function render()

@@ -176,6 +176,93 @@
             </section>
         </div>
 
+        <!-- Sold Items by Type -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Retail Items -->
+            <section class="bg-white shadow rounded-lg p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-gray-900">Sold Retail Items</h3>
+                    <span class="text-xs text-gray-500">Retail products sold on this date</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-xs">
+                        <thead class="bg-blue-50 text-blue-700 uppercase tracking-wide">
+                            <tr>
+                                <th class="px-3 py-2 text-left">Product</th>
+                                <th class="px-3 py-2 text-right">Qty</th>
+                                <th class="px-3 py-2 text-right">Unit Price</th>
+                                <th class="px-3 py-2 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($overallSummary['soldItemsByType']['retail'] ?? [] as $item)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-3 py-2 text-gray-900 font-medium">{{ $item['item_name'] }}</td>
+                                    <td class="px-3 py-2 text-right text-gray-700 font-semibold">{{ $item['quantity'] }}</td>
+                                    <td class="px-3 py-2 text-right text-gray-700">₱{{ number_format($item['unit_price'], 0) }}</td>
+                                    <td class="px-3 py-2 text-right font-bold text-blue-700">₱{{ number_format($item['total_price'], 0) }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="px-3 py-4 text-center text-gray-500">No retail items sold on this date.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                        @if(count($overallSummary['soldItemsByType']['retail'] ?? []) > 0)
+                            <tfoot class="bg-blue-50 font-bold">
+                                <tr>
+                                    <td colspan="3" class="px-3 py-2 text-right text-gray-900">Subtotal</td>
+                                    <td class="px-3 py-2 text-right text-blue-900">₱{{ number_format(collect($overallSummary['soldItemsByType']['retail'] ?? [])->sum('total_price'), 0) }}</td>
+                                </tr>
+                            </tfoot>
+                        @endif
+                    </table>
+                </div>
+            </section>
+
+            <!-- Material Items -->
+            <section class="bg-white shadow rounded-lg p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-gray-900">Sold Material Items</h3>
+                    <span class="text-xs text-gray-500">Material products sold on this date</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-xs">
+                        <thead class="bg-purple-50 text-purple-700 uppercase tracking-wide">
+                            <tr>
+                                <th class="px-3 py-2 text-left">Product</th>
+                                <th class="px-3 py-2 text-right">Qty</th>
+                                <th class="px-3 py-2 text-right">Unit Price</th>
+                                <th class="px-3 py-2 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($overallSummary['soldItemsByType']['material'] ?? [] as $item)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-3 py-2 text-gray-900 font-medium">{{ $item['item_name'] }}</td>
+                                    <td class="px-3 py-2 text-right text-gray-700 font-semibold">{{ $item['quantity'] }}</td>
+                                    <td class="px-3 py-2 text-right text-gray-700">₱{{ number_format($item['unit_price'], 0) }}</td>
+                                    <td class="px-3 py-2 text-right font-bold text-purple-700">₱{{ number_format($item['total_price'], 0) }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="px-3 py-4 text-center text-gray-500">No material items sold on this date.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                        @if(count($overallSummary['soldItemsByType']['material'] ?? []) > 0)
+                            <tfoot class="bg-purple-50 font-bold">
+                                <tr>
+                                    <td colspan="3" class="px-3 py-2 text-right text-gray-900">Subtotal</td>
+                                    <td class="px-3 py-2 text-right text-purple-900">₱{{ number_format(collect($overallSummary['soldItemsByType']['material'] ?? [])->sum('total_price'), 0) }}</td>
+                                </tr>
+                            </tfoot>
+                        @endif
+                    </table>
+                </div>
+            </section>
+        </div>
+
         <!-- Branch breakdown -->
         <section class="bg-white shadow rounded-lg p-4">
             <div class="flex items-center justify-between mb-3">

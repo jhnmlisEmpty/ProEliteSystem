@@ -14,52 +14,80 @@
         @if($canSelectBranch)
         <!-- FILTERS -->
         <div class="mb-4 bg-white rounded-lg shadow p-4">
-            <div class="flex flex-wrap items-end justify-between gap-3">
-            <div class="flex flex-wrap items-end gap-3">
-                @if($canSelectBranch)
-                <div class="flex flex-wrap gap-2">
-                    <span class="block text-xs font-medium text-gray-700 mb-1 w-full">Branch</span>
-                    <button 
-                    wire:click="switchBranch('all')" 
-                    class="px-4 py-2 rounded-lg text-sm font-medium transition {{ !$branchId ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                    All Branches
-                    </button>
-                    @foreach($branches as $branch)
-                    <button 
-                        wire:click="switchBranch({{ $branch->id }})" 
-                        class="px-4 py-2 rounded-lg text-sm font-medium transition {{ $branchId == $branch->id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                        {{ $branch->name }}
-                    </button>
-                    @endforeach
-                </div>
-                @endif
+            <div class="flex flex-wrap lg:flex-nowrap items-end gap-3">
+                <div class="flex flex-wrap lg:flex-nowrap items-end gap-3 w-full">
+                    @if($canSelectBranch)
+                    <div class="flex flex-wrap gap-2 items-end">
+                        <span class="block text-xs font-medium text-gray-700 mb-1 w-full">Branch</span>
+                        <button 
+                            wire:click="switchBranch('all')" 
+                            class="px-4 py-2 rounded-lg text-sm font-medium transition {{ !$branchId ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            All Branches
+                        </button>
+                        @foreach($branches as $branch)
+                        <button 
+                            wire:click="switchBranch({{ $branch->id }})" 
+                            class="px-4 py-2 rounded-lg text-sm font-medium transition {{ $branchId == $branch->id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            {{ $branch->name }}
+                        </button>
+                        @endforeach
+                    </div>
+                    @endif
 
-                <div class="flex flex-wrap items-end gap-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">From</label>
-                    <input type="date" wire:model="start_date" class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <div class="flex items-end gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">From</label>
+                            <input type="date" wire:model="start_date" class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">To</label>
+                            <input type="date" wire:model="end_date" class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <button wire:click="applyFilters" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                            Apply Filters
+                        </button>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">To</label>
-                    <input type="date" wire:model="end_date" class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                </div>
-
-                <div class="flex gap-2">
-                <button wire:click="applyFilters" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition w-full md:w-auto">
-                    Apply Filters
-                </button>
-                </div>
-            </div>
-
-            <a href="{{ route('reports.daily') }}" class="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                Report
-            </a>
             </div>
             <p class="text-xs text-gray-500 mt-2">Filters persist in database. Select date range and click Apply.</p>
+        </div>
+
+        <!-- REPORTS SECTION -->
+        <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <a 
+                href="{{ route('reports.daily') }}" 
+                class="bg-white rounded-lg shadow p-4 hover:shadow-lg hover:border-green-700 transition border-l-4 border-green-500"
+                target="_blank" rel="noopener"
+            >
+                <div class="flex items-center gap-3">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-900">Daily Report</h3>
+                        <p class="text-xs text-gray-500">Sales, supply movement, and expenses</p>
+                    </div>
+                </div>
+            </a>
+            <a 
+                href="{{ route('reports.inventory') }}" 
+                class="bg-white rounded-lg shadow p-4 hover:shadow-lg hover:border-emerald-700 transition border-l-4 border-emerald-500"
+                target="_blank" rel="noopener"
+            >
+                <div class="flex items-center gap-3">
+                    <div class="p-3 bg-emerald-100 rounded-lg">
+                        <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-900">Inventory Report</h3>
+                        <p class="text-xs text-gray-500">Available and sold out items</p>
+                    </div>
+                </div>
+            </a>
         </div>
 
         <!-- ADMIN-ONLY SECTIONS -->
