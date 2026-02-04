@@ -449,14 +449,13 @@
 
                             {{-- Photo Upload --}}
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Photo (Optional)</label>
-                                <input type="file" wire:model="upholsteryPhoto" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                                @error('upholsteryPhoto') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Photos (Optional)</label>
+                                <input type="file" wire:model="upholsteryPhotos" accept="image/*" multiple class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                @error('upholsteryPhotos') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                                 
-                                <div wire:loading wire:target="upholsteryPhoto" class="mt-2 text-sm text-gray-600">
-                                    Uploading photo...
+                                <div wire:loading wire:target="upholsteryPhotos" class="mt-2 text-sm text-gray-600">
+                                    Uploading photos...
                                 </div>
-
                             </div>
 
                             {{-- Crew Assignment --}}
@@ -612,7 +611,7 @@
                                                     <input type="number" min="0" wire:model.live="vipThaiCeilingPcs" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                                 </div>
                                                 <div>
-                                                    <label class="block text-xs font-medium text-gray-700 mb-1">Unit Price (₱)</label>
+                                                    <label class="block text-xs font-medium text-gray mb-1">Unit Price (₱)</label>
                                                     <input type="number" min="0" wire:model.live="vipThaiCeilingUnitPrice" wire:change="calculateVipComponentTotal" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                                 </div>
                                                 <div>
@@ -632,12 +631,12 @@
 
                             {{-- Photo Upload --}}
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Photo (Optional)</label>
-                                <input type="file" wire:model="vipPhoto" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                                @error('vipPhoto') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Photos (Optional)</label>
+                                <input type="file" wire:model="vipPhotos" accept="image/*" multiple class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                @error('vipPhotos') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                                 
-                                <div wire:loading wire:target="vipPhoto" class="mt-2 text-sm text-gray-600">
-                                    Uploading photo...
+                                <div wire:loading wire:target="vipPhotos" class="mt-2 text-sm text-gray-600">
+                                    Uploading photos...
                                 </div>
                             </div>
 
