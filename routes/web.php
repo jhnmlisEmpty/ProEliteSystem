@@ -25,6 +25,7 @@ use App\Livewire\ExpenseManagement;
 use App\Livewire\ExpenseForm;
 use App\Livewire\EmployeeServices;
 use App\Livewire\DailyReport;
+use App\Livewire\InventoryReport;
 
 // Guest routes
 Route::get('/login', Login::class)->name('login');
@@ -51,6 +52,7 @@ Route::middleware(['auth', 'denyEmployee'])->group(function () {
     Route::middleware('denyOrderCreator')->group(function () {
         
         Route::get('/reports/daily', DailyReport::class)->name('reports.daily');
+        Route::get('/reports/inventory', InventoryReport::class)->name('reports.inventory');
 
         Route::get('/products', ProductManagement::class)->name('products.index');
         Route::get('/products/create', ProductForm::class)->name('products.create')->middleware('admin');
