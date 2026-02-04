@@ -16,6 +16,7 @@ class ServiceAssignment extends Model
         'order_id',
         'service_id',
         'employee_id',
+        'payment_status',
     ];
 
     /**

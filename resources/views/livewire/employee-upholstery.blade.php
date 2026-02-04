@@ -40,72 +40,132 @@
         </div>
     </div>
 
-    {{-- Upholstery Table (Desktop) --}}
+    {{-- Responsive Upholstery Table --}}
     <div class="bg-white rounded-lg shadow-sm overflow-x-auto">
-        @if(count($upholsterySummary) > 0)
-            <div class="min-w-[700px] space-y-1">
-                <div class="flex flex-row items-center bg-gray-100 border border-gray-200 rounded text-xs px-2 py-1 font-semibold uppercase tracking-wide text-gray-600">
-                    <div class="w-20 min-w-[70px] text-center">Status</div>
-                     <div class="w-24 min-w-[100px] text-center">Date</div>
-                    <div class="w-40 min-w-[120px] text-center">Customer</div>
-                    <div class="w-24 min-w-[90px] text-right">Value</div>
-                    <div class="w-16 min-w-[60px] text-center">Team</div>
-                    <div class="flex-1 min-w-[120px] text-left">Co-workers</div>
-                    <div class="flex-1 min-w-[160px] text-left">Recent</div>
-                </div>
-                @foreach($upholsterySummary as $summary)
-                    <div class="flex flex-row items-center bg-white border border-gray-200 rounded hover:bg-gray-50 text-xs px-2 py-1">
-                        <div class="w-20 min-w-[70px] text-center">
-                            @php $isPaid = ($summary['payment_status'] ?? 'unpaid') === 'paid'; @endphp
-                            <button wire:click="togglePaidStatus({{ $summary['upholsteryOrder']->id }})"
-                                class="px-2 py-1 rounded text-xs font-semibold focus:outline-none transition
-                                    {{ $isPaid ? 'bg-green-100 text-green-800 border border-green-300 hover:bg-green-200' : 'bg-red-100 text-red-800 border border-red-300 hover:bg-red-200' }}">
-                                {{ $isPaid ? 'Paid' : 'Unpaid' }}
-                            </button>
-                        </div>
-                        <div class="w-28 min-w-[100px] text-center font-semibold text-gray-900">{{ $summary['assignments']->min('created_at')->format('M d, Y') }}</div>
-                        <div class="w-40 min-w-[120px] text-center text-gray-900">{{ $summary['upholsteryOrder']->order->customer->name ?? '-' }}</div>
-                       
-                        <div class="w-24 min-w-[90px] text-right font-semibold text-orange-700">₱{{ number_format($summary['orderValue']) }}</div>
-                        <div class="w-16 min-w-[60px] text-center text-gray-900">{{ $summary['otherEmployeesCount'] }}</div>
-                        <div class="flex-1 min-w-[120px] text-left">
-                            @if($summary['otherEmployeesCount'] > 0)
-                                @foreach($summary['otherEmployees'] as $coworker)
-                                    <span class="inline-block bg-blue-100 text-blue-800 rounded px-1 py-0.5 mr-1 mb-1">
-                                        {{ $coworker['name'] }}<span class="ml-0.5 font-semibold">{{ $coworker['count'] }}×</span>
-                                    </span>
-                                @endforeach
-                            @else
-                                <span class="text-gray-400">—</span>
-                            @endif
-                        </div>
-                        <div class="flex-1 min-w-[160px] text-left">
-                            @php $recent = $summary['assignments']->take(2); @endphp
-                            @if($recent->count() > 0)
-                                @foreach($recent as $assignment)
-                                    <div class="inline-block border border-gray-200 rounded px-1 py-0.5 mr-1 mb-1">
+        @if(count($assignmentsByDate) > 0)
+            <table class="w-full text-sm">
+                <thead class="bg-gray-100 border-b-2 border-gray-400">
+                    <tr>
+                        <th class="px-6 py-4 text-left font-bold text-gray-800 uppercase tracking-wide">Date</th>
+                        <th class="px-6 py-4 text-left font-bold text-gray-800 uppercase tracking-wide">Status</th>
+                        <th class="px-6 py-4 text-left font-bold text-gray-800 uppercase tracking-wide">Service</th>
+                        <th class="px-6 py-4 text-right font-bold text-gray-800 uppercase tracking-wide">Total Amount</th>
+                        <th class="px-6 py-4 text-left font-bold text-gray-800 uppercase tracking-wide">Co-workers</th>
+                        <th class="px-6 py-4 text-left font-bold text-gray-800 uppercase tracking-wide">Order</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    @foreach($assignmentsByDate as $date => $assignments)
+                        @php
+                            $isFirstRow = true;
+                            // Total rows for this date is just the number of assignments
+                            $totalRowsForDate = count($assignments);
+                        @endphp
+                        @foreach($assignments as $assignment)
+                            @php
+                                $isPaid = ($assignment->payment_status ?? 'unpaid') === 'paid';
+                                
+                                // Get other employees assigned to this upholstery order
+                                $otherEmployees = \App\Models\UpholsteryAssignment::where('upholstery_id', $assignment->upholstery_id)
+                                    ->where('employee_id', '!=', $this->employee->id)
+                                    ->with('employee')
+                                    ->get()
+                                    ->groupBy('employee_id')
+                                    ->map(function ($group) {
+                                        return [
+                                            'name' => $group->first()->employee->name,
+                                            'count' => $group->count()
+                                        ];
+                                    })
+                                    ->values();
+                                
+                                // Get upholstery services
+                                $upholstery = $assignment->upholstery;
+                                $services = [];
+                                $totalAmount = 0;
+                                
+                                if ($upholstery->seat_cover_amount > 0) {
+                                    $services[] = ['name' => 'Seat Cover', 'amount' => $upholstery->seat_cover_amount];
+                                    $totalAmount += $upholstery->seat_cover_amount;
+                                }
+                                if ($upholstery->ceiling_amount > 0) {
+                                    $services[] = ['name' => 'Ceiling', 'amount' => $upholstery->ceiling_amount];
+                                    $totalAmount += $upholstery->ceiling_amount;
+                                }
+                                if ($upholstery->door_trim_amount > 0) {
+                                    $services[] = ['name' => 'Door Trim', 'amount' => $upholstery->door_trim_amount];
+                                    $totalAmount += $upholstery->door_trim_amount;
+                                }
+                                if ($upholstery->carpet_amount > 0) {
+                                    $services[] = ['name' => 'Carpet', 'amount' => $upholstery->carpet_amount];
+                                    $totalAmount += $upholstery->carpet_amount;
+                                }
+                                if ($upholstery->others_amount > 0) {
+                                    $services[] = ['name' => 'Others', 'amount' => $upholstery->others_amount];
+                                    $totalAmount += $upholstery->others_amount;
+                                }
+                            @endphp
+                            <tr class="hover:bg-gray-50 transition">
+                                {{-- Date (only on first row of each date group) --}}
+                                @if($isFirstRow)
+                                    <td class="px-6 py-4 text-gray-900 font-semibold" rowspan="{{ $totalRowsForDate }}" style="vertical-align: middle;">
+                                        {{ \Carbon\Carbon::createFromFormat('Y-m-d', $date)->format('M d, Y') }}
+                                    </td>
+                                @endif
+                                
+                                {{-- Status --}}
+                                <td class="px-6 py-4">
+                                    <button wire:click="togglePaidStatus({{ $assignment->id }})"
+                                        class="px-2 py-1 rounded text-xs font-semibold focus:outline-none transition
+                                            {{ $isPaid ? 'bg-green-100 text-green-800 border border-green-300 hover:bg-green-200' : 'bg-red-100 text-red-800 border border-red-300 hover:bg-red-200' }}">
+                                        {{ $isPaid ? 'Paid' : 'Unpaid' }}
+                                    </button>
+                                </td>
+                                
+                                {{-- Services (all in one cell) --}}
+                                <td class="px-6 py-4 text-gray-900">
+                                    @foreach($services as $service)
+                                        <div class="mb-1">
+                                            <span class="font-semibold">{{ $service['name'] }}<span class="text-orange-700">(₱{{ number_format($service['amount']) }})</span></span>
+                                        </div>
+                                    @endforeach
+                                </td>
+                                
+                                {{-- Total Amount --}}
+                                <td class="px-6 py-4 text-right text-gray-900 font-semibold text-orange-700">₱{{ number_format($totalAmount) }}</td>
+                                
+                                {{-- Co-workers --}}
+                                <td class="px-6 py-4 text-gray-700">
+                                    @if($otherEmployees->count() > 0)
+                                        @foreach($otherEmployees as $coworker)
+                                            <span class="inline-block bg-blue-100 text-blue-800 rounded px-2 py-1 mr-1 mb-1 text-xs">
+                                                {{ $coworker['name'] }}<span class="ml-1 font-semibold">{{ $coworker['count'] }}×</span>
+                                            </span>
+                                        @endforeach
+                                    @else
+                                        <span class="text-gray-400">—</span>
+                                    @endif
+                                </td>
+                                
+                                {{-- Order --}}
+                                <td class="px-6 py-4 text-gray-700">
+                                    <div class="inline-block border border-gray-200 rounded px-2 py-1">
                                         <span class="font-semibold">ODR-{{ str_pad($assignment->upholstery->id ?? 0, 3, '0', STR_PAD_LEFT) }}</span>
-                                        <span class="text-gray-500">{{ $assignment->upholstery->order->customer->name ?? 'N/A' }}</span>
-                                        <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-orange-100 text-orange-800">
-                                            {{ ucfirst(str_replace('_', ' ', $assignment->order->status)) }}
-                                        </span>
+                                        <span class="text-gray-500 ml-1">{{ $assignment->upholstery->order->customer->name ?? 'N/A' }}</span>
+                                        <span class="ml-1 px-1 rounded bg-orange-100 text-orange-800 text-[10px]">{{ ucfirst(str_replace('_', ' ', $assignment->upholstery->order->status)) }}</span>
                                         <a href="{{ route('orders.view', $assignment->upholstery->order_id) }}"
-                                           class="ml-2 inline-flex items-center text-blue-600 hover:underline text-xs font-medium"
-                                           target="_blank" title="View Order">
+                                            class="ml-2 inline-flex items-center text-blue-600 hover:underline text-xs font-medium"
+                                            target="_blank" title="View Order">
                                             View
                                         </a>
                                     </div>
-                                @endforeach
-                                @if($summary['assignments']->count() > 2)
-                                    <span class="text-[10px] text-gray-500">+{{ $summary['assignments']->count() - 2 }} more</span>
-                                @endif
-                            @else
-                                <span class="text-gray-400">No recent</span>
-                            @endif
-                        </div>
-                    </div>
-                @endforeach
-            </div>
+                                </td>
+                            </tr>
+                            @php $isFirstRow = false; @endphp
+                        @endforeach
+                    @endforeach
+                </tbody>
+            </table>
         @else
             <div class="p-12 text-center">
                 <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
