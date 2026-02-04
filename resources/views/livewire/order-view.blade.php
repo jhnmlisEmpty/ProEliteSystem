@@ -286,7 +286,26 @@
                                         <p class="font-medium text-red-700">Upholstery Services</p>
                                         <p class="text-xs text-gray-500">{{ $upholstery->unit_type ?? 'N/A' }} - {{ $upholstery->unit_year_model }}</p>
                                         <p class="text-xs text-gray-500">Installation: {{ date('M d, Y', strtotime($upholstery->installation_date)) }}</p>
-                                        
+                                        <div class="text-xs space-y-1">
+                                            @if($upholstery->seat_cover_description)
+                                                <p class="italic"><strong>Seat Description:</strong> {{ $upholstery->seat_cover_description }}</p>
+                                            @endif
+                                            @if($upholstery->ceiling_description)
+                                                <p class="italic"><strong>Ceiling Description:</strong> {{ $upholstery->ceiling_description }}</p>
+                                            @endif
+                                            @if($upholstery->sidings_description)
+                                                <p class="italic"><strong>Sidings Description:</strong> {{ $upholstery->sidings_description }}</p>
+                                            @endif
+                                            @if($upholstery->rubber_mattings_description)
+                                                <p class="italic"><strong>Rubber Description:</strong> {{ $upholstery->rubber_mattings_description }}</p>
+                                            @endif
+                                            @if($upholstery->front_mattings_description)
+                                                <p class="italic"><strong>Front Description:</strong> {{ $upholstery->front_mattings_description }}</p>
+                                            @endif
+                                            @if($upholstery->headrest_description)
+                                                <p class="italic"><strong>Headrest Description:</strong> {{ $upholstery->headrest_description }}</p>
+                                            @endif
+                                        </div>
                                         @if($crewMembers->count() > 0)
                                             <p class="text-xs text-gray-600 mt-2">
                                                 <span class="font-semibold">Assigned Crew:</span>
@@ -296,7 +315,7 @@
                                             </p>
                                         @endif
                                         @if($upholstery->description)
-                                            <p class="text-xs text-gray-700 mt-2">
+                                            <p class="italic text-xs text-gray-700 mt-2">
                                                 <span class="font-semibold">Description:</span>
                                                 {{ $upholstery->description }}
                                             </p>
