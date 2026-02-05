@@ -53,7 +53,7 @@
         </div>
 
         <!-- REPORTS SECTION -->
-        <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <a 
                 href="{{ route('reports.daily') }}" 
                 class="bg-white rounded-lg shadow p-4 hover:shadow-lg hover:border-green-700 transition border-l-4 border-green-500"
@@ -85,6 +85,23 @@
                     <div>
                         <h3 class="text-sm font-semibold text-gray-900">Inventory Report</h3>
                         <p class="text-xs text-gray-500">Available and sold out items</p>
+                    </div>
+                </div>
+            </a>
+            <a 
+                href="{{ route('reports.sales-summary') }}" 
+                class="bg-white rounded-lg shadow p-4 hover:shadow-lg hover:border-green-700 transition border-l-4 border-green-500"
+                target="_blank" rel="noopener"
+            >
+                <div class="flex items-center gap-3">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-900">Sales Summary Report</h3>
+                        <p class="text-xs text-gray-500">Sales by category and date range</p>
                     </div>
                 </div>
             </a>
