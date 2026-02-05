@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Expense;
 use Carbon\Carbon;
 use Livewire\Component;
@@ -102,25 +103,25 @@ class SalesSummaryReport extends Component
         $dateStart = Carbon::parse($date)->startOfDay();
         $dateEnd = Carbon::parse($date)->endOfDay();
 
-        $query = Order::whereBetween('created_at', [$dateStart, $dateEnd])
-            ->where('payment_status', '!=', 'cancelled');
+        // Build the base query with order relationship filters
+        $query = OrderItem::whereHas('order', function ($q) use ($dateStart, $dateEnd) {
+            $q->whereBetween('created_at', [$dateStart, $dateEnd])
+              ->where('payment_status', '!=', 'cancelled');
+            
+            // Apply branch filtering
+            if (!$this->isAdmin) {
+                $q->where('branch_id', auth()->user()?->branch_id);
+            }
+        });
 
-        // Apply branch filtering
-        if (!$this->isAdmin) {
-            $query->where('branch_id', auth()->user()?->branch_id);
-        }
-
-        // Map category to order type
-        $typeMap = [
-            'accessories' => 'product',
-            'services' => 'service',
-            'upholstery' => 'upholstery',
-            'vip' => 'vip',
-        ];
-
-        $type = $typeMap[$category] ?? $category;
-
-        return $query->where('type', $type)->sum('total_amount') ?? 0;
+        // Filter by item type based on category and sum total_price from order items
+        return match($category) {
+            'accessories' => $query->whereNotNull('product_id')->sum('total_price') ?? 0,
+            'services' => $query->whereNotNull('service_id')->sum('total_price') ?? 0,
+            'upholstery' => $query->whereNotNull('upholstery_id')->sum('total_price') ?? 0,
+            'vip' => $query->whereNotNull('vip_id')->sum('total_price') ?? 0,
+            default => 0,
+        };
     }
 
     private function getExpensesByCategory(string $category, string $date): int
