@@ -163,7 +163,7 @@ class Dashboard extends Component
         $standaloneExpensesRange = Expense::whereBetween('created_at', [$start, $end]);
         if ($this->branchId) $standaloneExpensesRange->where('branch_id', $this->branchId);
         $this->totalBusinessExpenses = (int) ($standaloneExpensesRange->sum('amount') ?? 0);
-        $this->finalNetSales = $this->netSales - $this->totalBusinessExpenses;
+        $this->finalNetSales = $this->grossSales - $this->totalBusinessExpenses;
     }
 
     private function ordersRangeQuery($start, $end)
