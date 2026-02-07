@@ -933,8 +933,8 @@
                             {{-- DISCOUNT SECTION --}}
                             @if($discount_value > 0)
                                 <div class="flex justify-between items-center py-2 text-red-600 font-bold border-t-2 border-red-200">
-                                    <span>Discount ({{ $discount_type === 'percentage' ? $discount_value . '%' : 'Fixed' }}) <button wire:click="$set('discount_value', 0)" class="text-xs ml-1">×</button></span>
-                                    <span>−₱{{ number_format($discounted_amount, 2) }}</span>
+                                    <span>Discount (Fixed) <button wire:click="$set('discount_value', 0)" class="text-xs ml-1">×</button></span>
+                                    <span>−₱{{ number_format($discounted_amount) }}</span>
                                 </div>
                             @endif
 
@@ -986,19 +986,16 @@
                                             @error('discountPassword') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                                         </div>
                                     @else
-                                        {{-- Discount Form --}}
+                                        {{-- Discount Form (Fixed Amount Only) --}}
                                         <div class="space-y-2">
-                                            <select wire:model="discount_type" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                                <option value="percentage">% Off</option>
-                                                <option value="fixed">Fixed Amount</option>
-                                            </select>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Discount Amount (₱)</label>
                                             <div class="flex gap-2">
                                                 <input 
                                                     type="number" 
                                                     min="0" 
-                                                    step="0.01" 
+                                                    step="1" 
                                                     wire:model.live="discount_value" 
-                                                    placeholder="Enter amount" 
+                                                    placeholder="Enter fixed discount amount" 
                                                     class="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                                 <button 
                                                     wire:click="recalculate" 

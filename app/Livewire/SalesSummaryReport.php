@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Expense;
+use App\Models\Payment;
 use Carbon\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Collection;
@@ -103,25 +104,31 @@ class SalesSummaryReport extends Component
         $dateStart = Carbon::parse($date)->startOfDay();
         $dateEnd = Carbon::parse($date)->endOfDay();
 
-        // Build the base query with order relationship filters
-        $query = OrderItem::whereHas('order', function ($q) use ($dateStart, $dateEnd) {
-            $q->whereBetween('created_at', [$dateStart, $dateEnd])
-              ->where('payment_status', '!=', 'cancelled');
-            
-            // Apply branch filtering
-            if (!$this->isAdmin) {
-                $q->where('branch_id', auth()->user()?->branch_id);
-            }
-        });
-
-        // Filter by item type based on category and sum total_price from order items
-        return match($category) {
-            'accessories' => $query->whereNotNull('product_id')->sum('total_price') ?? 0,
-            'services' => $query->whereNotNull('service_id')->sum('total_price') ?? 0,
-            'upholstery' => $query->whereNotNull('upholstery_id')->sum('total_price') ?? 0,
-            'vip' => $query->whereNotNull('vip_id')->sum('total_price') ?? 0,
-            default => 0,
+        // Determine the column to filter by category
+        $column = match($category) {
+            'accessories' => 'product_id',
+            'services' => 'service_id',
+            'upholstery' => 'upholstery_id',
+            'vip' => 'vip_id',
+            default => null,
         };
+
+        if (!$column) return 0;
+
+        // Get payment amounts for this category on this date
+        $query = Payment::whereBetween('paid_at', [$dateStart, $dateEnd])
+            ->whereHas('order.orderItems', function ($q) use ($column) {
+                $q->whereNotNull($column);
+            });
+        
+        // Apply branch filtering
+        if (!$this->isAdmin) {
+            $query->whereHas('order', function ($q) {
+                $q->where('branch_id', auth()->user()?->branch_id);
+            });
+        }
+
+        return $query->sum('amount') ?? 0;
     }
 
     private function getExpensesByCategory(string $category, string $date): int

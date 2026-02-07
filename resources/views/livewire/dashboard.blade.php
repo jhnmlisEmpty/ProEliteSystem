@@ -51,8 +51,10 @@
             </div>
             <p class="text-xs text-gray-500 mt-2">Filters persist in database. Select date range and click Apply.</p>
         </div>
+        @endif
 
         <!-- REPORTS SECTION -->
+        @if(auth()->user()->role !== 'employee' && auth()->user()->role !== 'order_creator')
         <div class="mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <a 
                 href="{{ route('reports.daily') }}" 
@@ -106,9 +108,9 @@
                 </div>
             </a>
         </div>
+        @endif
 
-        <!-- ADMIN-ONLY SECTIONS -->
-        <!-- SALES SUMMARY (RANGE) -->
+         @if($canSelectBranch)
         <div class="mb-4">
             <h2 class="text-sm font-semibold text-gray-900 mb-2">Sales Summary (Filtered Range)</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">

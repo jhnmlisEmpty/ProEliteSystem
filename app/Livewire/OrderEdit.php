@@ -40,7 +40,7 @@ class OrderEdit extends Component
 
     // Financial Calculations
     public $subtotal = 0;
-    public $discount_type = 'percentage'; // 'percentage' or 'fixed'
+    public $discount_type = 'fixed'; // Only 'fixed' amount
     public $discount_value = 0;
     public $discounted_amount = 0;
     public $total_due = 0;
