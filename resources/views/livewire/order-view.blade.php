@@ -449,7 +449,7 @@
                     {{-- TOTALS ROW --}}
                     @php
                         $totalPaid = $order->payments->sum('amount');
-                        $balance = $order->total_gross - $totalPaid;
+                        $balance = $order->total_amount - $totalPaid;
                     @endphp
                     <tr class="bg-gray-100 border-t-2 border-gray-400 font-bold">
                         <td colspan="2" class="px-6 py-4 text-right text-gray-900 uppercase"></td>
@@ -459,6 +459,16 @@
                                     <span class="uppercase">Sub Total:</span>
                                     <span>₱{{ number_format($order->total_gross) }}</span>
                                 </div>
+                                @if($order->discounted_amount > 0)
+                                    <div class="flex justify-between text-orange-600">
+                                        <span class="uppercase">Discount:</span>
+                                        <span>-₱{{ number_format($order->discounted_amount) }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-gray-700">
+                                        <span class="uppercase">Sub Total after Discount:</span>
+                                        <span>₱{{ number_format($order->total_amount) }}</span>
+                                    </div>
+                                @endif
                                 <div class="flex justify-between text-blue-600">
                                     <span class="uppercase">Amount Paid:</span>
                                     <span>₱{{ number_format($totalPaid) }}</span>
