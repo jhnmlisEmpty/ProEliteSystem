@@ -87,6 +87,11 @@ class Order extends Model
         return $query->where('status', 'in_progress');
     }
 
+    public function scopeForInstallation($query)
+    {
+        return $query->where('status', 'for_installation');
+    }
+
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');

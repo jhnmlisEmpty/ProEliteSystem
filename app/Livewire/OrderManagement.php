@@ -16,9 +16,10 @@ class OrderManagement extends Component
     public $branchFilter = '';
     public $itemTypeFilter = '';
     public $view = 'table'; // 'table' or 'kanban'
-    public $tableTab = 'all'; // 'all', 'pending', 'in_progress', 'completed', 'cancelled'
+    public $tableTab = 'all'; // 'all', 'pending', 'in_progress', 'for_installation', 'completed', 'cancelled'
     public $showAllPending = false; // Toggle for showing all pending orders in kanban
     public $showAllInProgress = false; // Toggle for showing all in progress orders in kanban
+    public $showAllForInstallation = false; // Toggle for showing all for installation orders in kanban
     public $showAllCompleted = false; // Toggle for showing all completed orders in kanban
 
     public function setView($view)
@@ -34,6 +35,11 @@ class OrderManagement extends Component
     public function toggleShowAllInProgress()
     {
         $this->showAllInProgress = !$this->showAllInProgress;
+    }
+
+    public function toggleShowAllForInstallation()
+    {
+        $this->showAllForInstallation = !$this->showAllForInstallation;
     }
 
     public function toggleShowAllCompleted()
@@ -159,6 +165,10 @@ class OrderManagement extends Component
         $inProgressTotal = $inProgressQuery->count();
         $inProgressOrders = $this->showAllInProgress ? $inProgressQuery->get() : $inProgressQuery->limit(10)->get();
         
+        $forInstallationQuery = $baseQuery->clone()->where('status', 'for_installation')->orderBy('created_at', 'desc');
+        $forInstallationTotal = $forInstallationQuery->count();
+        $forInstallationOrders = $this->showAllForInstallation ? $forInstallationQuery->get() : $forInstallationQuery->limit(10)->get();
+        
         $completedQuery = $baseQuery->clone()->where('status', 'completed')->orderBy('created_at', 'desc');
         $completedTotal = $completedQuery->count();
         $completedOrders = $this->showAllCompleted ? $completedQuery->get() : $completedQuery->limit(10)->get();
@@ -172,6 +182,8 @@ class OrderManagement extends Component
             'pendingTotal' => $pendingTotal,
             'inProgressOrders' => $inProgressOrders,
             'inProgressTotal' => $inProgressTotal,
+            'forInstallationOrders' => $forInstallationOrders,
+            'forInstallationTotal' => $forInstallationTotal,
             'completedOrders' => $completedOrders,
             'completedTotal' => $completedTotal,
             'branches' => $branches,
