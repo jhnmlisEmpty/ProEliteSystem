@@ -110,7 +110,7 @@ Default credentials (see [BranchSeeder.php](database/seeders/BranchSeeder.php)):
 ## Critical Conventions
 
 ### Enum Values
-**Order status**: `pending`, `in_progress`, `completed`, `cancelled`  
+**Order status**: `pending`, `in_progress`, `for_installation`, `completed`, `cancelled`  
 **Payment status**: `unpaid`, `partial`, `paid`  
 **Product type**: `retail` (has sell_price), `material` (used internally, optional sell_price)  
 **Discount type**: `percentage`, `fixed`

@@ -159,7 +159,7 @@
 | vehicle_type | VARCHAR(255) | NULLABLE | Vehicle type (e.g., Van, SUV) |
 | plate_number | VARCHAR(255) | NULLABLE | Vehicle plate number |
 | type | ENUM('product', 'service', 'both') | NOT NULL, DEFAULT 'product' | Order type |
-| status | ENUM('pending', 'in_progress', 'completed', 'cancelled') | NOT NULL, DEFAULT 'pending' | Order status |
+| status | ENUM('pending', 'in_progress', 'for_installation', 'completed', 'cancelled') | NOT NULL, DEFAULT 'pending' | Order status |
 | payment_status | ENUM('unpaid', 'partial', 'paid') | NOT NULL, DEFAULT 'unpaid' | Payment status |
 | total_amount | INTEGER | NOT NULL, DEFAULT 0 | Total order amount (peso) |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |

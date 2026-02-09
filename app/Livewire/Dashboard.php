@@ -234,6 +234,7 @@ class Dashboard extends Component
         $this->ordersChartData = [
             ['status' => 'Pending', 'count' => (clone $base)->where('status','pending')->count()],
             ['status' => 'In Progress', 'count' => (clone $base)->where('status','in_progress')->count()],
+            ['status' => 'For Installation', 'count' => (clone $base)->where('status','for_installation')->count()],
             ['status' => 'Completed', 'count' => (clone $base)->where('status','completed')->count()],
             ['status' => 'Cancelled', 'count' => (clone $base)->where('status','cancelled')->count()],
         ];
