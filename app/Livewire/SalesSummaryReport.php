@@ -115,11 +115,15 @@ class SalesSummaryReport extends Component
 
         if (!$column) return 0;
 
-        // Get payment amounts for this category on this date
+        // Other columns to ensure only this category is counted
+        $otherColumns = array_values(array_diff(
+            ['product_id', 'service_id', 'upholstery_id', 'vip_id'],
+            [$column]
+        ));
+
+        // Get payments with order items
         $query = Payment::whereBetween('paid_at', [$dateStart, $dateEnd])
-            ->whereHas('order.orderItems', function ($q) use ($column) {
-                $q->whereNotNull($column);
-            });
+            ->with(['order.orderItems']);
         
         // Apply branch filtering
         if (!$this->isAdmin) {
@@ -128,7 +132,34 @@ class SalesSummaryReport extends Component
             });
         }
 
-        return $query->sum('amount') ?? 0;
+        $payments = $query->get();
+
+        // Allocate payment amounts proportionally by category
+        return $payments->reduce(function($carry, $payment) use ($column, $otherColumns) {
+            if (!$payment->order) return $carry;
+            
+            $order = $payment->order;
+            
+            // Get items matching this category (this column not null, others null)
+            $categoryItems = $order->orderItems->filter(function($item) use ($column, $otherColumns) {
+                if ($item->{$column} === null) return false;
+                foreach ($otherColumns as $col) {
+                    if ($item->{$col} !== null) return false;
+                }
+                return true;
+            });
+            
+            $categoryTotal = $categoryItems->sum('total_price');
+            $allTotal = $order->orderItems->sum('total_price');
+            
+            if ($allTotal == 0) return $carry;
+            
+            // Calculate proportion and allocate payment as whole number
+            $proportion = $categoryTotal / $allTotal;
+            $allocated = round($payment->amount * $proportion);
+            
+            return $carry + $allocated;
+        }, 0);
     }
 
     private function getExpensesByCategory(string $category, string $date): int
