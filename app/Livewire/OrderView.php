@@ -25,7 +25,7 @@ class OrderView extends Component
 
     // Status change
     public $newStatus = '';
-    public $statusOptions = ['pending', 'in_progress', 'completed', 'cancelled'];
+    public $statusOptions = ['pending', 'in_progress', 'for_installation', 'completed', 'cancelled'];
     public $showStatusDropdown = false;
 
     protected $rules = [

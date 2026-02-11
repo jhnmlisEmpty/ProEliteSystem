@@ -163,7 +163,7 @@ class Dashboard extends Component
         $standaloneExpensesRange = Expense::whereBetween('created_at', [$start, $end]);
         if ($this->branchId) $standaloneExpensesRange->where('branch_id', $this->branchId);
         $this->totalBusinessExpenses = (int) ($standaloneExpensesRange->sum('amount') ?? 0);
-        $this->finalNetSales = $this->netSales - $this->totalBusinessExpenses;
+        $this->finalNetSales = $this->grossSales - $this->totalBusinessExpenses;
     }
 
     private function ordersRangeQuery($start, $end)
@@ -234,6 +234,7 @@ class Dashboard extends Component
         $this->ordersChartData = [
             ['status' => 'Pending', 'count' => (clone $base)->where('status','pending')->count()],
             ['status' => 'In Progress', 'count' => (clone $base)->where('status','in_progress')->count()],
+            ['status' => 'For Installation', 'count' => (clone $base)->where('status','for_installation')->count()],
             ['status' => 'Completed', 'count' => (clone $base)->where('status','completed')->count()],
             ['status' => 'Cancelled', 'count' => (clone $base)->where('status','cancelled')->count()],
         ];
@@ -346,32 +347,35 @@ class Dashboard extends Component
         // This method always loads payments for "today" only, not affected by dashboard date filters.
         $todayStart = Carbon::today()->startOfDay();
         $todayEnd = Carbon::today()->endOfDay();
-        $paymentsQuery = \App\Models\Payment::whereBetween('paid_at', [$todayStart, $todayEnd])
-            ->with(['order.customer', 'order.branch', 'order.orderItems']);
+        $ordersQuery = Order::whereHas('payments', function($q) use ($todayStart, $todayEnd) {
+            $q->whereBetween('paid_at', [$todayStart, $todayEnd]);
+        })->with(['customer', 'branch', 'orderItems', 'payments' => function($q) use ($todayStart, $todayEnd) {
+            $q->whereBetween('paid_at', [$todayStart, $todayEnd]);
+        }]);
+        
         if ($this->branchId) {
-            $paymentsQuery->whereHas('order', function($q) {
-                $q->where('branch_id', $this->branchId);
-            });
+            $ordersQuery->where('branch_id', $this->branchId);
         }
-        $this->todaysPayments = $paymentsQuery->get()->map(function($payment) {
-            $order = $payment->order;
+        
+        $this->todaysPayments = $ordersQuery->get()->map(function($order) {
+            $totalPaidToday = $order->payments->sum('amount');
             return [
-                'order_id' => $order?->id,
-                'customer_name' => $order?->customer_name ?? $order?->customer?->name ?? 'N/A',
-                'amount' => $order?->total_amount ?? 0,
-                'payment_status' => $order?->payment_status ?? 'N/A',
-                'balance' => ($order?->total_amount ?? 0) - ($order?->payments()->sum('amount') ?? 0),
-                'paid_amount' => $payment->amount,
-                'order_status' => $order?->status ?? 'N/A',
-                'order_branch' => $order?->branch?->name ?? 'N/A',
-                'order_items' => $order?->orderItems?->map(function($item) {
+                'order_id' => $order->id,
+                'customer_name' => $order->customer_name ?? $order->customer?->name ?? 'N/A',
+                'amount' => $order->total_amount ?? 0,
+                'payment_status' => $order->payment_status ?? 'N/A',
+                'balance' => ($order->total_amount ?? 0) - ($order->payments()->sum('amount') ?? 0),
+                'paid_amount' => $totalPaidToday,
+                'order_status' => $order->status ?? 'N/A',
+                'order_branch' => $order->branch?->name ?? 'N/A',
+                'order_items' => $order->orderItems?->map(function($item) {
                     return [
                         'item_name' => $item->item_name,
                         'quantity' => $item->quantity,
                         'total_price' => $item->total_price,
                     ];
                 })->toArray() ?? [],
-                'paid_at' => $payment->paid_at ? $payment->paid_at->format('Y-m-d H:i') : '',
+                'paid_at' => $order->payments->last()?->paid_at ? $order->payments->last()->paid_at->format('Y-m-d H:i') : '',
                 'order' => $order,
             ];
         })->toArray();

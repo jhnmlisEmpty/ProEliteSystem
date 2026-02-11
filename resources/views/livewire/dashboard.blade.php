@@ -51,9 +51,11 @@
             </div>
             <p class="text-xs text-gray-500 mt-2">Filters persist in database. Select date range and click Apply.</p>
         </div>
+        @endif
 
         <!-- REPORTS SECTION -->
-        <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+        @if(auth()->user()->role !== 'employee' && auth()->user()->role !== 'order_creator')
+        <div class="mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <a 
                 href="{{ route('reports.daily') }}" 
                 class="bg-white rounded-lg shadow p-4 hover:shadow-lg hover:border-green-700 transition border-l-4 border-green-500"
@@ -88,10 +90,27 @@
                     </div>
                 </div>
             </a>
+            <a 
+                href="{{ route('reports.sales-summary') }}" 
+                class="bg-white rounded-lg shadow p-4 hover:shadow-lg hover:border-green-700 transition border-l-4 border-green-500"
+                target="_blank" rel="noopener"
+            >
+                <div class="flex items-center gap-3">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-900">Sales Summary Report</h3>
+                        <p class="text-xs text-gray-500">Sales by category and date range</p>
+                    </div>
+                </div>
+            </a>
         </div>
+        @endif
 
-        <!-- ADMIN-ONLY SECTIONS -->
-        <!-- SALES SUMMARY (RANGE) -->
+         @if($canSelectBranch)
         <div class="mb-4">
             <h2 class="text-sm font-semibold text-gray-900 mb-2">Sales Summary (Filtered Range)</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -122,7 +141,7 @@
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-green-500">
                     <p class="text-xs text-gray-600 font-medium">Net Sales (After Expenses)</p>
                     <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($finalNetSales, 0) }}</p>
-                    <p class="text-xs text-gray-400 mt-1 italic">₱{{ number_format($netSales, 0) }} - ₱{{ number_format($totalBusinessExpenses, 0) }} = ₱{{ number_format($finalNetSales, 0) }}</p>
+                    <p class="text-xs text-gray-400 mt-1 italic">₱{{ number_format($grossSales, 0) }} - ₱{{ number_format($totalBusinessExpenses, 0) }} = ₱{{ number_format($finalNetSales, 0) }}</p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-purple-500">
                     <p class="text-xs text-gray-600 font-medium">Inventory Value</p>

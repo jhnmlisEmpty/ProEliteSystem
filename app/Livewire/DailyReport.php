@@ -85,30 +85,36 @@ class DailyReport extends Component
 
     private function getPayments(string $date, ?int $branchId = null): array
     {
-        $paymentsQuery = \App\Models\Payment::whereDate('paid_at', $date)
-            ->with(['order.customer']);
+        $dateStart = Carbon::parse($date)->startOfDay();
+        $dateEnd = Carbon::parse($date)->endOfDay();
+        
+        $ordersQuery = Order::whereHas('payments', function($q) use ($dateStart, $dateEnd) {
+            $q->whereBetween('paid_at', [$dateStart, $dateEnd]);
+        })->with(['customer', 'branch', 'orderItems', 'payments' => function($q) use ($dateStart, $dateEnd) {
+            $q->whereBetween('paid_at', [$dateStart, $dateEnd]);
+        }]);
+        
         if ($branchId) {
-            $paymentsQuery->whereHas('order', function($q) use ($branchId) {
-                $q->where('branch_id', $branchId);
-            });
+            $ordersQuery->where('branch_id', $branchId);
         }
-        $payments = $paymentsQuery->get();
-        return $payments->map(fn($payment) => $this->formatPayment($payment))->toArray();
+        
+        $orders = $ordersQuery->get();
+        return $orders->map(fn($order) => $this->formatPayment($order))->toArray();
     }
 
-    private function formatPayment($payment): array
+    private function formatPayment($order): array
     {
-        $order = $payment->order;
+        $totalPaidOnDate = $order->payments->sum('amount');
         return [
-            'order_id' => $order?->id,
-            'customer_name' => $order?->customer_name ?? $order?->customer?->name ?? 'N/A',
-            'amount' => $order?->total_amount ?? 0,
-            'payment_status' => $order?->payment_status ?? 'N/A',
-            'balance' => ($order?->total_amount ?? 0) - ($order?->payments()->sum('amount') ?? 0),
-            'paid_amount' => $payment->amount,
-            'order_status' => $order?->status ?? 'N/A',
-            'order_branch' => $order?->branch?->name ?? 'N/A',
-            'order_items' => $order?->orderItems?->map(fn($item) => [
+            'order_id' => $order->id,
+            'customer_name' => $order->customer_name ?? $order->customer?->name ?? 'N/A',
+            'amount' => $order->total_amount ?? 0,
+            'payment_status' => $order->payment_status ?? 'N/A',
+            'balance' => ($order->total_amount ?? 0) - ($order->payments()->sum('amount') ?? 0),
+            'paid_amount' => $totalPaidOnDate,
+            'order_status' => $order->status ?? 'N/A',
+            'order_branch' => $order->branch?->name ?? 'N/A',
+            'order_items' => $order->orderItems?->map(fn($item) => [
                 'item_name' => $item->item_name,
                 'quantity' => $item->quantity,
                 'total_price' => $item->total_price,

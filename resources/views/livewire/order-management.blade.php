@@ -122,6 +122,12 @@
                     In Progress
                 </button>
                 <button 
+                    wire:click="setTableTab('for_installation')" 
+                    class="px-6 py-4 font-medium text-sm whitespace-nowrap transition border-b-2 {{ $tableTab === 'for_installation' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-600 hover:text-gray-900' }}"
+                >
+                    For Installation
+                </button>
+                <button 
                     wire:click="setTableTab('completed')" 
                     class="px-6 py-4 font-medium text-sm whitespace-nowrap transition border-b-2 {{ $tableTab === 'completed' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-600 hover:text-gray-900' }}"
                 >
@@ -238,6 +244,8 @@
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
                                 @elseif($order->status === 'in_progress')
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">In Progress</span>
+                                @elseif($order->status === 'for_installation')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">For Installation</span>
                                 @elseif($order->status === 'completed')
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Completed</span>
                                 @else
@@ -291,7 +299,7 @@
 
     {{-- KANBAN VIEW --}}
     @if($view === 'kanban')
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {{-- Pending Column --}}
             <div class="bg-white rounded-lg shadow overflow-hidden flex flex-col">
                 <div class="bg-yellow-100 border-b-4 border-yellow-400 px-6 py-4">
@@ -371,7 +379,7 @@
                             @endif
                             <div class="grid grid-cols-2 gap-2 mb-3">
                                 <button wire:click="updateOrderStatus({{ $order->id }}, 'in_progress')" class="px-2 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition">In Progress</button>
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'completed')" class="px-2 py-1.5 text-xs bg-green-600 hover:bg-green-700 text-white rounded font-medium transition">Complete</button>
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'for_installation')" class="px-2 py-1.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded font-medium transition">For Installation</button>
                             </div>
                             <div class="flex gap-2">
                                 <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg font-medium transition">View</a>
@@ -466,7 +474,7 @@
                                 <div class="text-sm text-gray-600 mb-3">{{ $order->customer->vehicle_type }} - {{ $order->customer->plate_number }}</div>
                             @endif
                             <div class="grid grid-cols-2 gap-2 mb-3">
-                                <button wire:click="updateOrderStatus({{ $order->id }}, 'completed')" class="px-2 py-1.5 text-xs bg-green-600 hover:bg-green-700 text-white rounded font-medium transition">Complete</button>
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'for_installation')" class="px-2 py-1.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded font-medium transition">For Installation</button>
                                 <button wire:click="updateOrderStatus({{ $order->id }}, 'pending')" class="px-2 py-1.5 text-xs bg-yellow-600 hover:bg-yellow-700 text-white rounded font-medium transition">Pending</button>
                             </div>
                             <div class="flex gap-2">
@@ -479,6 +487,102 @@
                     @empty
                         <div class="text-center py-8 text-gray-500">
                             <p>No in-progress orders</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+            {{-- For Installation Column --}}
+            <div class="bg-white rounded-lg shadow overflow-hidden flex flex-col">
+                <div class="bg-purple-100 border-b-4 border-purple-400 px-6 py-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-purple-900 text-lg">For Installation</h3>
+                            <p class="text-sm text-purple-700 mt-1">{{ $showAllForInstallation ? $forInstallationTotal : ($forInstallationTotal > 10 ? '10 out of ' . $forInstallationTotal : $forInstallationTotal) }} orders</p>
+                        </div>
+                        @if(!$showAllForInstallation && $forInstallationOrders->count() >= 10)
+                            <button wire:click="toggleShowAllForInstallation" class="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded font-medium transition">
+                                Show All
+                            </button>
+                        @elseif($showAllForInstallation)
+                            <button wire:click="toggleShowAllForInstallation" class="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded font-medium transition">
+                                Show Less
+                            </button>
+                        @endif
+                    </div>
+                </div>
+                <div class="p-4 space-y-3 flex-1">
+                    @forelse($forInstallationOrders as $order)
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="font-semibold text-gray-900 text-lg">Order #{{ $order->id }}</div>
+                                <div class="flex flex-wrap gap-1 ml-2">
+                                    @php
+                                        $hasProducts = $order->orderItems->where('product_id', '!=', null)->count() > 0;
+                                        $hasServices = $order->orderItems->where('service_id', '!=', null)->count() > 0;
+                                        $hasUpholstery = $order->orderItems->where('upholstery_id', '!=', null)->count() > 0;
+                                        $hasVip = $order->orderItems->where('vip_id', '!=', null)->count() > 0;
+                                        $hasExpenses = $order->expenses->count() > 0;
+                                    @endphp
+                                    @if($hasProducts)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">PRODUCTS</span>
+                                    @endif
+                                    @if($hasServices)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">SERVICES</span>
+                                    @endif
+                                    @if($hasUpholstery)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">UPHOLSTERY</span>
+                                    @endif
+                                    @if($hasVip)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">VIP PACKAGE</span>
+                                    @endif
+                                    @if($hasExpenses)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">EXPENSES</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <div class="font-semibold text-gray-900">₱{{ number_format($order->total_amount) }}</div>
+                                </div>
+                                <div class="text-right">
+                                    @php
+                                        $totalPaid = $order->payments()->sum('amount') ?? 0;
+                                        $balance = $order->total_amount - $totalPaid;
+                                    @endphp
+                                    <div class="text-sm {{ $balance > 0 ? 'text-orange-600' : 'text-green-600' }} font-medium">Balance: ₱{{ number_format($balance) }}</div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-700 mb-2">{{ $order->customer_name }}</div>
+                            <div class="text-xs text-gray-600 mb-2">{{ $order->customer?->phone ?? 'N/A' }}</div>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">{{ $order->branch?->name ?? 'N/A' }}</span>
+                                <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">For Installation</span>
+                                @if($order->payment_status === 'unpaid')
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">Unpaid</span>
+                                @elseif($order->payment_status === 'partial')
+                                    <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded">Partial</span>
+                                @else
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">Paid</span>
+                                @endif
+                            </div>
+                            @if($order->customer && ($order->customer->vehicle_type || $order->customer->plate_number))
+                                <div class="text-sm text-gray-600 mb-3">{{ $order->customer->vehicle_type }} - {{ $order->customer->plate_number }}</div>
+                            @endif
+                            <div class="grid grid-cols-2 gap-2 mb-3">
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'completed')" class="px-2 py-1.5 text-xs bg-green-600 hover:bg-green-700 text-white rounded font-medium transition">Complete</button>
+                                <button wire:click="updateOrderStatus({{ $order->id }}, 'in_progress')" class="px-2 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition">In Progress</button>
+                            </div>
+                            <div class="flex gap-2">
+                                <a href="{{ route('orders.view', $order->id) }}" class="flex-1 text-center text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg font-medium transition">View</a>
+                                @if(auth()->user()->role === 'admin')
+                                    <a href="{{ route('orders.edit', $order->id) }}" class="flex-1 text-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg font-medium transition">Edit</a>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-8 text-gray-500">
+                            <p>No for-installation orders</p>
                         </div>
                     @endforelse
                 </div>
