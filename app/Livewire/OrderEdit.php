@@ -985,12 +985,7 @@ class OrderEdit extends Component
         $this->cartServices = array_values(array_filter($this->cartItems, fn ($item) => $item['type'] === 'service'));
         $this->cartExpenses = array_values(array_filter($this->cartItems, fn ($item) => $item['type'] === 'expense'));
 
-        // Calculate Discount
-        if ($this->discount_type === 'percentage') {
-            $this->discounted_amount = round($this->subtotal * ((int)$this->discount_value / 100));
-        } else {
-            $this->discounted_amount = (int)$this->discount_value;
-        }
+        $this->discounted_amount = (int)$this->discount_value;
 
         // Calculate Total Due
         $this->total_due = max(0, $this->subtotal - $this->discounted_amount);
