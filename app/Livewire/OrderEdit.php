@@ -182,7 +182,7 @@ class OrderEdit extends Component
         }
 
         // Load discount
-        $this->discount_type = $order->discount_type ?? 'percentage';
+        $this->discount_type = 'fixed';
         $this->discount_value = $order->discount_value ?? 0;
         $this->discounted_amount = $order->discounted_amount ?? 0;
 
