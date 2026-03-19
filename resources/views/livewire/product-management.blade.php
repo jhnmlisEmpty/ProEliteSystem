@@ -2,13 +2,11 @@
     <!-- Page Header -->
     <x-page-header title="Product Management" subtitle="Manage your retail and material products inventory">
         <x-slot name="actions">
-            @if(auth()->user()->isAdmin())
-                <a href="/products/create" wire:navigate
-                   class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition">
-                    <x-heroicon-o-plus class="w-5 h-5 mr-2" />
-                    Add Product
-                </a>
-            @endif
+            <a href="/products/create" wire:navigate
+                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition">
+                <x-heroicon-o-plus class="w-5 h-5 mr-2" />
+                Add Product
+            </a>
         </x-slot>
     </x-page-header>
 
@@ -126,15 +124,17 @@
                                class="text-purple-600 hover:text-purple-800 mr-3 font-medium">
                                 Logs
                             </a>
+                          
+                            <a href="/products/{{ $product->id }}/adjust" wire:navigate
+                                class="text-amber-600 hover:text-amber-800 mr-3 font-medium">
+                                Adjust
+                            </a>
+
+                            <a href="/products/{{ $product->id }}/edit" wire:navigate
+                                class="text-blue-600 hover:text-blue-900 mr-3 font-medium">
+                                Edit
+                            </a>
                             @if(auth()->user()->isAdmin())
-                                <a href="/products/{{ $product->id }}/adjust" wire:navigate
-                                    class="text-amber-600 hover:text-amber-800 mr-3 font-medium">
-                                    Adjust
-                                </a>
-                                <a href="/products/{{ $product->id }}/edit" wire:navigate
-                                   class="text-blue-600 hover:text-blue-900 mr-3 font-medium">
-                                    Edit
-                                </a>
                                 <button wire:click="delete({{ $product->id }})" 
                                         wire:confirm="Are you sure you want to delete this product?"
                                         class="text-red-600 hover:text-red-900 font-medium">
