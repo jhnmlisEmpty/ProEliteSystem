@@ -43,11 +43,6 @@ class ProductForm extends Component
 
     public function mount($id = null)
     {
-        // Only admins can create or edit products
-        if (!auth()->user()->isAdmin()) {
-            session()->flash('error', 'Unauthorized: Only administrators can manage products.');
-            return redirect()->route('products.index');
-        }
 
         // Set default branch based on user role
         if (!$id) {
