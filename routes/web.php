@@ -49,6 +49,12 @@ Route::middleware(['auth', 'denyEmployee'])->group(function () {
     Route::get('/expenses', ExpenseManagement::class)->name('expenses.index');
     Route::get('/expenses/create', ExpenseForm::class)->name('expenses.create');
 
+    Route::get('/products', ProductManagement::class)->name('products.index');
+    Route::get('/products/create', ProductForm::class)->name('products.create')->middleware('admin');
+    Route::get('/products/{id}/edit', ProductForm::class)->name('products.edit')->middleware('admin');
+    Route::get('/products/{id}/adjust', ProductAdjust::class)->name('products.adjust')->middleware('admin');
+    Route::get('/products/{id}/logs', ProductLogs::class)->name('products.logs');
+
     // All other routes - blocked for order_creator
     Route::middleware('denyOrderCreator')->group(function () {
         
@@ -56,11 +62,7 @@ Route::middleware(['auth', 'denyEmployee'])->group(function () {
         Route::get('/reports/inventory', InventoryReport::class)->name('reports.inventory');
         Route::get('/reports/sales-summary', SalesSummaryReport::class)->name('reports.sales-summary');
 
-        Route::get('/products', ProductManagement::class)->name('products.index');
-        Route::get('/products/create', ProductForm::class)->name('products.create')->middleware('admin');
-        Route::get('/products/{id}/edit', ProductForm::class)->name('products.edit')->middleware('admin');
-        Route::get('/products/{id}/adjust', ProductAdjust::class)->name('products.adjust')->middleware('admin');
-        Route::get('/products/{id}/logs', ProductLogs::class)->name('products.logs');
+
 
         Route::get('/services', ServiceManagement::class)->name('services.index');
         Route::get('/services/create', ServiceForm::class)->name('services.create');
