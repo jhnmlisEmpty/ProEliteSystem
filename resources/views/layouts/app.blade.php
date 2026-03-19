@@ -52,13 +52,14 @@
                             <x-heroicon-o-banknotes class="w-4 h-4 inline-block mr-1" />
                             Expenses
                         </a>
+
+                         <a href="{{ route('products.index') }}" 
+                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
+                            <x-heroicon-o-cube class="w-4 h-4 inline-block mr-1" />
+                            Products
+                        </a>
                        
                         @if(Auth::user()?->role !== 'order_creator')
-                            <a href="{{ route('products.index') }}" 
-                               class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
-                                <x-heroicon-o-cube class="w-4 h-4 inline-block mr-1" />
-                                Products
-                            </a>
                             <a href="{{ route('services.index') }}" 
                                class="text-gray-300 hover:bg-gray-700 hover:text-white px-2 py-1 rounded-md text-xs font-medium transition {{ request()->is('services*') ? 'bg-gray-700 text-white' : '' }}">
                                 <x-heroicon-o-wrench-screwdriver class="w-4 h-4 inline-block mr-1" />
@@ -133,11 +134,13 @@
                     Expenses
                 </a>
 
+                <a href="{{ route('products.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-2 py-1 rounded-md text-xs font-medium {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
+                    <x-heroicon-o-cube class="w-4 h-4 inline-block mr-1" />
+                    Products
+                </a>
+
                 @if(Auth::user()?->role !== 'order_creator')
-                    <a href="{{ route('products.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-2 py-1 rounded-md text-xs font-medium {{ request()->is('products*') ? 'bg-gray-700 text-white' : '' }}">
-                        <x-heroicon-o-cube class="w-4 h-4 inline-block mr-1" />
-                        Products
-                    </a>
+                    
                     <a href="{{ route('services.index') }}" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-2 py-1 rounded-md text-xs font-medium {{ request()->is('services*') ? 'bg-gray-700 text-white' : '' }}">
                         <x-heroicon-o-wrench-screwdriver class="w-4 h-4 inline-block mr-1" />
                         Services
