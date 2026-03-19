@@ -50,9 +50,9 @@ Route::middleware(['auth', 'denyEmployee'])->group(function () {
     Route::get('/expenses/create', ExpenseForm::class)->name('expenses.create');
 
     Route::get('/products', ProductManagement::class)->name('products.index');
-    Route::get('/products/create', ProductForm::class)->name('products.create')->middleware('admin');
+    Route::get('/products/create', ProductForm::class)->name('products.create');
     Route::get('/products/{id}/edit', ProductForm::class)->name('products.edit')->middleware('admin');
-    Route::get('/products/{id}/adjust', ProductAdjust::class)->name('products.adjust')->middleware('admin');
+    Route::get('/products/{id}/adjust', ProductAdjust::class)->name('products.adjust');
     Route::get('/products/{id}/logs', ProductLogs::class)->name('products.logs');
 
     // All other routes - blocked for order_creator
