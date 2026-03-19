@@ -130,11 +130,13 @@
                                 Adjust
                             </a>
 
-                            <a href="/products/{{ $product->id }}/edit" wire:navigate
-                                class="text-blue-600 hover:text-blue-900 mr-3 font-medium">
-                                Edit
-                            </a>
+                            
                             @if(auth()->user()->isAdmin())
+                                <a href="/products/{{ $product->id }}/edit" wire:navigate
+                                    class="text-blue-600 hover:text-blue-900 mr-3 font-medium">
+                                    Edit
+                                </a>
+                                
                                 <button wire:click="delete({{ $product->id }})" 
                                         wire:confirm="Are you sure you want to delete this product?"
                                         class="text-red-600 hover:text-red-900 font-medium">
