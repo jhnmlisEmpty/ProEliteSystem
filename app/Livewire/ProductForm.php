@@ -116,7 +116,7 @@ class ProductForm extends Component
     {
         $branches = Branch::where('is_active', true)->orderBy('name')->get();
         $user = auth()->user();
-        $canSelectBranch = in_array($user->role, ['admin', 'manager']);
+        $canSelectBranch = in_array($user->role, ['admin', 'manager', 'order_creator']);
         
         return view('livewire.product-form', [
             'branches' => $branches,
