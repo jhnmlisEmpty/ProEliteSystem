@@ -141,7 +141,7 @@
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-green-500">
                     <p class="text-xs text-gray-600 font-medium">Net Sales (After Expenses)</p>
                     <p class="text-xl font-bold text-gray-900 mt-0.5">₱{{ number_format($finalNetSales, 0) }}</p>
-                    <p class="text-xs text-gray-400 mt-1 italic">₱{{ number_format($grossSales, 0) }} - ₱{{ number_format($totalBusinessExpenses, 0) }} = ₱{{ number_format($finalNetSales, 0) }}</p>
+                    <p class="text-xs text-gray-400 mt-1 italic">₱{{ number_format($todaySales, 0) }} - ₱{{ number_format($totalBusinessExpenses, 0) }} = ₱{{ number_format($finalNetSales, 0) }}</p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-3 border-l-4 border-purple-500">
                     <p class="text-xs text-gray-600 font-medium">Inventory Value</p>
