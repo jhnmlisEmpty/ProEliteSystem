@@ -28,6 +28,10 @@ class OrderView extends Component
     public $statusOptions = ['pending', 'in_progress', 'for_installation', 'completed', 'cancelled'];
     public $showStatusDropdown = false;
 
+    // Payment status change
+    public $newPaymentStatus = '';
+    public $paymentStatusOptions = ['unpaid', 'partial', 'paid'];
+
     protected $rules = [
         'paymentAmount' => 'required|integer|min:1',
         'paymentMethod' => 'required|in:cash,bank_transfer,credit_card,gcash',
@@ -68,6 +72,7 @@ class OrderView extends Component
     {
         $this->editCustomerName = $this->order->customer_name;
         $this->newStatus = $this->order->status;
+        $this->newPaymentStatus = $this->order->payment_status;
     }
 
     public function render()
@@ -210,6 +215,29 @@ class OrderView extends Component
             $this->loadOrder();
         } catch (\Exception $e) {
             $this->addError('status', 'Failed to update status: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * PAYMENT STATUS MANAGEMENT
+     */
+    public function changePaymentStatus($paymentStatus = null)
+    {
+        // Use provided status parameter or fall back to newPaymentStatus property
+        $paymentStatusToSet = $paymentStatus ?? $this->newPaymentStatus;
+        
+        if ($paymentStatusToSet === $this->order->payment_status) {
+            session()->flash('error', 'Order payment is already ' . ucfirst($paymentStatusToSet) . '.');
+            return;
+        }
+
+        try {
+            $this->order->update(['payment_status' => $paymentStatusToSet]);
+            $this->newPaymentStatus = $paymentStatusToSet;
+            session()->flash('success', 'Payment status updated to ' . ucfirst($this->newPaymentStatus) . '!');
+            $this->loadOrder();
+        } catch (\Exception $e) {
+            $this->addError('payment_status', 'Failed to update payment status: ' . $e->getMessage());
         }
     }
 

@@ -27,9 +27,11 @@
                             <option value="{{ $status }}" {{ $order->status === $status ? 'selected' : '' }}>{{ ucfirst(str_replace('_', ' ', $status)) }}</option>
                         @endforeach
                     </select>
-                    <span class="px-3 py-1 rounded border border-gray-300 text-xs font-medium uppercase text-gray-700 bg-white">
-                        {{ $order->payment_status }}
-                    </span>
+                    <select wire:change="changePaymentStatus($event.target.value)" class="px-3 py-1 rounded border border-gray-300 text-xs font-medium uppercase text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @foreach($paymentStatusOptions as $paymentStatus)
+                            <option value="{{ $paymentStatus }}" {{ $order->payment_status === $paymentStatus ? 'selected' : '' }}>{{ ucfirst($paymentStatus) }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <p class="text-sm text-gray-600 mt-2">Created {{ $order->created_at->format('M d, Y') }} • <span class="font-semibold text-gray-900">Branch: {{ $order->branch->name ?? 'N/A' }}</span></p>
             </div>
