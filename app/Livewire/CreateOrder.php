@@ -178,8 +178,7 @@ class CreateOrder extends Component
                     $q->where('name', 'like', '%' . $this->customerSearch . '%')
                         ->orWhere('phone', 'like', '%' . $this->customerSearch . '%');
                 })
-                ->when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
-                ->take(8)
+                ->take(10)
                 ->get()
             : collect();
 
