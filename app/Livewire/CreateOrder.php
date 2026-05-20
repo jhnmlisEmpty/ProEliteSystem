@@ -174,7 +174,8 @@ class CreateOrder extends Component
         $isAdmin = auth()->user()->role === 'admin';
 
         $customers = $this->customerSearch
-            ? Customer::where(function ($q) {
+            ? Customer::withoutGlobalScopes()
+                ->where(function ($q) {
                     $q->where('name', 'like', '%' . $this->customerSearch . '%')
                         ->orWhere('phone', 'like', '%' . $this->customerSearch . '%');
                 })
@@ -754,11 +755,7 @@ class CreateOrder extends Component
      */
     public function selectCustomer($customerId)
     {
-        $isAdmin = auth()->user()->role === 'admin';
-        $userBranch = auth()->user()->branch_id;
-        
-        $customer = Customer::when(!$isAdmin, fn ($q) => $q->where('branch_id', $userBranch))
-            ->find($customerId);
+        $customer = Customer::withoutGlobalScopes()->find($customerId);
         
         if ($customer) {
             $this->customer_id = $customer->id;
