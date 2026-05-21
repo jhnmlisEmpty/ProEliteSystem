@@ -755,7 +755,7 @@ class CreateOrder extends Component
      */
     public function selectCustomer($customerId)
     {
-        $customer = Customer::find($customerId);
+        $customer = Customer::withoutGlobalScopes()->find($customerId);
         
         if ($customer) {
             $this->customer_id = $customer->id;
