@@ -174,8 +174,7 @@ class CreateOrder extends Component
         $isAdmin = auth()->user()->role === 'admin';
 
         $customers = $this->customerSearch
-            ? Customer::withoutGlobalScopes()
-                ->where(function ($q) {
+            ? Customer::where(function ($q) {
                     $q->where('name', 'like', '%' . $this->customerSearch . '%')
                         ->orWhere('phone', 'like', '%' . $this->customerSearch . '%');
                 })
@@ -755,7 +754,7 @@ class CreateOrder extends Component
      */
     public function selectCustomer($customerId)
     {
-        $customer = Customer::withoutGlobalScopes()->find($customerId);
+        $customer = Customer::find($customerId);
         
         if ($customer) {
             $this->customer_id = $customer->id;
@@ -964,7 +963,8 @@ class CreateOrder extends Component
 
         try {
             $orderId = DB::transaction(function () {
-                $customer = Customer::find($this->customer_id);
+                // Use withoutGlobalScopes for lookup since customer_id is already validated from UI
+                $customer = Customer::withoutGlobalScopes()->find($this->customer_id);
 
                 if (!$customer) {
                     throw new \Exception('Customer not found.');
