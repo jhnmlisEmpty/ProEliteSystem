@@ -154,8 +154,19 @@ class SalesSummaryReport extends Component
             
             if ($allTotal == 0) return $carry;
             
-            // Calculate proportion and allocate payment as whole number
-            $proportion = $categoryTotal / $allTotal;
+            // Discount applies ONLY to accessories (products)
+            $discountAmount = $order->discounted_amount ?? 0;
+            $totalAfterDiscount = $allTotal - $discountAmount;
+            
+            if ($totalAfterDiscount <= 0) return $carry;
+            
+            // For products: subtract discount from their category total
+            if ($column === 'product_id') {
+                $categoryTotal = max(0, $categoryTotal - $discountAmount);
+            }
+            
+            // Calculate proportion based on total after discount
+            $proportion = $categoryTotal / $totalAfterDiscount;
             $allocated = round($payment->amount * $proportion);
             
             return $carry + $allocated;
