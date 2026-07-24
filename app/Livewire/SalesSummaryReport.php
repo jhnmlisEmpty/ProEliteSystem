@@ -3,9 +3,12 @@
 namespace App\Livewire;
 
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Expense;
+use App\Models\Payment;
 use Carbon\Carbon;
 use Livewire\Component;
+use Illuminate\Support\Collection;
 
 class SalesSummaryReport extends Component
 {
@@ -118,20 +121,24 @@ class SalesSummaryReport extends Component
             [$column]
         ));
 
-        // Get orders that received a payment on this date, then sum item totals directly
-        $query = Order::whereHas('payments', function ($paymentQuery) use ($dateStart, $dateEnd) {
-            $paymentQuery->whereBetween('paid_at', [$dateStart, $dateEnd]);
-        })->with(['orderItems']);
+        // Get payments with order items
+        $query = Payment::whereBetween('paid_at', [$dateStart, $dateEnd])
+            ->with(['order.orderItems']);
         
         // Apply branch filtering
         if (!$this->isAdmin) {
-            $query->where('branch_id', auth()->user()?->branch_id);
+            $query->whereHas('order', function ($q) {
+                $q->where('branch_id', auth()->user()?->branch_id);
+            });
         }
 
-        $orders = $query->get();
+        $payments = $query->get();
 
-        // Sum the actual item totals for the category.
-        return $orders->reduce(function ($carry, $order) use ($column, $otherColumns) {
+        // Allocate payment amounts proportionally by category
+        return $payments->reduce(function($carry, $payment) use ($column, $otherColumns) {
+            if (!$payment->order) return $carry;
+            
+            $order = $payment->order;
             
             // Get items matching this category (this column not null, others null)
             $categoryItems = $order->orderItems->filter(function($item) use ($column, $otherColumns) {
@@ -143,13 +150,26 @@ class SalesSummaryReport extends Component
             });
             
             $categoryTotal = $categoryItems->sum('total_price');
-
-            // Discount applies only to accessories (products)
+            $allTotal = $order->orderItems->sum('total_price');
+            
+            if ($allTotal == 0) return $carry;
+            
+            // Discount applies ONLY to accessories (products)
+            $discountAmount = $order->discounted_amount ?? 0;
+            $totalAfterDiscount = $allTotal - $discountAmount;
+            
+            if ($totalAfterDiscount <= 0) return $carry;
+            
+            // For products: subtract discount from their category total
             if ($column === 'product_id') {
-                $categoryTotal = max(0, $categoryTotal - ($order->discounted_amount ?? 0));
+                $categoryTotal = max(0, $categoryTotal - $discountAmount);
             }
-
-            return $carry + $categoryTotal;
+            
+            // Calculate proportion based on total after discount
+            $proportion = $categoryTotal / $totalAfterDiscount;
+            $allocated = round($payment->amount * $proportion);
+            
+            return $carry + $allocated;
         }, 0);
     }
 
